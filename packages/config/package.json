@@ -1,0 +1,19 @@
+{
+  "name": "@pairly/config",
+  "version": "0.0.1",
+  "private": true,
+  "files": [
+    "tsconfig.base.json",
+    "tsconfig.node.json",
+    "tsconfig.react.json",
+    "eslint.config.js"
+  ],
+  "scripts": {
+    "build": "echo @pairly/config ready",
+    "lint": "prettier --check .",
+    "test": "node --test tests/config.test.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}
