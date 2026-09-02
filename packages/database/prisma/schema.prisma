@@ -1,0 +1,115 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum RoomRole {
+  HOST
+  EDITOR
+  COMMENTER
+  VIEWER
+}
+
+enum RoomAccessMode {
+  PUBLIC
+  PASSCODE
+  INVITE_ONLY
+  LOBBY
+}
+
+enum RoomMode {
+  COLLABORATIVE
+  INTERVIEW
+  CLASSROOM
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String?  @unique
+  name        String
+  avatar      String?
+  githubId    String?  @unique
+  preferences Json?    @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  hostedRooms      Room[]              @relation("HostRooms")
+  roomParticipants RoomParticipant[]
+  snapshots        WorkspaceSnapshot[]
+
+  @@index([email])
+  @@index([githubId])
+  @@map("users")
+}
+
+model Room {
+  id               String         @id @default(cuid())
+  code             String         @unique
+  title            String         @default("Untitled Room")
+  accessMode       RoomAccessMode @default(PUBLIC)
+  passcodeHash     String?
+  roomMode         RoomMode       @default(COLLABORATIVE)
+  hostId           String
+  host             User           @relation("HostRooms", fields: [hostId], references: [id], onDelete: Cascade)
+  isLocked         Boolean        @default(false)
+  executionEnabled Boolean        @default(true)
+  aiEnabled        Boolean        @default(true)
+  maxParticipants  Int            @default(20)
+  defaultRole      RoomRole       @default(EDITOR)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  expiresAt        DateTime?
+
+  participants RoomParticipant[]
+  snapshots    WorkspaceSnapshot[]
+
+  @@index([code])
+  @@index([hostId])
+  @@index([expiresAt])
+  @@map("rooms")
+}
+
+model RoomParticipant {
+  id               String    @id @default(cuid())
+  roomId           String
+  room             Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId           String?
+  user             User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  guestDisplayName String?
+  guestAvatar      String?
+  guestColor       String?
+  role             RoomRole  @default(EDITOR)
+  isMuted          Boolean   @default(false)
+  isBanned         Boolean   @default(false)
+  joinedAt         DateTime  @default(now())
+  leftAt           DateTime?
+  lastSeenAt       DateTime  @default(now())
+
+  @@index([roomId])
+  @@index([userId])
+  @@index([roomId, role])
+  @@map("room_participants")
+}
+
+model WorkspaceSnapshot {
+  id          String   @id @default(cuid())
+  roomId      String
+  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  version     Int      @default(1)
+  name        String   @default("Snapshot")
+  data        Bytes
+  sizeBytes   Int      @default(0)
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+
+  @@index([roomId])
+  @@index([roomId, version])
+  @@index([createdAt])
+  @@map("workspace_snapshots")
+}
