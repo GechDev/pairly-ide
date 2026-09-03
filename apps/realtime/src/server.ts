@@ -3,6 +3,7 @@ import cors from '@fastify/cors';
 import websocket from '@fastify/websocket';
 import { RoomManager } from './rooms.js';
 import { authenticateRoomToken } from './auth.js';
+import { authorizeAction } from './rbac/guard.js';
 
 export interface ServerOptions {
   roomManager?: RoomManager;
@@ -88,7 +89,7 @@ export function buildServer(options: ServerOptions = {}): FastifyInstance {
           participant.id
         );
 
-        // 5. Handle inbound messages and ping/pong latency harness
+        // 5. Handle inbound messages and ping/pong latency harness with RBAC
         socket.on('message', (rawData) => {
           try {
             const data = JSON.parse(rawData.toString());
@@ -109,7 +110,107 @@ export function buildServer(options: ServerOptions = {}): FastifyInstance {
               return;
             }
 
-            // Broadcast general collaborative messages
+            // Always fetch the latest participant state (in case role changed dynamically)
+            const currentParticipant =
+              roomManager.getParticipant(roomCode, participant.id) || participant;
+            const isRoomLocked = roomManager.isRoomLocked(roomCode);
+
+            // Handle Administrative Role Change (FR-ROOM-06)
+            if (data.type === 'CHANGE_ROLE') {
+              const auth = authorizeAction('CHANGE_ROLE', {
+                role: currentParticipant.role,
+              });
+              if (!auth.allowed) {
+                socket.send(
+                  JSON.stringify({
+                    type: 'ERROR',
+                    code: auth.code || 'UNAUTHORIZED_ACTION',
+                    message: auth.message,
+                  })
+                );
+                return;
+              }
+
+              const { targetParticipantId, newRole } = data;
+              const success = roomManager.updateParticipantRole(
+                roomCode,
+                targetParticipantId,
+                newRole
+              );
+              if (success) {
+                roomManager.broadcast(roomCode, {
+                  type: 'ROLE_CHANGED',
+                  participantId: targetParticipantId,
+                  newRole,
+                });
+              }
+              return;
+            }
+
+            // Handle Room Lock Toggle (FR-ROOM-04)
+            if (data.type === 'TOGGLE_ROOM_LOCK') {
+              const auth = authorizeAction('TOGGLE_ROOM_LOCK', {
+                role: currentParticipant.role,
+              });
+              if (!auth.allowed) {
+                socket.send(
+                  JSON.stringify({
+                    type: 'ERROR',
+                    code: auth.code || 'UNAUTHORIZED_ACTION',
+                    message: auth.message,
+                  })
+                );
+                return;
+              }
+
+              const locked = Boolean(data.isLocked);
+              roomManager.setRoomLock(roomCode, locked);
+              roomManager.broadcast(roomCode, {
+                type: 'ROOM_LOCK_UPDATED',
+                isLocked: locked,
+              });
+              return;
+            }
+
+            // Enforce RBAC on Document Updates (FR-ROOM-05..07, AT-03)
+            if (data.type === 'DOCUMENT_UPDATE' || data.type === 'YJS_UPDATE') {
+              const auth = authorizeAction('DOCUMENT_UPDATE', {
+                role: currentParticipant.role,
+                isRoomLocked,
+              });
+              if (!auth.allowed) {
+                socket.send(
+                  JSON.stringify({
+                    type: 'ERROR',
+                    code: auth.code || 'UNAUTHORIZED_ACTION',
+                    message: auth.message,
+                    originalAction: data.type,
+                  })
+                );
+                return; // Discard unauthorized edit
+              }
+            }
+
+            // Enforce RBAC on Code Execution (FR-EXEC-01)
+            if (data.type === 'EXECUTE_CODE') {
+              const auth = authorizeAction('EXECUTE_CODE', {
+                role: currentParticipant.role,
+                isRoomLocked,
+              });
+              if (!auth.allowed) {
+                socket.send(
+                  JSON.stringify({
+                    type: 'ERROR',
+                    code: auth.code || 'UNAUTHORIZED_ACTION',
+                    message: auth.message,
+                    originalAction: data.type,
+                  })
+                );
+                return; // Discard unauthorized execution
+              }
+            }
+
+            // Broadcast permitted collaborative messages
             roomManager.broadcast(roomCode, data, participant.id);
           } catch {
             // Non-JSON or raw binary framing
