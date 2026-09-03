@@ -1,10 +1,39 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
-import { ArrowRight, Sparkles, Terminal } from 'lucide-react';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ArrowRight, Loader2, Sparkles, Terminal } from 'lucide-react';
 
 export function HeroSection() {
+  const router = useRouter();
+  const [isCreating, setIsCreating] = useState(false);
+
+  const handleStartRoom = async () => {
+    if (isCreating) return;
+    setIsCreating(true);
+    try {
+      const res = await fetch('/api/v1/rooms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (data.success && data.joinUrl) {
+        if (data.guest) {
+          sessionStorage.setItem(`pairly_guest_${data.room.code}`, JSON.stringify(data.guest));
+        }
+        if (data.token) {
+          sessionStorage.setItem(`pairly_token_${data.room.code}`, data.token);
+        }
+        router.push(data.joinUrl);
+        return;
+      }
+      router.push('/room/pair-demo');
+    } catch {
+      router.push('/room/pair-demo');
+    }
+  };
+
   return (
     <section className="relative overflow-hidden pt-12 pb-24 lg:pt-20 lg:pb-32">
       {/* Background glow effects */}
@@ -32,15 +61,25 @@ export function HeroSection() {
 
         {/* Primary Call to Action Button (FR-UX-01) */}
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link
-            href="/room/new"
+          <button
             id="hero-start-room-btn"
             data-testid="start-room-btn"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl text-base font-bold text-white bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 hover:-translate-y-0.5 transition-all duration-200 group"
+            onClick={handleStartRoom}
+            disabled={isCreating}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl text-base font-bold text-white bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 hover:-translate-y-0.5 transition-all duration-200 group disabled:opacity-75 disabled:pointer-events-none"
           >
-            <span>Start a room</span>
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </Link>
+            {isCreating ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Creating workspace...</span>
+              </>
+            ) : (
+              <>
+                <span>Start a room</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </>
+            )}
+          </button>
           <a
             href="#features"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-base font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition-colors"
