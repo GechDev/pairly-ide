@@ -1,5 +1,5 @@
 import type { WebSocket } from 'ws';
-import type { ParticipantIdentity } from '@pairly/contracts';
+import type { ParticipantIdentity, RoomRole } from '@pairly/contracts';
 
 export interface RoomParticipantSession {
   participant: ParticipantIdentity;
@@ -12,6 +12,7 @@ export interface RoomParticipantSession {
 export interface ActiveRoom {
   code: string;
   createdAt: number;
+  isLocked: boolean;
   participants: Map<string, RoomParticipantSession>;
 }
 
@@ -27,6 +28,7 @@ export class RoomManager {
       room = {
         code: roomCode,
         createdAt: Date.now(),
+        isLocked: false,
         participants: new Map(),
       };
       this.rooms.set(roomCode, room);
@@ -93,6 +95,54 @@ export class RoomManager {
     if (session) {
       session.lastPingAt = Date.now();
     }
+  }
+
+  /**
+   * Returns a specific participant identity if present.
+   */
+  public getParticipant(
+    roomCode: string,
+    participantId: string
+  ): ParticipantIdentity | undefined {
+    const room = this.rooms.get(roomCode);
+    return room?.participants.get(participantId)?.participant;
+  }
+
+  /**
+   * Dynamically updates a participant's role (FR-ROOM-06).
+   */
+  public updateParticipantRole(
+    roomCode: string,
+    participantId: string,
+    newRole: RoomRole
+  ): boolean {
+    const room = this.rooms.get(roomCode);
+    if (!room) return false;
+
+    const session = room.participants.get(participantId);
+    if (!session) return false;
+
+    session.participant.role = newRole;
+    return true;
+  }
+
+  /**
+   * Sets the room lock state (FR-ROOM-04).
+   */
+  public setRoomLock(roomCode: string, isLocked: boolean): boolean {
+    const room = this.rooms.get(roomCode);
+    if (!room) return false;
+
+    room.isLocked = isLocked;
+    return true;
+  }
+
+  /**
+   * Returns true if room is locked.
+   */
+  public isRoomLocked(roomCode: string): boolean {
+    const room = this.rooms.get(roomCode);
+    return room?.isLocked ?? false;
   }
 
   /**
