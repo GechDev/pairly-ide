@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import type { ParticipantIdentity } from '@pairly/contracts';
 import { generateGuestIdentity } from '../../lib/guest';
+import { CodeEditor } from '../editor/CodeEditor';
+import type { CollaborativeSession } from '../editor/yjsExtension';
 
 interface RoomClientProps {
   roomCode: string;
@@ -25,6 +27,8 @@ export function RoomClient({ roomCode }: RoomClientProps) {
     'connecting' | 'connected' | 'disconnected'
   >('connecting');
   const [activeParticipants, setActiveParticipants] = useState<ParticipantIdentity[]>([]);
+  const activeSessionRef = React.useRef<CollaborativeSession | null>(null);
+  const wsRef = React.useRef<WebSocket | null>(null);
 
   useEffect(() => {
     // 1. Retrieve or generate guest identity
@@ -63,6 +67,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
     try {
       const wsUrl = `ws://localhost:4001/ws/rooms/${roomCode}?token=${encodeURIComponent(token)}`;
       ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
 
       ws.onopen = () => {
         setConnectionStatus('connected');
@@ -82,6 +87,11 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             setActiveParticipants((prev) =>
               prev.filter((p) => p.id !== msg.participantId)
             );
+            activeSessionRef.current?.removeRemoteCursor(msg.participantId);
+          } else if (msg.type === 'DOC_UPDATE') {
+            activeSessionRef.current?.applyEncodedUpdate(msg.update);
+          } else if (msg.type === 'CURSOR_UPDATE') {
+            activeSessionRef.current?.setRemoteCursor(msg.cursor);
           }
         } catch {}
       };
@@ -248,9 +258,27 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           </div>
 
           {/* Code Area */}
-          <div className="flex-1 p-4 font-mono text-sm leading-relaxed text-slate-300 overflow-auto">
-            <pre className="text-slate-400">
-              <code>{`// Welcome to Pairly Room ${roomCode}
+          <div className="flex-1 overflow-hidden relative">
+            {participant && (
+              <CodeEditor
+                language="typescript"
+                participant={participant}
+                readOnly={participant.role === 'VIEWER'}
+                onSessionReady={(session) => {
+                  activeSessionRef.current = session;
+                  session.onUpdate((base64Update, origin) => {
+                    if (
+                      origin === 'local' &&
+                      wsRef.current &&
+                      wsRef.current.readyState === WebSocket.OPEN
+                    ) {
+                      wsRef.current.send(
+                        JSON.stringify({ type: 'DOC_UPDATE', update: base64Update })
+                      );
+                    }
+                  });
+                }}
+                initialCode={`// Welcome to Pairly Room ${roomCode}
 // Real-time collaborative pair programming environment
 // Type below or invite colleagues using the Share button.
 
@@ -258,8 +286,9 @@ function welcome() {
   console.log("Room active: ${roomCode}");
 }
 
-welcome();`}</code>
-            </pre>
+welcome();`}
+              />
+            )}
           </div>
         </section>
       </div>
