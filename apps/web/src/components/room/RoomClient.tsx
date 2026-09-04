@@ -15,6 +15,12 @@ import type { ParticipantIdentity } from '@pairly/contracts';
 import { generateGuestIdentity } from '../../lib/guest';
 import { CodeEditor } from '../editor/CodeEditor';
 import type { CollaborativeSession } from '../editor/yjsExtension';
+import { FileTree } from '../workspace/FileTree';
+import { Tabs } from '../workspace/Tabs';
+import {
+  createWorkspaceManager,
+  type WorkspaceState,
+} from '../workspace/workspaceState';
 
 interface RoomClientProps {
   roomCode: string;
@@ -29,6 +35,17 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [activeParticipants, setActiveParticipants] = useState<ParticipantIdentity[]>([]);
   const activeSessionRef = React.useRef<CollaborativeSession | null>(null);
   const wsRef = React.useRef<WebSocket | null>(null);
+  const workspaceManagerRef = React.useRef(createWorkspaceManager());
+  const [workspaceState, setWorkspaceState] = useState<WorkspaceState>(
+    workspaceManagerRef.current.getState()
+  );
+
+  useEffect(() => {
+    const unsubscribe = workspaceManagerRef.current.subscribe(setWorkspaceState);
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     // 1. Retrieve or generate guest identity
@@ -229,19 +246,31 @@ export function RoomClient({ roomCode }: RoomClientProps) {
 
       {/* Main IDE Workspace */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar (File Explorer stub) */}
+        {/* Left Sidebar (File Explorer) */}
         <aside
           id="workspace-filetree-panel"
           data-testid="filetree-panel"
-          className="w-56 border-r border-slate-800 bg-slate-900/40 p-3 hidden md:flex flex-col gap-2"
+          className="w-56 border-r border-slate-800 bg-slate-900/40 hidden md:flex flex-col overflow-hidden"
         >
-          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-            Files
-          </div>
-          <div className="flex items-center gap-2 px-2 py-1 rounded bg-slate-800/80 text-xs text-slate-200">
-            <span className="w-2 h-2 rounded-full bg-brand-400" />
-            <span>main.ts</span>
-          </div>
+          <FileTree
+            items={workspaceState.items}
+            activeFileId={workspaceState.activeFileId}
+            onSelectFile={(id) => workspaceManagerRef.current.openTab(id)}
+            onCreateFile={(name, isFolder, parentId) =>
+              workspaceManagerRef.current.createFile(name, isFolder, parentId)
+            }
+            onDeleteFile={(id) => workspaceManagerRef.current.deleteFile(id)}
+            onImportItems={(imported) => {
+              for (const item of imported) {
+                workspaceManagerRef.current.createFile(
+                  item.name,
+                  item.isFolder,
+                  item.parentId,
+                  item.content
+                );
+              }
+            }}
+          />
         </aside>
 
         {/* Central Editor Viewport */}
@@ -251,19 +280,30 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           className="flex-1 flex flex-col bg-slate-950 relative overflow-hidden"
         >
           {/* Editor Tab Bar */}
-          <div className="h-9 border-b border-slate-800/80 bg-slate-900/20 px-4 flex items-center gap-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-t text-xs font-mono bg-slate-950 border-t-2 border-brand-500 text-slate-200">
-              <span>main.ts</span>
-            </div>
-          </div>
+          <Tabs
+            items={workspaceState.items}
+            openTabIds={workspaceState.openTabIds}
+            activeFileId={workspaceState.activeFileId}
+            onSelectTab={(id) => workspaceManagerRef.current.setActiveTab(id)}
+            onCloseTab={(id) => workspaceManagerRef.current.closeTab(id)}
+          />
 
           {/* Code Area */}
           <div className="flex-1 overflow-hidden relative">
             {participant && (
               <CodeEditor
+                key={workspaceState.activeFileId || 'empty'}
                 language="typescript"
                 participant={participant}
                 readOnly={participant.role === 'VIEWER'}
+                onCodeChange={(newCode) => {
+                  if (workspaceState.activeFileId) {
+                    workspaceManagerRef.current.updateFileContent(
+                      workspaceState.activeFileId,
+                      newCode
+                    );
+                  }
+                }}
                 onSessionReady={(session) => {
                   activeSessionRef.current = session;
                   session.onUpdate((base64Update, origin) => {
@@ -278,15 +318,10 @@ export function RoomClient({ roomCode }: RoomClientProps) {
                     }
                   });
                 }}
-                initialCode={`// Welcome to Pairly Room ${roomCode}
-// Real-time collaborative pair programming environment
-// Type below or invite colleagues using the Share button.
-
-function welcome() {
-  console.log("Room active: ${roomCode}");
-}
-
-welcome();`}
+                initialCode={
+                  workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.content ||
+                  `// Welcome to Pairly Room ${roomCode}`
+                }
               />
             )}
           </div>
