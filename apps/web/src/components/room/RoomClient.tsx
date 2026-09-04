@@ -67,18 +67,30 @@ export function RoomClient({ roomCode }: RoomClientProps) {
     setActiveParticipants([currentParticipant]);
 
     // 2. Establish connection to realtime service if available
+    const rawPayload = JSON.stringify({
+      participantId: currentParticipant.id,
+      displayName: currentParticipant.displayName,
+      avatar: currentParticipant.avatar,
+      color: currentParticipant.color,
+      role: currentParticipant.role,
+      roomCode,
+    });
+    const encodedPayload =
+      typeof window !== 'undefined' && typeof window.btoa === 'function'
+        ? window
+            .btoa(unescape(encodeURIComponent(rawPayload)))
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/, '')
+        : Buffer.from(rawPayload)
+            .toString('base64')
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/, '');
+
     const token =
       sessionStorage.getItem(`pairly_token_${roomCode}`) ||
-      `pairly_mock_${Buffer.from(
-        JSON.stringify({
-          participantId: currentParticipant.id,
-          displayName: currentParticipant.displayName,
-          avatar: currentParticipant.avatar,
-          color: currentParticipant.color,
-          role: currentParticipant.role,
-          roomCode,
-        })
-      ).toString('base64url')}`;
+      `pairly_mock_${encodedPayload}`;
 
     let ws: WebSocket | null = null;
     try {
