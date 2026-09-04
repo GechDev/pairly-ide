@@ -9,6 +9,7 @@ describe('AT-02: CRDT Concurrent Editing Convergence and Cursor Sync', () => {
     avatar: 'https://avatar.test/alice.png',
     color: '#3b82f6',
     role: 'EDITOR',
+    isGuest: true,
   };
 
   const bob: ParticipantIdentity = {
@@ -17,6 +18,7 @@ describe('AT-02: CRDT Concurrent Editing Convergence and Cursor Sync', () => {
     avatar: 'https://avatar.test/bob.png',
     color: '#10b981',
     role: 'EDITOR',
+    isGuest: true,
   };
 
   it('converges to identical document state when two participants edit non-overlapping lines concurrently', () => {
