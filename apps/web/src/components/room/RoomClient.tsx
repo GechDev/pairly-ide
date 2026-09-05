@@ -21,6 +21,8 @@ import {
   createWorkspaceManager,
   type WorkspaceState,
 } from '../workspace/workspaceState';
+import { PresenceBar } from '../presence/PresenceBar';
+import { useFollow } from '../presence/useFollow';
 
 interface RoomClientProps {
   roomCode: string;
@@ -39,6 +41,15 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [workspaceState, setWorkspaceState] = useState<WorkspaceState>(
     workspaceManagerRef.current.getState()
   );
+  const [participantPresenceMap, setParticipantPresenceMap] = useState<
+    Record<string, { fileId?: string | null; fileName?: string | null }>
+  >({});
+
+  const follow = useFollow({
+    onFollowFileChange: (fileId) => {
+      workspaceManagerRef.current.setActiveTab(fileId);
+    },
+  });
 
   useEffect(() => {
     const unsubscribe = workspaceManagerRef.current.subscribe(setWorkspaceState);
@@ -46,6 +57,20 @@ export function RoomClient({ roomCode }: RoomClientProps) {
       unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN && participant) {
+      const activeItem = workspaceState.items.find((i) => i.id === workspaceState.activeFileId);
+      wsRef.current.send(
+        JSON.stringify({
+          type: 'PRESENCE_UPDATE',
+          participantId: participant.id,
+          fileId: workspaceState.activeFileId,
+          fileName: activeItem?.name,
+        })
+      );
+    }
+  }, [workspaceState.activeFileId, participant]);
 
   useEffect(() => {
     // 1. Retrieve or generate guest identity
@@ -117,6 +142,22 @@ export function RoomClient({ roomCode }: RoomClientProps) {
               prev.filter((p) => p.id !== msg.participantId)
             );
             activeSessionRef.current?.removeRemoteCursor(msg.participantId);
+          } else if (msg.type === 'SPOTLIGHT_CHANGED') {
+            follow.setSpotlight(msg.targetParticipantId);
+          } else if (msg.type === 'PRESENCE_UPDATE') {
+            setParticipantPresenceMap((prev) => ({
+              ...prev,
+              [msg.participantId]: {
+                fileId: msg.fileId,
+                fileName: msg.fileName,
+              },
+            }));
+            if (
+              follow.followedParticipantId === msg.participantId ||
+              follow.spotlightedParticipantId === msg.participantId
+            ) {
+              follow.updateFollowedState(msg.fileId, msg.cursor?.line, msg.cursor?.column);
+            }
           } else if (msg.type === 'DOC_UPDATE') {
             activeSessionRef.current?.applyEncodedUpdate(msg.update);
           } else if (msg.type === 'CURSOR_UPDATE') {
@@ -228,22 +269,28 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             <span className="hidden md:inline capitalize">{connectionStatus}</span>
           </div>
 
-          <div
-            id="participant-presence-bar"
-            data-testid="presence-bar"
-            className="flex items-center -space-x-1.5 overflow-hidden"
-          >
-            {activeParticipants.map((p) => (
-              <div
-                key={p.id}
-                title={`${p.displayName} (${p.role})`}
-                className="w-7 h-7 rounded-full border-2 border-slate-900 flex items-center justify-center text-[10px] font-bold text-white shadow"
-                style={{ backgroundColor: p.color }}
-              >
-                {p.displayName.charAt(0)}
-              </div>
-            ))}
-          </div>
+          <PresenceBar
+            currentParticipant={participant}
+            participants={activeParticipants.map((p) => ({
+              participant: p,
+              activeFileId: participantPresenceMap[p.id]?.fileId,
+              activeFileName: participantPresenceMap[p.id]?.fileName,
+            }))}
+            followedParticipantId={follow.followedParticipantId}
+            spotlightedParticipantId={follow.spotlightedParticipantId}
+            onFollow={follow.startFollowing}
+            onUnfollow={follow.stopFollowing}
+            onToggleSpotlight={(targetId) => {
+              if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+                wsRef.current.send(
+                  JSON.stringify({
+                    type: 'SPOTLIGHT_TOGGLE',
+                    targetParticipantId: targetId,
+                  })
+                );
+              }
+            }}
+          />
 
           <button
             id="share-room-btn"
@@ -267,7 +314,10 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           <FileTree
             items={workspaceState.items}
             activeFileId={workspaceState.activeFileId}
-            onSelectFile={(id) => workspaceManagerRef.current.openTab(id)}
+            onSelectFile={(id) => {
+              follow.breakFollowOnInteraction();
+              workspaceManagerRef.current.openTab(id);
+            }}
             onCreateFile={(name, isFolder, parentId) =>
               workspaceManagerRef.current.createFile(name, isFolder, parentId)
             }
@@ -296,7 +346,10 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             items={workspaceState.items}
             openTabIds={workspaceState.openTabIds}
             activeFileId={workspaceState.activeFileId}
-            onSelectTab={(id) => workspaceManagerRef.current.setActiveTab(id)}
+            onSelectTab={(id) => {
+              follow.breakFollowOnInteraction();
+              workspaceManagerRef.current.setActiveTab(id);
+            }}
             onCloseTab={(id) => workspaceManagerRef.current.closeTab(id)}
           />
 
