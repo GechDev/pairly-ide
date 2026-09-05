@@ -12,7 +12,8 @@ export type RealtimeAction =
   | 'ADD_COMMENT'
   | 'CHANGE_ROLE'
   | 'TOGGLE_ROOM_LOCK'
-  | 'KICK_PARTICIPANT';
+  | 'KICK_PARTICIPANT'
+  | 'SPOTLIGHT_PARTICIPANT';
 
 export interface RBACCheckResult {
   allowed: boolean;
@@ -81,6 +82,7 @@ export function authorizeAction(
     case 'CHANGE_ROLE':
     case 'TOGGLE_ROOM_LOCK':
     case 'KICK_PARTICIPANT':
+    case 'SPOTLIGHT_PARTICIPANT':
       if (!canManageRoom(role)) {
         return {
           allowed: false,

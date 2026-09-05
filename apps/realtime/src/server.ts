@@ -172,6 +172,30 @@ export function buildServer(options: ServerOptions = {}): FastifyInstance {
               return;
             }
 
+            // Handle Host Spotlight Toggle (FR-EDIT-08)
+            if (data.type === 'SPOTLIGHT_TOGGLE') {
+              const auth = authorizeAction('SPOTLIGHT_PARTICIPANT', {
+                role: currentParticipant.role,
+              });
+              if (!auth.allowed) {
+                socket.send(
+                  JSON.stringify({
+                    type: 'ERROR',
+                    code: auth.code || 'UNAUTHORIZED_ACTION',
+                    message: auth.message,
+                  })
+                );
+                return;
+              }
+
+              roomManager.broadcast(roomCode, {
+                type: 'SPOTLIGHT_CHANGED',
+                targetParticipantId: data.targetParticipantId ?? null,
+                spotlightedBy: currentParticipant.id,
+              });
+              return;
+            }
+
             // Enforce RBAC on Document Updates (FR-ROOM-05..07, AT-03)
             if (data.type === 'DOCUMENT_UPDATE' || data.type === 'YJS_UPDATE') {
               const auth = authorizeAction('DOCUMENT_UPDATE', {
