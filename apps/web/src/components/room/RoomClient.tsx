@@ -10,6 +10,7 @@ import {
   WifiOff,
   Play,
   Share2,
+  History,
 } from 'lucide-react';
 import type { ParticipantIdentity } from '@pairly/contracts';
 import { generateGuestIdentity } from '../../lib/guest';
@@ -23,6 +24,7 @@ import {
 } from '../workspace/workspaceState';
 import { PresenceBar } from '../presence/PresenceBar';
 import { useFollow } from '../presence/useFollow';
+import { CheckpointModal } from './CheckpointModal';
 
 interface RoomClientProps {
   roomCode: string;
@@ -44,6 +46,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [participantPresenceMap, setParticipantPresenceMap] = useState<
     Record<string, { fileId?: string | null; fileName?: string | null }>
   >({});
+  const [isCheckpointModalOpen, setIsCheckpointModalOpen] = useState(false);
 
   const follow = useFollow({
     onFollowFileChange: (fileId) => {
@@ -231,7 +234,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           </div>
         </div>
 
-        {/* Center: Play / Run Controls */}
+        {/* Center: Play / Run Controls & Checkpoint Snapshots */}
         <div className="flex items-center gap-2">
           <button
             id="run-code-btn"
@@ -240,6 +243,17 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           >
             <Play className="w-3.5 h-3.5 fill-current" />
             <span>Run</span>
+          </button>
+
+          <button
+            id="checkpoint-modal-btn"
+            data-testid="checkpoint-btn"
+            onClick={() => setIsCheckpointModalOpen(true)}
+            title="Manage Workspace Checkpoints"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition-colors shadow-sm"
+          >
+            <History className="w-3.5 h-3.5 text-brand-400" />
+            <span className="hidden sm:inline">Checkpoints</span>
           </button>
         </div>
 
@@ -392,6 +406,13 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           </div>
         </section>
       </div>
+
+      <CheckpointModal
+        isOpen={isCheckpointModalOpen}
+        onClose={() => setIsCheckpointModalOpen(false)}
+        roomCode={roomCode}
+        isHostOrEditor={participant?.role === 'HOST' || participant?.role === 'EDITOR'}
+      />
     </div>
   );
 }
