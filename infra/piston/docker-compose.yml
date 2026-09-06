@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  piston:
+    image: ghcr.io/engineer-man/piston:latest
+    container_name: pairly_piston_runner
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - '2000:2000'
+    volumes:
+      - piston_packages:/piston/packages
+    environment:
+      # Piston execution configuration conforming to SRS FR-EXEC-04 & FR-EXEC-05
+      PISTON_BIND_ADDRESS: '0.0.0.0:2000'
+      PISTON_RUN_TIMEOUT: '10000' # 10s maximum timeout
+      PISTON_COMPILE_TIMEOUT: '10000'
+      PISTON_MAX_PROCESS_COUNT: '64' # Fork bomb prevention
+      PISTON_MAX_OPEN_FILES: '256'
+      PISTON_MAX_FILE_SIZE: '10000000' # 10MB file limit
+      PISTON_RUN_MEMORY_LIMIT: '268435456' # 256MB memory cap
+      PISTON_OUTPUT_MAX_SIZE: '1048576' # 1MB max stdout/stderr
+      PISTON_DISABLE_NETWORKING: 'true' # Sandboxes have outbound network disabled
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1024M
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q --spider http://127.0.0.1:2000/api/v2/runtimes || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  piston_packages:
