@@ -138,8 +138,8 @@ describe('T-11: Workspace Snapshot Persistence & Checkpoint Recovery (AT-10)', (
     // 3. List snapshots (should return both entries)
     const snapshots = await getRoomSnapshots(mockPrisma, roomId);
     expect(snapshots.length).toBe(2);
-    expect(snapshots[0].name).toBe('Before Refactoring');
-    expect(snapshots[1].name).toBe('Initial Working State');
+    expect(snapshots[0]?.name).toBe('Before Refactoring');
+    expect(snapshots[1]?.name).toBe('Initial Working State');
 
     // 4. Retrieve specific snapshot by ID
     const retrieved = await getSnapshotById(mockPrisma, snap1.id);

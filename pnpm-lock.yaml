@@ -66,6 +66,9 @@ importers:
       '@pairly/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@pairly/execution':
+        specifier: workspace:*
+        version: link:../../packages/execution
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -176,6 +179,22 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^2.1.8
+        version: 2.1.9(@types/node@20.19.43)(happy-dom@21.0.4)
+
+  packages/execution:
+    dependencies:
+      '@pairly/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+    devDependencies:
+      '@pairly/config':
+        specifier: workspace:*
+        version: link:../config
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.4
         version: 2.1.9(@types/node@20.19.43)(happy-dom@21.0.4)
 
 packages:
