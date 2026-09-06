@@ -1,4 +1,4 @@
-import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '@pairly/contracts';
+import type { SupportedLanguage } from '@pairly/contracts';
 
 export interface LanguageDefinition {
   id: SupportedLanguage;
