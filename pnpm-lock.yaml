@@ -29,6 +29,9 @@ importers:
       '@pairly/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@pairly/execution':
+        specifier: workspace:*
+        version: link:../../packages/execution
       fastify:
         specifier: ^4.28.1
         version: 4.29.1
