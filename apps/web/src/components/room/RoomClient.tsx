@@ -12,7 +12,12 @@ import {
   Share2,
   History,
 } from 'lucide-react';
-import type { ParticipantIdentity } from '@pairly/contracts';
+import type {
+  ParticipantIdentity,
+  ExecutionOutputChunk,
+  ExecutionStatus,
+} from '@pairly/contracts';
+import { detectLanguageFromFilename } from '@pairly/execution';
 import { generateGuestIdentity } from '../../lib/guest';
 import { CodeEditor } from '../editor/CodeEditor';
 import type { CollaborativeSession } from '../editor/yjsExtension';
@@ -25,6 +30,7 @@ import {
 import { PresenceBar } from '../presence/PresenceBar';
 import { useFollow } from '../presence/useFollow';
 import { CheckpointModal } from './CheckpointModal';
+import { SharedTerminal } from '../terminal/SharedTerminal';
 
 interface RoomClientProps {
   roomCode: string;
@@ -47,6 +53,12 @@ export function RoomClient({ roomCode }: RoomClientProps) {
     Record<string, { fileId?: string | null; fileName?: string | null }>
   >({});
   const [isCheckpointModalOpen, setIsCheckpointModalOpen] = useState(false);
+  const [terminalChunks, setTerminalChunks] = useState<ExecutionOutputChunk[]>([]);
+  const [terminalStatus, setTerminalStatus] = useState<ExecutionStatus | 'IDLE'>('IDLE');
+  const [terminalExitCode, setTerminalExitCode] = useState<number | null>(null);
+  const [terminalDuration, setTerminalDuration] = useState<number | undefined>(undefined);
+  const [isTerminalExpanded, setIsTerminalExpanded] = useState(true);
+  const [activeRunId, setActiveRunId] = useState<string | null>(null);
 
   const follow = useFollow({
     onFollowFileChange: (fileId) => {
@@ -165,6 +177,19 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             activeSessionRef.current?.applyEncodedUpdate(msg.update);
           } else if (msg.type === 'CURSOR_UPDATE') {
             activeSessionRef.current?.setRemoteCursor(msg.cursor);
+          } else if (msg.type === 'TERMINAL_CHUNK') {
+            setTerminalChunks((prev) => [...prev, msg.chunk]);
+            if (msg.chunk?.runId) setActiveRunId(msg.chunk.runId);
+          } else if (msg.type === 'TERMINAL_STATUS') {
+            setTerminalStatus(msg.status);
+            if (msg.result) {
+              setTerminalExitCode(msg.result.exitCode ?? null);
+              setTerminalDuration(msg.result.durationMs);
+            }
+          } else if (msg.type === 'TERMINAL_HISTORY') {
+            setTerminalChunks(msg.chunks || []);
+          } else if (msg.type === 'TERMINAL_CLEARED') {
+            setTerminalChunks([]);
           }
         } catch {}
       };
@@ -192,6 +217,72 @@ export function RoomClient({ roomCode }: RoomClientProps) {
     navigator.clipboard.writeText(window.location.href);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleRunCode = async () => {
+    const activeItem = workspaceState.items.find((i) => i.id === workspaceState.activeFileId);
+    const filename = activeItem?.name || 'main.js';
+    const content = activeItem?.content || '// empty';
+    const language = detectLanguageFromFilename(filename);
+
+    const runParams = {
+      language,
+      files: [{ name: filename, content, encoding: 'utf-8' as const }],
+      limits: { timeoutMs: 10000, memoryLimitMb: 256, networkEnabled: false as const },
+    };
+
+    setTerminalStatus('RUNNING');
+    setIsTerminalExpanded(true);
+
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'RUN_START', params: runParams }));
+    } else {
+      try {
+        const res = await fetch(`/api/v1/rooms/${roomCode}/run`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-role': participant?.role || 'EDITOR',
+          },
+          body: JSON.stringify(runParams),
+        });
+        const result = await res.json();
+        if (result.stdout) {
+          setTerminalChunks((prev) => [
+            ...prev,
+            { runId: result.runId, stream: 'stdout', data: result.stdout, timestamp: Date.now() },
+          ]);
+        }
+        if (result.stderr) {
+          setTerminalChunks((prev) => [
+            ...prev,
+            { runId: result.runId, stream: 'stderr', data: result.stderr, timestamp: Date.now() },
+          ]);
+        }
+        setTerminalStatus(result.status || 'COMPLETED');
+        setTerminalExitCode(result.exitCode ?? 0);
+        setTerminalDuration(result.durationMs);
+      } catch (err: unknown) {
+        setTerminalStatus('FAILED');
+        setTerminalChunks((prev) => [
+          ...prev,
+          { runId: 'err', stream: 'stderr', data: String(err), timestamp: Date.now() },
+        ]);
+      }
+    }
+  };
+
+  const handleSendStdin = (data: string) => {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN && activeRunId) {
+      wsRef.current.send(JSON.stringify({ type: 'RUN_STDIN', runId: activeRunId, data }));
+    }
+  };
+
+  const handleClearTerminal = () => {
+    setTerminalChunks([]);
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'TERMINAL_CLEAR' }));
+    }
   };
 
   return (
@@ -239,7 +330,10 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           <button
             id="run-code-btn"
             data-testid="run-code-btn"
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition-colors shadow-sm"
+            onClick={handleRunCode}
+            disabled={terminalStatus === 'RUNNING' || participant?.role === 'VIEWER'}
+            title={participant?.role === 'VIEWER' ? 'Viewers cannot run code' : 'Execute code in sandbox'}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-medium transition-colors shadow-sm"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
             <span>Run</span>
@@ -404,6 +498,18 @@ export function RoomClient({ roomCode }: RoomClientProps) {
               />
             )}
           </div>
+
+          {/* Shared Real-Time Terminal (FR-EXEC-02..03) */}
+          <SharedTerminal
+            chunks={terminalChunks}
+            status={terminalStatus}
+            exitCode={terminalExitCode}
+            durationMs={terminalDuration}
+            isExpanded={isTerminalExpanded}
+            onToggleExpand={() => setIsTerminalExpanded((prev) => !prev)}
+            onSendStdin={handleSendStdin}
+            onClear={handleClearTerminal}
+          />
         </section>
       </div>
 
