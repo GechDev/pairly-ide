@@ -1,0 +1,43 @@
+{
+  "name": "@pairly/execution",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./languages": {
+      "types": "./dist/languages.d.ts",
+      "import": "./dist/languages.js",
+      "default": "./dist/languages.js"
+    },
+    "./limits": {
+      "types": "./dist/limits.d.ts",
+      "import": "./dist/limits.js",
+      "default": "./dist/limits.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js",
+      "default": "./dist/client.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@pairly/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "@pairly/config": "workspace:*",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  }
+}
