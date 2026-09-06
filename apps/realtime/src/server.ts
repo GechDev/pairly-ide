@@ -4,6 +4,7 @@ import websocket from '@fastify/websocket';
 import { RoomManager } from './rooms.js';
 import { authenticateRoomToken } from './auth.js';
 import { authorizeAction } from './rbac/guard.js';
+import { defaultTerminalManager } from './pty/runner.js';
 
 export interface ServerOptions {
   roomManager?: RoomManager;
@@ -78,6 +79,17 @@ export function buildServer(options: ServerOptions = {}): FastifyInstance {
             participants: roomManager.getParticipants(roomCode),
           })
         );
+
+        // 3b. Send recent terminal history for late joiners (FR-EXEC-08)
+        const history = defaultTerminalManager.getRoomHistory(roomCode);
+        if (history.length > 0) {
+          socket.send(
+            JSON.stringify({
+              type: 'TERMINAL_HISTORY',
+              chunks: history,
+            })
+          );
+        }
 
         // 4. Broadcast participant presence to peers
         roomManager.broadcast(
@@ -232,6 +244,61 @@ export function buildServer(options: ServerOptions = {}): FastifyInstance {
                 );
                 return; // Discard unauthorized execution
               }
+            }
+
+            // Realtime Terminal Execution: Spawn Runner (FR-EXEC-01..02)
+            if (data.type === 'RUN_START') {
+              const auth = authorizeAction('EXECUTE_CODE', {
+                role: currentParticipant.role,
+                isRoomLocked,
+              });
+              if (!auth.allowed) {
+                socket.send(
+                  JSON.stringify({
+                    type: 'ERROR',
+                    code: auth.code || 'UNAUTHORIZED_ACTION',
+                    message: auth.message,
+                    originalAction: data.type,
+                  })
+                );
+                return;
+              }
+
+              defaultTerminalManager.startRun(roomCode, data.params, {
+                onChunk: (chunk) => {
+                  roomManager.broadcast(roomCode, {
+                    type: 'TERMINAL_CHUNK',
+                    chunk,
+                  });
+                },
+                onStatusChange: (status, result) => {
+                  roomManager.broadcast(roomCode, {
+                    type: 'TERMINAL_STATUS',
+                    status,
+                    result,
+                  });
+                },
+              });
+              return;
+            }
+
+            // Realtime Terminal: Interactive Stdin (FR-EXEC-03)
+            if (data.type === 'RUN_STDIN') {
+              const auth = authorizeAction('EXECUTE_CODE', {
+                role: currentParticipant.role,
+                isRoomLocked,
+              });
+              if (!auth.allowed) return;
+
+              defaultTerminalManager.sendStdin(data.runId, data.data);
+              return;
+            }
+
+            // Realtime Terminal: Clear Output History
+            if (data.type === 'TERMINAL_CLEAR') {
+              defaultTerminalManager.clearRoomHistory(roomCode);
+              roomManager.broadcast(roomCode, { type: 'TERMINAL_CLEARED' });
+              return;
             }
 
             // Broadcast permitted collaborative messages
