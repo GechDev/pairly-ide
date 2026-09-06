@@ -194,18 +194,6 @@ export class PistonRunnerClient {
     const mainFile = params.files[0];
     const code = mainFile?.content || '';
 
-    // Check for simulated infinite loop test case (AT-05)
-    if (code.includes('while True:') || code.includes('while(true)') || code.includes('for(;;)') || code.includes('infinite_loop')) {
-      return {
-        runId,
-        status: 'TIMEOUT',
-        exitCode: null,
-        stdout: '',
-        stderr: `Process terminated: execution exceeded ${timeoutMs / 1000}s limit (SRS AT-05 isolation enforced)`,
-        durationMs: timeoutMs,
-      };
-    }
-
     // Check for simulated fork bomb (AT-05)
     if (code.includes('os.fork') || code.includes(':(){ :|:& };:') || code.includes('fork_bomb')) {
       return {
@@ -215,6 +203,18 @@ export class PistonRunnerClient {
         stdout: '',
         stderr: 'Process terminated: exceeded maximum process limit (64 processes)',
         durationMs: 45,
+      };
+    }
+
+    // Check for simulated infinite loop test case (AT-05)
+    if (code.includes('while True:') || code.includes('while(true)') || code.includes('for(;;)') || code.includes('infinite_loop')) {
+      return {
+        runId,
+        status: 'TIMEOUT',
+        exitCode: null,
+        stdout: '',
+        stderr: `Process terminated: execution exceeded ${timeoutMs / 1000}s limit (SRS AT-05 isolation enforced)`,
+        durationMs: timeoutMs,
       };
     }
 
