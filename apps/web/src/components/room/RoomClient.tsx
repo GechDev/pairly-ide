@@ -11,6 +11,7 @@ import {
   Play,
   Share2,
   History,
+  Globe,
 } from 'lucide-react';
 import type {
   ParticipantIdentity,
@@ -31,6 +32,7 @@ import { PresenceBar } from '../presence/PresenceBar';
 import { useFollow } from '../presence/useFollow';
 import { CheckpointModal } from './CheckpointModal';
 import { SharedTerminal } from '../terminal/SharedTerminal';
+import { WebPreview } from '../preview/WebPreview';
 
 interface RoomClientProps {
   roomCode: string;
@@ -59,6 +61,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [terminalDuration, setTerminalDuration] = useState<number | undefined>(undefined);
   const [isTerminalExpanded, setIsTerminalExpanded] = useState(true);
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const follow = useFollow({
     onFollowFileChange: (fileId) => {
@@ -349,6 +352,21 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             <History className="w-3.5 h-3.5 text-brand-400" />
             <span className="hidden sm:inline">Checkpoints</span>
           </button>
+
+          <button
+            id="toggle-preview-btn"
+            data-testid="toggle-preview-btn"
+            onClick={() => setIsPreviewOpen((prev) => !prev)}
+            title="Toggle Live Web Preview"
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border transition-colors shadow-sm ${
+              isPreviewOpen
+                ? 'bg-brand-600 text-white border-brand-500'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+            }`}
+          >
+            <Globe className="w-3.5 h-3.5 text-brand-300" />
+            <span className="hidden sm:inline">Preview</span>
+          </button>
         </div>
 
         {/* Right: Presence and Connection Status */}
@@ -511,6 +529,13 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             onClear={handleClearTerminal}
           />
         </section>
+
+        {/* Live Web Preview Panel (FR-PREV-01..03, AT-06) */}
+        {isPreviewOpen && (
+          <div className="w-1/2 flex flex-col min-w-[320px] max-w-[50%] h-full">
+            <WebPreview items={workspaceState.items} />
+          </div>
+        )}
       </div>
 
       <CheckpointModal
