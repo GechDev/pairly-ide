@@ -1,13 +1,13 @@
 import { describe, it, expect, vi } from 'vitest';
 import { TerminalSessionManager } from '../../realtime/src/pty/runner';
-import type { ExecutionOutputChunk, ExecutionStatus } from '@pairly/contracts';
+import type { ExecutionOutputChunk } from '@pairly/contracts';
 
 describe('T-13: Shared Real-Time Terminal & Interactive Stdin (AT-04)', () => {
   it('streams output in real-time and supports interactive stdin (FR-EXEC-02..03, AT-04)', async () => {
     const manager = new TerminalSessionManager();
     const roomId = 'room-at04-interactive-test';
     const receivedChunks: ExecutionOutputChunk[] = [];
-    let latestStatus: ExecutionStatus = 'QUEUED';
+    let latestStatus: string = 'QUEUED';
 
     // Interactive Python program: input("Name: ") -> print(f"Hello, {name}!")
     const interactiveProgram = {
