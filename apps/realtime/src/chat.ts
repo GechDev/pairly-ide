@@ -25,9 +25,13 @@ export interface SendMessagePayload {
  * Extracts unique @mentions from message content (e.g., "@alice @bob").
  */
 export function extractMentions(content: string): string[] {
-  const matches = content.match(/@([a-zA-Z0-9_-]+)/g);
-  if (!matches) return [];
-  const unique = new Set(matches.map((m) => m.substring(1).toLowerCase()));
+  const matches = content.matchAll(/(?:^|\s)@([a-zA-Z0-9_-]+)/g);
+  const unique = new Set<string>();
+  for (const match of matches) {
+    if (match[1]) {
+      unique.add(match[1].toLowerCase());
+    }
+  }
   return Array.from(unique);
 }
 
