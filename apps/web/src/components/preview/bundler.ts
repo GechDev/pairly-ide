@@ -111,12 +111,27 @@ export function bundleWorkspaceForPreview(items: WorkspaceItem[]): BundlerResult
     }
   );
 
-  // 5. Inject Preview Console Interceptor and CSP meta header
+  // 5. Inject Preview Console Interceptor, CSP meta header, and Error Banner Overlay
+  const cspMeta = `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; style-src 'unsafe-inline'; img-src data: https: blob:; font-src data:; connect-src 'none';">`;
+
   const consoleScript = `
+${cspMeta}
 <script>
   (function() {
+    function showRuntimeError(msg, line, col) {
+      let banner = document.getElementById('__pairly_error_banner__');
+      if (!banner) {
+        banner = document.createElement('div');
+        banner.id = '__pairly_error_banner__';
+        banner.style.cssText = 'position:fixed;bottom:10px;left:10px;right:10px;background:#881337;color:#ffe4e6;padding:10px 14px;border-radius:8px;font-family:ui-monospace,monospace;font-size:12px;z-index:999999;box-shadow:0 10px 25px rgba(0,0,0,0.5);border:1px solid #e11d48;';
+        document.body ? document.body.appendChild(banner) : document.documentElement.appendChild(banner);
+      }
+      banner.innerHTML = '<strong>Preview Error:</strong> ' + String(msg) + (line ? ' (Line ' + line + ':' + (col||0) + ')' : '');
+    }
+
     // Intercept errors and forward to parent window
     window.onerror = function(msg, url, line, col, error) {
+      showRuntimeError(msg, line, col);
       try {
         window.parent.postMessage({
           type: 'PREVIEW_ERROR',
