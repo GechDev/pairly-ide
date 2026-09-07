@@ -5,6 +5,7 @@ import { RoomManager } from './rooms.js';
 import { authenticateRoomToken } from './auth.js';
 import { authorizeAction } from './rbac/guard.js';
 import { defaultTerminalManager } from './pty/runner.js';
+import { defaultChatManager } from './chat.js';
 
 export interface ServerOptions {
   roomManager?: RoomManager;
@@ -87,6 +88,17 @@ export function buildServer(options: ServerOptions = {}): FastifyInstance {
             JSON.stringify({
               type: 'TERMINAL_HISTORY',
               chunks: history,
+            })
+          );
+        }
+
+        // 3c. Send chat history for late joiners (FR-COMM-02)
+        const chatHistory = defaultChatManager.getHistory(roomCode);
+        if (chatHistory.length > 0) {
+          socket.send(
+            JSON.stringify({
+              type: 'CHAT_HISTORY',
+              messages: chatHistory,
             })
           );
         }
@@ -298,6 +310,28 @@ export function buildServer(options: ServerOptions = {}): FastifyInstance {
             if (data.type === 'TERMINAL_CLEAR') {
               defaultTerminalManager.clearRoomHistory(roomCode);
               roomManager.broadcast(roomCode, { type: 'TERMINAL_CLEARED' });
+              return;
+            }
+
+            // Realtime In-Room Chat (FR-COMM-01..02)
+            if (data.type === 'CHAT_SEND') {
+              const text = String(data.content || '').trim();
+              if (!text || text.length > 4000) return;
+
+              const message = defaultChatManager.addMessage({
+                roomId: roomCode,
+                senderId: currentParticipant.id,
+                senderName: currentParticipant.displayName,
+                senderAvatar: currentParticipant.avatar,
+                senderColor: currentParticipant.color,
+                senderRole: currentParticipant.role,
+                content: text,
+              });
+
+              roomManager.broadcast(roomCode, {
+                type: 'CHAT_MESSAGE',
+                message,
+              });
               return;
             }
 
