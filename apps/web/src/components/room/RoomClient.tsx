@@ -12,6 +12,7 @@ import {
   Share2,
   History,
   Globe,
+  MessageSquare,
 } from 'lucide-react';
 import type {
   ParticipantIdentity,
@@ -33,6 +34,7 @@ import { useFollow } from '../presence/useFollow';
 import { CheckpointModal } from './CheckpointModal';
 import { SharedTerminal } from '../terminal/SharedTerminal';
 import { WebPreview } from '../preview/WebPreview';
+import { ChatPanel, type ChatMessageItem } from '../chat/ChatPanel';
 
 interface RoomClientProps {
   roomCode: string;
@@ -62,6 +64,9 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [isTerminalExpanded, setIsTerminalExpanded] = useState(true);
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessageItem[]>([]);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const follow = useFollow({
     onFollowFileChange: (fileId) => {
@@ -193,6 +198,11 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             setTerminalChunks(msg.chunks || []);
           } else if (msg.type === 'TERMINAL_CLEARED') {
             setTerminalChunks([]);
+          } else if (msg.type === 'CHAT_MESSAGE') {
+            setChatMessages((prev) => [...prev, msg.message]);
+            setUnreadCount((prev) => prev + 1);
+          } else if (msg.type === 'CHAT_HISTORY') {
+            setChatMessages(msg.messages || []);
           }
         } catch {}
       };
@@ -288,6 +298,26 @@ export function RoomClient({ roomCode }: RoomClientProps) {
     }
   };
 
+  const handleSendChatMessage = (content: string) => {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'CHAT_SEND', content }));
+    } else if (participant) {
+      const localMsg: ChatMessageItem = {
+        id: `local_${Date.now()}`,
+        roomId: roomCode,
+        senderId: participant.id,
+        senderName: participant.displayName,
+        senderAvatar: participant.avatar,
+        senderColor: participant.color,
+        senderRole: participant.role,
+        content,
+        mentions: [],
+        createdAt: Date.now(),
+      };
+      setChatMessages((prev) => [...prev, localMsg]);
+    }
+  };
+
   return (
     <div
       id="room-workspace-root"
@@ -366,6 +396,29 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           >
             <Globe className="w-3.5 h-3.5 text-brand-300" />
             <span className="hidden sm:inline">Preview</span>
+          </button>
+
+          <button
+            id="toggle-chat-btn"
+            data-testid="toggle-chat-btn"
+            onClick={() => {
+              setIsChatOpen((prev) => !prev);
+              setUnreadCount(0);
+            }}
+            title="Toggle Room Chat"
+            className={`relative inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border transition-colors shadow-sm ${
+              isChatOpen
+                ? 'bg-brand-600 text-white border-brand-500'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+            }`}
+          >
+            <MessageSquare className="w-3.5 h-3.5 text-brand-300" />
+            <span className="hidden sm:inline">Chat</span>
+            {unreadCount > 0 && !isChatOpen && (
+              <span className="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full text-[9px] bg-brand-500 text-white font-bold">
+                {unreadCount}
+              </span>
+            )}
           </button>
         </div>
 
@@ -535,6 +588,17 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           <div className="w-1/2 flex flex-col min-w-[320px] max-w-[50%] h-full">
             <WebPreview items={workspaceState.items} />
           </div>
+        )}
+
+        {/* In-Room Collaborative Chat Panel (FR-COMM-01..02) */}
+        {isChatOpen && (
+          <ChatPanel
+            messages={chatMessages}
+            currentParticipant={participant}
+            participants={activeParticipants}
+            onSendMessage={handleSendChatMessage}
+            onClose={() => setIsChatOpen(false)}
+          />
         )}
       </div>
 
