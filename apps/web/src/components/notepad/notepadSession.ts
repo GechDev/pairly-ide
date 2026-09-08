@@ -10,6 +10,7 @@ export interface NotepadSession {
   onUpdate: (callback: (updateBase64: string, origin: any) => void) => () => void;
   applyRemoteUpdate: (updateBase64: string) => void;
   applyUpdate: (updateBase64: string) => void;
+  getSnapshotUpdate: () => string;
   getYDoc: () => Y.Doc;
   exportMarkdownBlob: () => Blob;
   destroy: () => void;
@@ -69,7 +70,11 @@ export function createNotepadSession(initialText = ''): NotepadSession {
       doc.transact(() => {
         text.delete(0, text.length);
         text.insert(0, content);
-      });
+      }, 'local');
+    },
+    getSnapshotUpdate: () => {
+      const update = Y.encodeStateAsUpdate(doc);
+      return Buffer.from(update).toString('base64');
     },
     onUpdate,
     applyRemoteUpdate,
