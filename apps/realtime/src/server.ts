@@ -6,6 +6,7 @@ import { authenticateRoomToken } from './auth.js';
 import { authorizeAction } from './rbac/guard.js';
 import { defaultTerminalManager } from './pty/runner.js';
 import { defaultChatManager } from './chat.js';
+import { defaultNotepadManager } from './notepad.js';
 
 export interface ServerOptions {
   roomManager?: RoomManager;
@@ -102,6 +103,16 @@ export function buildServer(options: ServerOptions = {}): FastifyInstance {
             })
           );
         }
+
+        // 3d. Send notepad state for late joiners (FR-BOARD-02)
+        const notepad = defaultNotepadManager.getNotepad(roomCode);
+        socket.send(
+          JSON.stringify({
+            type: 'NOTEPAD_SNAPSHOT',
+            content: notepad.content,
+            updatedAt: notepad.updatedAt,
+          })
+        );
 
         // 4. Broadcast participant presence to peers
         roomManager.broadcast(
@@ -332,6 +343,23 @@ export function buildServer(options: ServerOptions = {}): FastifyInstance {
                 type: 'CHAT_MESSAGE',
                 message,
               });
+              return;
+            }
+
+            // Realtime Shared Collaborative Notepad (FR-BOARD-02)
+            if (data.type === 'NOTEPAD_UPDATE') {
+              const content = typeof data.content === 'string' ? data.content : '';
+              const state = defaultNotepadManager.updateNotepad(roomCode, content, currentParticipant.id);
+              roomManager.broadcast(
+                roomCode,
+                {
+                  type: 'NOTEPAD_UPDATE',
+                  content: state.content,
+                  updatedAt: state.updatedAt,
+                  senderId: currentParticipant.id,
+                },
+                participant.id
+              );
               return;
             }
 
