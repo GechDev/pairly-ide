@@ -9,6 +9,8 @@ export interface NotepadSession {
   setText: (content: string) => void;
   onUpdate: (callback: (updateBase64: string, origin: any) => void) => () => void;
   applyRemoteUpdate: (updateBase64: string) => void;
+  applyUpdate: (updateBase64: string) => void;
+  getYDoc: () => Y.Doc;
   exportMarkdownBlob: () => Blob;
   destroy: () => void;
 }
@@ -71,6 +73,8 @@ export function createNotepadSession(initialText = ''): NotepadSession {
     },
     onUpdate,
     applyRemoteUpdate,
+    applyUpdate: applyRemoteUpdate,
+    getYDoc: () => doc,
     exportMarkdownBlob,
     destroy: () => {
       doc.destroy();

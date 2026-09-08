@@ -13,6 +13,7 @@ import {
   History,
   Globe,
   MessageSquare,
+  FileText,
 } from 'lucide-react';
 import type {
   ParticipantIdentity,
@@ -35,6 +36,8 @@ import { CheckpointModal } from './CheckpointModal';
 import { SharedTerminal } from '../terminal/SharedTerminal';
 import { WebPreview } from '../preview/WebPreview';
 import { ChatPanel, type ChatMessageItem } from '../chat/ChatPanel';
+import { SharedNotepad } from '../notepad/SharedNotepad';
+import type { NotepadSession } from '../notepad/notepadSession';
 
 interface RoomClientProps {
   roomCode: string;
@@ -67,6 +70,8 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [chatMessages, setChatMessages] = useState<ChatMessageItem[]>([]);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isNotepadOpen, setIsNotepadOpen] = useState(false);
+  const notepadSessionRef = React.useRef<NotepadSession | null>(null);
 
   const follow = useFollow({
     onFollowFileChange: (fileId) => {
@@ -203,6 +208,12 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             setUnreadCount((prev) => prev + 1);
           } else if (msg.type === 'CHAT_HISTORY') {
             setChatMessages(msg.messages || []);
+          } else if (msg.type === 'NOTEPAD_SNAPSHOT' || msg.type === 'NOTEPAD_UPDATE') {
+            if (msg.update && notepadSessionRef.current) {
+              notepadSessionRef.current.applyUpdate(msg.update);
+            } else if (typeof msg.content === 'string' && notepadSessionRef.current) {
+              notepadSessionRef.current.setText(msg.content);
+            }
           }
         } catch {}
       };
@@ -318,6 +329,18 @@ export function RoomClient({ roomCode }: RoomClientProps) {
     }
   };
 
+  const handleBroadcastNotepadUpdate = (updateBase64: string) => {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(
+        JSON.stringify({
+          type: 'NOTEPAD_UPDATE',
+          content: notepadSessionRef.current?.getText() || '',
+          update: updateBase64,
+        })
+      );
+    }
+  };
+
   return (
     <div
       id="room-workspace-root"
@@ -419,6 +442,21 @@ export function RoomClient({ roomCode }: RoomClientProps) {
                 {unreadCount}
               </span>
             )}
+          </button>
+
+          <button
+            id="toggle-notepad-btn"
+            data-testid="toggle-notepad-btn"
+            onClick={() => setIsNotepadOpen((prev) => !prev)}
+            title="Toggle Collaborative Markdown Notes (Isolated from Workspace Code)"
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border transition-colors shadow-sm ${
+              isNotepadOpen
+                ? 'bg-amber-600/30 text-amber-300 border-amber-500/50'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">Notes</span>
           </button>
         </div>
 
@@ -607,6 +645,17 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         onClose={() => setIsCheckpointModalOpen(false)}
         roomCode={roomCode}
         isHostOrEditor={participant?.role === 'HOST' || participant?.role === 'EDITOR'}
+      />
+
+      {/* Shared Collaborative Markdown Notepad (FR-BOARD-02) */}
+      <SharedNotepad
+        isOpen={isNotepadOpen}
+        onClose={() => setIsNotepadOpen(false)}
+        roomCode={roomCode}
+        onBroadcastUpdate={handleBroadcastNotepadUpdate}
+        onMountSession={(session) => {
+          notepadSessionRef.current = session;
+        }}
       />
     </div>
   );
