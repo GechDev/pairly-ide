@@ -16,6 +16,7 @@ import {
   Clock,
 } from 'lucide-react';
 import type { ExecutionOutputChunk, ExecutionStatus } from '@pairly/contracts';
+import { TerminalActions } from './TerminalActions';
 
 export interface SharedTerminalProps {
   chunks: ExecutionOutputChunk[];
@@ -27,6 +28,8 @@ export interface SharedTerminalProps {
   onClose?: () => void;
   isExpanded?: boolean;
   onToggleExpand?: () => void;
+  onExplainAndFix?: () => void;
+  isAiExplaining?: boolean;
 }
 
 export function SharedTerminal({
@@ -39,6 +42,8 @@ export function SharedTerminal({
   onClose,
   isExpanded = true,
   onToggleExpand,
+  onExplainAndFix,
+  isAiExplaining = false,
 }: SharedTerminalProps) {
   const [activeTab, setActiveTab] = useState<'terminal' | 'output' | 'problems'>('terminal');
   const [stdinValue, setStdinValue] = useState('');
@@ -242,6 +247,17 @@ export function SharedTerminal({
             )}
             <div ref={terminalEndRef} />
           </div>
+
+          {/* Explain & Fix Action Banner for Non-Zero Exit Codes (FR-AI-09) */}
+          {onExplainAndFix && (
+            <TerminalActions
+              exitCode={exitCode}
+              status={status}
+              terminalOutput={chunks.map((c) => c.data).join('')}
+              onExplainAndFix={onExplainAndFix}
+              isLoading={isAiExplaining}
+            />
+          )}
 
           {/* Interactive Stdin Bar (FR-EXEC-03) */}
           <form
