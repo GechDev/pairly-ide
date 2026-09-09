@@ -41,6 +41,7 @@ import { ChatPanel, type ChatMessageItem } from '../chat/ChatPanel';
 import { SharedNotepad } from '../notepad/SharedNotepad';
 import type { NotepadSession } from '../notepad/notepadSession';
 import { AiAssistantPanel, AIProposalModal } from '../ai';
+import { computeUnifiedDiff } from '@pairly/ai';
 
 interface RoomClientProps {
   roomCode: string;
@@ -78,6 +79,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
   const [activeProposal, setActiveProposal] = useState<AiProposal | null>(null);
   const [documentVersion, setDocumentVersion] = useState<number>(1);
+  const [isAiExplaining, setIsAiExplaining] = useState(false);
 
   const follow = useFollow({
     onFollowFileChange: (fileId) => {
@@ -344,6 +346,67 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           update: updateBase64,
         })
       );
+    }
+  };
+
+  const handleExplainAndFix = async () => {
+    const activeItem = workspaceState.items.find((i) => i.id === workspaceState.activeFileId);
+    if (!activeItem) return;
+
+    const terminalLogs = terminalChunks.map((c) => c.data).join('');
+    setIsAiExplaining(true);
+
+    try {
+      const res = await fetch(`/api/v1/rooms/${roomCode}/ai`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-role': participant?.role || 'EDITOR',
+        },
+        body: JSON.stringify({
+          action: 'EXPLAIN_AND_FIX',
+          model: 'claude-3-5-sonnet',
+          context: {
+            activeFile: {
+              path: activeItem.name,
+              content: activeItem.content || '',
+              language: detectLanguageFromFilename(activeItem.name),
+            },
+            terminalOutput: terminalLogs,
+            errorContext: {
+              message: `Process terminated with exit code ${terminalExitCode ?? 1}`,
+              stackTrace: terminalLogs,
+            },
+          },
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.suggestedCode) {
+          const diffRes = computeUnifiedDiff(
+            activeItem.content || '',
+            data.suggestedCode,
+            activeItem.name
+          );
+
+          setActiveProposal({
+            proposalId: `prop-fix-${Date.now()}`,
+            action: 'EXPLAIN_AND_FIX',
+            filePath: activeItem.name,
+            baseDocumentVersion: documentVersion,
+            explanation: data.explanation,
+            diff: diffRes.diffText,
+            suggestedCode: data.suggestedCode,
+            status: 'PENDING',
+            createdAt: Date.now(),
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Failed to explain and fix error', err);
+    } finally {
+      setIsAiExplaining(false);
     }
   };
 
@@ -629,7 +692,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             )}
           </div>
 
-          {/* Shared Real-Time Terminal (FR-EXEC-02..03) */}
+          {/* Shared Real-Time Terminal (FR-EXEC-02..03, FR-AI-09) */}
           <SharedTerminal
             chunks={terminalChunks}
             status={terminalStatus}
@@ -639,6 +702,8 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             onToggleExpand={() => setIsTerminalExpanded((prev) => !prev)}
             onSendStdin={handleSendStdin}
             onClear={handleClearTerminal}
+            onExplainAndFix={handleExplainAndFix}
+            isAiExplaining={isAiExplaining}
           />
         </section>
 
