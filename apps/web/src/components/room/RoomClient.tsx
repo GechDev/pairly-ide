@@ -14,11 +14,13 @@ import {
   Globe,
   MessageSquare,
   FileText,
+  Sparkles,
 } from 'lucide-react';
 import type {
   ParticipantIdentity,
   ExecutionOutputChunk,
   ExecutionStatus,
+  AiProposal,
 } from '@pairly/contracts';
 import { detectLanguageFromFilename } from '@pairly/execution';
 import { generateGuestIdentity } from '../../lib/guest';
@@ -38,6 +40,7 @@ import { WebPreview } from '../preview/WebPreview';
 import { ChatPanel, type ChatMessageItem } from '../chat/ChatPanel';
 import { SharedNotepad } from '../notepad/SharedNotepad';
 import type { NotepadSession } from '../notepad/notepadSession';
+import { AiAssistantPanel, AIProposalModal } from '../ai';
 
 interface RoomClientProps {
   roomCode: string;
@@ -72,6 +75,9 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isNotepadOpen, setIsNotepadOpen] = useState(false);
   const notepadSessionRef = React.useRef<NotepadSession | null>(null);
+  const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
+  const [activeProposal, setActiveProposal] = useState<AiProposal | null>(null);
+  const [documentVersion, setDocumentVersion] = useState<number>(1);
 
   const follow = useFollow({
     onFollowFileChange: (fileId) => {
@@ -458,6 +464,21 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             <FileText className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden sm:inline">Notes</span>
           </button>
+
+          <button
+            id="toggle-ai-btn"
+            data-testid="toggle-ai-btn"
+            onClick={() => setIsAiPanelOpen((prev) => !prev)}
+            title="Toggle Pairly Agent AI Assistant (FR-AI-01)"
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border transition-colors shadow-sm ${
+              isAiPanelOpen
+                ? 'bg-purple-600/30 text-purple-300 border-purple-500/50'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+            <span className="hidden sm:inline">AI Agent</span>
+          </button>
         </div>
 
         {/* Right: Presence and Connection Status */}
@@ -638,6 +659,26 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             onClose={() => setIsChatOpen(false)}
           />
         )}
+
+        {/* Pairly Agent AI Assistant Panel (FR-AI-01..03) */}
+        {isAiPanelOpen && (
+          <div className="w-80 flex flex-col min-w-[300px] max-w-[360px] h-full border-l border-slate-800">
+            <AiAssistantPanel
+              roomCode={roomCode}
+              activeFilePath={
+                workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.name ||
+                'index.ts'
+              }
+              activeFileContent={
+                workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.content ||
+                ''
+              }
+              documentVersion={documentVersion}
+              userRole={participant?.role || 'EDITOR'}
+              onOpenProposal={(prop) => setActiveProposal(prop)}
+            />
+          </div>
+        )}
       </div>
 
       <CheckpointModal
@@ -656,6 +697,31 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         onMountSession={(session) => {
           notepadSessionRef.current = session;
         }}
+      />
+
+      {/* AI Code Modification Proposal Modal (FR-AI-04, FR-AI-05, FR-AI-08) */}
+      <AIProposalModal
+        proposal={activeProposal}
+        isOpen={!!activeProposal}
+        currentDocumentVersion={documentVersion}
+        currentDocumentContent={
+          workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.content || ''
+        }
+        originalDocumentContent={
+          workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.content || ''
+        }
+        onClose={() => setActiveProposal(null)}
+        onAccept={(proposal, finalCode) => {
+          const file = workspaceState.items.find((i) => i.id === workspaceState.activeFileId);
+          if (file) {
+            workspaceManagerRef.current.updateFileContent(file.id, finalCode);
+            setDocumentVersion((v) => v + 1);
+          }
+        }}
+        onReject={() => {
+          setActiveProposal(null);
+        }}
+        userCanApply={participant?.role === 'HOST' || participant?.role === 'EDITOR'}
       />
     </div>
   );
