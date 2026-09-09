@@ -16,6 +16,7 @@
     "@pairly/contracts": "workspace:*",
     "@pairly/database": "workspace:*",
     "@pairly/execution": "workspace:*",
+    "@pairly/ai": "workspace:*",
     "clsx": "^2.1.1",
     "jszip": "^3.10.2",
     "lucide-react": "^0.453.0",
