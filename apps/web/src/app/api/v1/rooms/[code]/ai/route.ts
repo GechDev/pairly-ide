@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   validateAiInvocation,
-  canEdit,
+  canWrite,
   type RoomRole,
 } from '@pairly/contracts';
 import { defaultAiGateway } from '@pairly/ai';
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
 
     // Role check from headers
     const roleHeader = (request.headers.get('x-user-role') || 'EDITOR') as RoomRole;
-    if (!canEdit(roleHeader)) {
+    if (!canWrite(roleHeader)) {
       return NextResponse.json(
         {
           error: 'Unauthorized: Your role does not have permission to invoke AI assistance (SRS SEC-01)',
