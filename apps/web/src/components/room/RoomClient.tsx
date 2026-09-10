@@ -15,6 +15,7 @@ import {
   MessageSquare,
   FileText,
   Sparkles,
+  Video,
 } from 'lucide-react';
 import type {
   ParticipantIdentity,
@@ -42,6 +43,7 @@ import { SharedNotepad } from '../notepad/SharedNotepad';
 import type { NotepadSession } from '../notepad/notepadSession';
 import { AiAssistantPanel, AIProposalModal } from '../ai';
 import { computeUnifiedDiff } from '@pairly/ai';
+import { useLiveKit, VideoGrid, MediaBar } from '../media';
 
 interface RoomClientProps {
   roomCode: string;
@@ -80,6 +82,11 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [activeProposal, setActiveProposal] = useState<AiProposal | null>(null);
   const [documentVersion, setDocumentVersion] = useState<number>(1);
   const [isAiExplaining, setIsAiExplaining] = useState(false);
+  const [isMediaPanelOpen, setIsMediaPanelOpen] = useState(false);
+  const liveKit = useLiveKit({
+    roomCode,
+    participantName: participant?.displayName || 'Guest',
+  });
 
   const follow = useFollow({
     onFollowFileChange: (fileId) => {
@@ -542,6 +549,24 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             <Sparkles className="w-3.5 h-3.5 text-purple-400" />
             <span className="hidden sm:inline">AI Agent</span>
           </button>
+
+          <button
+            id="toggle-media-btn"
+            data-testid="toggle-media-btn"
+            onClick={() => setIsMediaPanelOpen((prev) => !prev)}
+            title="Toggle WebRTC Audio/Video Call (FR-COMM-03..07)"
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border transition-colors shadow-sm ${
+              isMediaPanelOpen
+                ? 'bg-indigo-600/30 text-indigo-300 border-indigo-500/50'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+            }`}
+          >
+            <Video className="w-3.5 h-3.5 text-indigo-400" />
+            <span className="hidden sm:inline">Call</span>
+            {liveKit.isConnected && (
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse ml-0.5" />
+            )}
+          </button>
         </div>
 
         {/* Right: Presence and Connection Status */}
@@ -741,6 +766,46 @@ export function RoomClient({ roomCode }: RoomClientProps) {
               documentVersion={documentVersion}
               userRole={participant?.role || 'EDITOR'}
               onOpenProposal={(prop) => setActiveProposal(prop)}
+            />
+          </div>
+        )}
+
+        {/* WebRTC Audio/Video Call Panel (FR-COMM-03..07, 10) */}
+        {isMediaPanelOpen && (
+          <div className="w-80 flex flex-col min-w-[300px] max-w-[360px] h-full border-l border-slate-800 bg-slate-950">
+            <div className="p-3 border-b border-slate-800 bg-slate-900/60 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Video className="h-4 w-4 text-indigo-400" />
+                <span className="text-xs font-bold text-slate-200">Room Call</span>
+              </div>
+              <button
+                onClick={() => setIsMediaPanelOpen(false)}
+                className="text-xs text-slate-400 hover:text-slate-200 p-1 rounded"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <VideoGrid
+                localName={participant?.displayName || 'You'}
+                isMicMuted={liveKit.isMicMuted}
+                isCameraOff={liveKit.isCameraOff}
+                isScreenSharing={liveKit.isScreenSharing}
+                remoteParticipants={liveKit.remoteParticipants}
+              />
+            </div>
+            <MediaBar
+              isConnected={liveKit.isConnected}
+              isConnecting={liveKit.isConnecting}
+              isMicMuted={liveKit.isMicMuted}
+              isCameraOff={liveKit.isCameraOff}
+              isScreenSharing={liveKit.isScreenSharing}
+              error={liveKit.error}
+              onToggleMic={liveKit.toggleMic}
+              onToggleCamera={liveKit.toggleCamera}
+              onToggleScreenShare={liveKit.toggleScreenShare}
+              onConnect={liveKit.connect}
+              onDisconnect={liveKit.disconnect}
             />
           </div>
         )}
