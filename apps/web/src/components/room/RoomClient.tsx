@@ -44,6 +44,8 @@ import type { NotepadSession } from '../notepad/notepadSession';
 import { AiAssistantPanel, AIProposalModal } from '../ai';
 import { computeUnifiedDiff } from '@pairly/ai';
 import { useLiveKit, VideoGrid, MediaBar } from '../media';
+import { GitHubImportModal } from '../workspace/GitHubImportModal';
+import type { GitHubImportFile } from '../../lib/githubClient';
 
 interface RoomClientProps {
   roomCode: string;
@@ -83,6 +85,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [documentVersion, setDocumentVersion] = useState<number>(1);
   const [isAiExplaining, setIsAiExplaining] = useState(false);
   const [isMediaPanelOpen, setIsMediaPanelOpen] = useState(false);
+  const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
   const liveKit = useLiveKit({
     roomCode,
     participantName: participant?.displayName || 'Guest',
@@ -658,6 +661,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
                 );
               }
             }}
+            onOpenGitHubImport={() => setIsGitHubModalOpen(true)}
           />
         </aside>
 
@@ -852,6 +856,17 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           setActiveProposal(null);
         }}
         userCanApply={participant?.role === 'HOST' || participant?.role === 'EDITOR'}
+      />
+
+      {/* GitHub Repository Import Modal (FR-INT-01..02) */}
+      <GitHubImportModal
+        isOpen={isGitHubModalOpen}
+        onClose={() => setIsGitHubModalOpen(false)}
+        onImportFiles={(files, repoName) => {
+          for (const f of files) {
+            workspaceManagerRef.current.createFile(f.path, f.isFolder, null, f.content);
+          }
+        }}
       />
     </div>
   );

@@ -11,6 +11,7 @@ import {
   Upload,
   ChevronRight,
   ChevronDown,
+  Github,
 } from 'lucide-react';
 import type { WorkspaceItem } from './workspaceState';
 import { exportWorkspaceAsZip, importZipToWorkspace, triggerFileDownload } from '../../lib/zip';
@@ -22,6 +23,7 @@ export interface FileTreeProps {
   onCreateFile: (name: string, isFolder?: boolean, parentId?: string | null) => void;
   onDeleteFile: (fileId: string) => void;
   onImportItems: (items: WorkspaceItem[]) => void;
+  onOpenGitHubImport?: () => void;
 }
 
 export function FileTree({
@@ -164,6 +166,17 @@ export function FileTree({
           >
             <Plus className="w-3.5 h-3.5" />
           </button>
+          {onOpenGitHubImport && (
+            <button
+              id="import-github-btn"
+              data-testid="import-github-btn"
+              onClick={onOpenGitHubImport}
+              title="Import GitHub Repository (FR-INT-01..02)"
+              className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            >
+              <Github className="w-3.5 h-3.5" />
+            </button>
+          )}
           <label
             title="Import ZIP"
             className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
