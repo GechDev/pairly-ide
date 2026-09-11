@@ -16,6 +16,7 @@ import {
   FileText,
   Sparkles,
   Video,
+  ShieldAlert,
 } from 'lucide-react';
 import type {
   ParticipantIdentity,
@@ -46,6 +47,7 @@ import { computeUnifiedDiff } from '@pairly/ai';
 import { useLiveKit, VideoGrid, MediaBar } from '../media';
 import { GitHubImportModal } from '../workspace/GitHubImportModal';
 import type { GitHubImportFile } from '../../lib/githubClient';
+import { AbuseReportModal } from './AbuseReportModal';
 
 interface RoomClientProps {
   roomCode: string;
@@ -86,6 +88,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [isAiExplaining, setIsAiExplaining] = useState(false);
   const [isMediaPanelOpen, setIsMediaPanelOpen] = useState(false);
   const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const liveKit = useLiveKit({
     roomCode,
     participantName: participant?.displayName || 'Guest',
@@ -622,6 +625,17 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           />
 
           <button
+            id="report-abuse-btn"
+            data-testid="report-abuse-btn"
+            onClick={() => setIsReportModalOpen(true)}
+            title="Report Abuse or Security Incident (FR-ADMIN-01)"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-rose-950/40 hover:text-rose-300 text-slate-400 text-xs font-medium border border-slate-700/60 transition-colors"
+          >
+            <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+            <span className="hidden sm:inline">Report</span>
+          </button>
+
+          <button
             id="share-room-btn"
             onClick={copyRoomLink}
             className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition-colors"
@@ -867,6 +881,18 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             workspaceManagerRef.current.createFile(f.path, f.isFolder, null, f.content);
           }
         }}
+      />
+
+      {/* In-Room Abuse and Security Violation Report Modal (FR-ADMIN-01) */}
+      <AbuseReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        roomCode={roomCode}
+        reporterId={participant?.id || 'guest-reporter'}
+        participants={activeParticipants}
+        activeFileName={
+          workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.name
+        }
       />
     </div>
   );
