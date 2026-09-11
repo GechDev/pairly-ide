@@ -33,6 +33,7 @@ export function FileTree({
   onCreateFile,
   onDeleteFile,
   onImportItems,
+  onOpenGitHubImport,
 }: FileTreeProps) {
   const [openFolders, setOpenFolders] = useState<Record<string, boolean>>({
     'folder-src': true,
