@@ -11,6 +11,7 @@ import {
   PhoneCall,
   Loader2,
   AlertTriangle,
+  Settings2,
 } from 'lucide-react';
 
 export interface MediaBarProps {
@@ -25,6 +26,7 @@ export interface MediaBarProps {
   onToggleScreenShare: () => void;
   onConnect: () => void;
   onDisconnect: () => void;
+  onOpenSettings?: () => void;
   className?: string;
 }
 
@@ -137,6 +139,19 @@ export function MediaBar({
             >
               <Monitor className="h-4 w-4" />
             </button>
+
+            {/* Device Settings */}
+            {onOpenSettings && (
+              <button
+                type="button"
+                data-testid="device-settings-btn"
+                onClick={onOpenSettings}
+                title="Audio & Video Settings"
+                className="flex items-center justify-center rounded-lg p-2 text-xs bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-all"
+              >
+                <Settings2 className="h-4 w-4" />
+              </button>
+            )}
 
             {/* Leave Call */}
             <button

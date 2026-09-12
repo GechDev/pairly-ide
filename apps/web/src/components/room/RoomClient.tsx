@@ -44,7 +44,7 @@ import { SharedNotepad } from '../notepad/SharedNotepad';
 import type { NotepadSession } from '../notepad/notepadSession';
 import { AiAssistantPanel, AIProposalModal } from '../ai';
 import { computeUnifiedDiff } from '@pairly/ai';
-import { useLiveKit, VideoGrid, MediaBar } from '../media';
+import { useLiveKit, VideoGrid, MediaBar, DeviceSettingsModal } from '../media';
 import { GitHubImportModal } from '../workspace/GitHubImportModal';
 import type { GitHubImportFile } from '../../lib/githubClient';
 import { AbuseReportModal } from './AbuseReportModal';
@@ -89,6 +89,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [isMediaPanelOpen, setIsMediaPanelOpen] = useState(false);
   const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isDeviceSettingsOpen, setIsDeviceSettingsOpen] = useState(false);
   const liveKit = useLiveKit({
     roomCode,
     participantName: participant?.displayName || 'Guest',
@@ -809,6 +810,9 @@ export function RoomClient({ roomCode }: RoomClientProps) {
                 isMicMuted={liveKit.isMicMuted}
                 isCameraOff={liveKit.isCameraOff}
                 isScreenSharing={liveKit.isScreenSharing}
+                audioVolume={liveKit.audioVolume}
+                localVideoTrack={liveKit.localVideoTrack}
+                localScreenTrack={liveKit.localScreenTrack}
                 remoteParticipants={liveKit.remoteParticipants}
               />
             </div>
@@ -824,6 +828,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
               onToggleScreenShare={liveKit.toggleScreenShare}
               onConnect={liveKit.connect}
               onDisconnect={liveKit.disconnect}
+              onOpenSettings={() => setIsDeviceSettingsOpen(true)}
             />
           </div>
         )}
@@ -893,6 +898,13 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         activeFileName={
           workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.name
         }
+      />
+
+      {/* Audio & Video Device Settings Modal */}
+      <DeviceSettingsModal
+        isOpen={isDeviceSettingsOpen}
+        onClose={() => setIsDeviceSettingsOpen(false)}
+        availableDevices={liveKit.availableDevices}
       />
     </div>
   );
