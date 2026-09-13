@@ -30,6 +30,7 @@ import { CodeEditor } from '../editor/CodeEditor';
 import type { CollaborativeSession } from '../editor/yjsExtension';
 import { FileTree } from '../workspace/FileTree';
 import { Tabs } from '../workspace/Tabs';
+import { StatusBar } from '../workspace/StatusBar';
 import {
   createWorkspaceManager,
   type WorkspaceState,
@@ -870,6 +871,23 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           </div>
         )}
       </div>
+
+      {/* IDE Bottom Status Bar (CodeX Inspired) */}
+      <StatusBar
+        activeFileName={
+          workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.name || 'index.ts'
+        }
+        language={
+          detectLanguageFromFilename(
+            workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.name || 'index.ts'
+          )
+        }
+        isConnected={connectionStatus === 'connected'}
+        isPreviewOpen={isPreviewOpen}
+        isTerminalOpen={isTerminalExpanded}
+        onTogglePreview={() => setIsPreviewOpen((prev) => !prev)}
+        onToggleTerminal={() => setIsTerminalExpanded((prev) => !prev)}
+      />
 
       <CheckpointModal
         isOpen={isCheckpointModalOpen}
