@@ -363,6 +363,23 @@ export function buildServer(options: ServerOptions = {}): FastifyInstance {
               return;
             }
 
+            // Collaborative Remote Pointer Relay (CodeX Inspired)
+            if (data.type === 'POINTER_UPDATE') {
+              roomManager.broadcast(
+                roomCode,
+                {
+                  type: 'POINTER_UPDATE',
+                  participantId: currentParticipant.id,
+                  name: currentParticipant.displayName,
+                  color: currentParticipant.color,
+                  x: data.x,
+                  y: data.y,
+                },
+                currentParticipant.id
+              );
+              return;
+            }
+
             // Broadcast permitted collaborative messages
             roomManager.broadcast(roomCode, data, participant.id);
           } catch {
