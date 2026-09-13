@@ -50,6 +50,7 @@ import { useLiveKit, VideoGrid, MediaBar, DeviceSettingsModal } from '../media';
 import { GitHubImportModal } from '../workspace/GitHubImportModal';
 import type { GitHubImportFile } from '../../lib/githubClient';
 import { AbuseReportModal } from './AbuseReportModal';
+import { ShareRoomModal } from './ShareRoomModal';
 
 interface RoomClientProps {
   roomCode: string;
@@ -91,6 +92,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [isMediaPanelOpen, setIsMediaPanelOpen] = useState(false);
   const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isDeviceSettingsOpen, setIsDeviceSettingsOpen] = useState(false);
   const [remotePointers, setRemotePointers] = useState<Record<string, RemotePointer>>({});
   const editorContainerRef = useRef<HTMLDivElement>(null);
@@ -654,7 +656,9 @@ export function RoomClient({ roomCode }: RoomClientProps) {
 
           <button
             id="share-room-btn"
-            onClick={copyRoomLink}
+            data-testid="share-room-btn"
+            onClick={() => setIsShareModalOpen(true)}
+            title="Share Room and View QR Code"
             className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition-colors"
           >
             <Share2 className="w-3.5 h-3.5" />
@@ -960,6 +964,14 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         isOpen={isDeviceSettingsOpen}
         onClose={() => setIsDeviceSettingsOpen(false)}
         availableDevices={liveKit.availableDevices}
+      />
+
+      {/* Share Room and Invite Peers Modal (CodeX Inspired) */}
+      <ShareRoomModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        roomCode={roomCode}
+        isHost={participant?.role === 'HOST'}
       />
     </div>
   );
