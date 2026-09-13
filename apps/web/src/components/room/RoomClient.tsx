@@ -36,6 +36,7 @@ import {
 } from '../workspace/workspaceState';
 import { PresenceBar } from '../presence/PresenceBar';
 import { useFollow } from '../presence/useFollow';
+import { RemotePointers, type RemotePointer } from '../presence/RemotePointers';
 import { CheckpointModal } from './CheckpointModal';
 import { SharedTerminal } from '../terminal/SharedTerminal';
 import { WebPreview } from '../preview/WebPreview';
@@ -90,6 +91,8 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isDeviceSettingsOpen, setIsDeviceSettingsOpen] = useState(false);
+  const [remotePointers, setRemotePointers] = useState<Record<string, RemotePointer>>({});
+  const editorContainerRef = useRef<HTMLDivElement>(null);
   const liveKit = useLiveKit({
     roomCode,
     participantName: participant?.displayName || 'Guest',
@@ -236,6 +239,18 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             } else if (typeof msg.content === 'string' && notepadSessionRef.current) {
               notepadSessionRef.current.setText(msg.content);
             }
+          } else if (msg.type === 'POINTER_UPDATE' && msg.participantId) {
+            setRemotePointers((prev) => ({
+              ...prev,
+              [msg.participantId]: {
+                id: msg.participantId,
+                name: msg.name || 'Participant',
+                color: msg.color || '#6366f1',
+                x: msg.x,
+                y: msg.y,
+                lastUpdate: Date.now(),
+              },
+            }));
           }
         } catch {}
       };
@@ -684,6 +699,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         <section
           id="workspace-editor"
           data-testid="room-editor"
+          ref={editorContainerRef}
           className="flex-1 flex flex-col bg-slate-950 relative overflow-hidden"
         >
           {/* Editor Tab Bar */}
@@ -700,6 +716,27 @@ export function RoomClient({ roomCode }: RoomClientProps) {
 
           {/* Code Area */}
           <div className="flex-1 overflow-hidden relative">
+            {/* Real-Time Collaborative Remote Pointers */}
+            <RemotePointers
+              currentUserId={participant?.id}
+              pointers={remotePointers}
+              containerRef={editorContainerRef}
+              onBroadcastPointer={(x, y) => {
+                if (wsRef.current?.readyState === WebSocket.OPEN && participant) {
+                  wsRef.current.send(
+                    JSON.stringify({
+                      type: 'POINTER_UPDATE',
+                      participantId: participant.id,
+                      name: participant.displayName,
+                      color: participant.color,
+                      x,
+                      y,
+                    })
+                  );
+                }
+              }}
+            />
+
             {participant && (
               <CodeEditor
                 key={workspaceState.activeFileId || 'empty'}
