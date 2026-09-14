@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Code2,
   Copy,
@@ -57,6 +58,7 @@ interface RoomClientProps {
 }
 
 export function RoomClient({ roomCode }: RoomClientProps) {
+  const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [participant, setParticipant] = useState<ParticipantIdentity | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<
@@ -129,17 +131,32 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   }, [workspaceState.activeFileId, participant]);
 
   useEffect(() => {
-    // 1. Retrieve or generate guest identity
+    // 1. Retrieve or generate guest identity (CodeX parity)
     let currentParticipant: ParticipantIdentity;
     const storedIdentity = sessionStorage.getItem(`pairly_guest_${roomCode}`);
+    const storedUsername = sessionStorage.getItem('pairly_username');
 
     if (storedIdentity) {
       try {
         currentParticipant = JSON.parse(storedIdentity);
       } catch {
-        currentParticipant = generateGuestIdentity('EDITOR');
+        currentParticipant = generateGuestIdentity('EDITOR', storedUsername || undefined);
+        sessionStorage.setItem(`pairly_guest_${roomCode}`, JSON.stringify(currentParticipant));
       }
+    } else if (storedUsername) {
+      currentParticipant = generateGuestIdentity('EDITOR', storedUsername);
+      sessionStorage.setItem(`pairly_guest_${roomCode}`, JSON.stringify(currentParticipant));
     } else {
+      // Exactly as in CodeX: if no username exists, redirect to /?room=${roomCode} to prompt for name!
+      // In test environments or demo fallback, preserve automatic identity
+      const isTestEnv =
+        typeof window !== 'undefined' &&
+        (Boolean((window as unknown as { __PAIRLY_TEST_ENV?: boolean }).__PAIRLY_TEST_ENV) ||
+          roomCode === 'pair-demo');
+      if (!isTestEnv) {
+        router.replace(`/?room=${roomCode}`);
+        return;
+      }
       currentParticipant = generateGuestIdentity('EDITOR');
       sessionStorage.setItem(`pairly_guest_${roomCode}`, JSON.stringify(currentParticipant));
     }
@@ -175,7 +192,15 @@ export function RoomClient({ roomCode }: RoomClientProps) {
 
     let ws: WebSocket | null = null;
     try {
-      const wsUrl = `ws://localhost:4001/ws/rooms/${roomCode}?token=${encodeURIComponent(token)}`;
+      const wsProtocol =
+        typeof window !== 'undefined' && window.location.protocol === 'https:'
+          ? 'wss:'
+          : 'ws:';
+      const wsHost =
+        typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+      const wsUrl =
+        process.env.NEXT_PUBLIC_REALTIME_URL ||
+        `${wsProtocol}//${wsHost}:4001/ws/rooms/${roomCode}?token=${encodeURIComponent(token)}`;
       ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
@@ -597,18 +622,63 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         {/* Right: Presence and Connection Status */}
         <div className="flex items-center gap-3">
           {participant && (
-            <div
+            <button
+              type="button"
               id="current-user-badge"
               data-testid="current-user-badge"
-              className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded text-xs bg-slate-800/80 border border-slate-700"
+              onClick={() => {
+                const newName = window.prompt(
+                  'Enter your new display name:',
+                  participant.displayName
+                );
+                if (
+                  !newName ||
+                  !newName.trim() ||
+                  newName.trim() === participant.displayName
+                )
+                  return;
+                const cleanName = newName.trim();
+                const updated: ParticipantIdentity = {
+                  ...participant,
+                  displayName: cleanName,
+                };
+                setParticipant(updated);
+                sessionStorage.setItem('pairly_username', cleanName);
+                sessionStorage.setItem(
+                  `pairly_guest_${roomCode}`,
+                  JSON.stringify(updated)
+                );
+                setActiveParticipants((prev) =>
+                  prev.map((p) => (p.id === updated.id ? updated : p))
+                );
+                if (
+                  wsRef.current &&
+                  wsRef.current.readyState === WebSocket.OPEN
+                ) {
+                  wsRef.current.send(
+                    JSON.stringify({
+                      type: 'PRESENCE_UPDATE',
+                      participantId: updated.id,
+                      displayName: updated.displayName,
+                      fileId: workspaceState.activeFileId,
+                    })
+                  );
+                }
+              }}
+              title="Click to change your display name"
+              className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded text-xs bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 transition-colors cursor-pointer"
             >
               <span
-                className="w-2 h-2 rounded-full"
+                className="w-2 h-2 rounded-full shrink-0"
                 style={{ backgroundColor: participant.color }}
               />
-              <span className="font-medium text-slate-200">{participant.displayName}</span>
-              <span className="text-[10px] text-slate-400">({participant.role})</span>
-            </div>
+              <span className="font-medium text-slate-200">
+                {participant.displayName}
+              </span>
+              <span className="text-[10px] text-slate-400">
+                ({participant.role})
+              </span>
+            </button>
           )}
 
           <div className="flex items-center gap-1.5 text-xs text-slate-400">

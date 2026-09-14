@@ -62,15 +62,19 @@ const CURATED_COLORS = [
  * Creates a randomized guest identity per SRS FR-ROOM-03.
  * Guests receive a temporary identity with display name, avatar, and color.
  */
-export function generateGuestIdentity(role: RoomRole = 'HOST'): ParticipantIdentity {
+export function generateGuestIdentity(
+  role: RoomRole = 'HOST',
+  customName?: string
+): ParticipantIdentity {
   const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
   const animal = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
   const color = CURATED_COLORS[Math.floor(Math.random() * CURATED_COLORS.length)]!;
   const id = `guest_${Math.random().toString(36).slice(2, 10)}`;
+  const cleanName = customName?.trim();
 
   return {
     id,
-    displayName: `${adj} ${animal}`,
+    displayName: cleanName || `${adj} ${animal}`,
     avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${id}`,
     color,
     role,

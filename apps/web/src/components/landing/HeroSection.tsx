@@ -1,38 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowRight, Loader2, Sparkles, Terminal } from 'lucide-react';
+import React from 'react';
+import { Sparkles, Terminal } from 'lucide-react';
+import { RoomAccessForm } from './RoomAccessForm';
 
-export function HeroSection() {
-  const router = useRouter();
-  const [isCreating, setIsCreating] = useState(false);
+export interface HeroSectionProps {
+  initialRoomId?: string;
+}
 
-  const handleStartRoom = async () => {
-    if (isCreating) return;
-    setIsCreating(true);
-    try {
-      const res = await fetch('/api/v1/rooms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      });
-      const data = await res.json();
-      if (data.success && data.joinUrl) {
-        if (data.guest) {
-          sessionStorage.setItem(`pairly_guest_${data.room.code}`, JSON.stringify(data.guest));
-        }
-        if (data.token) {
-          sessionStorage.setItem(`pairly_token_${data.room.code}`, data.token);
-        }
-        router.push(data.joinUrl);
-        return;
-      }
-      router.push('/room/pair-demo');
-    } catch {
-      router.push('/room/pair-demo');
-    }
-  };
+export function HeroSection({ initialRoomId }: HeroSectionProps) {
 
   return (
     <section className="relative overflow-hidden pt-12 pb-24 lg:pt-20 lg:pb-32">
@@ -61,36 +37,12 @@ export function HeroSection() {
           review AI proposals together.
         </p>
 
-        {/* Primary Call to Action Button (FR-UX-01) */}
-        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <button
-            id="hero-start-room-btn"
-            data-testid="start-room-btn"
-            onClick={handleStartRoom}
-            disabled={isCreating}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-3.5 rounded-lg text-base font-bold text-slate-950 bg-emerald-400 hover:bg-emerald-300 active:bg-emerald-500 shadow-sm transition-all duration-150 group disabled:opacity-75 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
-          >
-            {isCreating ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Creating workspace...</span>
-              </>
-            ) : (
-              <>
-                <span>Start a room</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </>
-            )}
-          </button>
-          <a
-            href="#features"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg text-base font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-          >
-            Explore features
-          </a>
+        {/* Room Access Form (CodeX Inspired: Create Room or Join by ID) */}
+        <div className="mt-10">
+          <RoomAccessForm initialRoomId={initialRoomId} />
         </div>
 
-        <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+        <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
           No credit card or registration required • Instant guest workspace
         </p>
 
