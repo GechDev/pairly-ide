@@ -115,7 +115,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [isAiExplaining, setIsAiExplaining] = useState(false);
   const [isMediaPanelOpen, setIsMediaPanelOpen] = useState(false);
   const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
-  const [isGitHubExportOpen, setIsGitHubExportOpen] = useState(false);
+  const [isGitHubExportModalOpen, setIsGitHubExportModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
@@ -191,7 +191,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         handleRunCode();
       } else if (isModifier && e.shiftKey && e.key.toLowerCase() === 's') {
         e.preventDefault();
-        setIsGitHubExportOpen(true);
+        setIsGitHubExportModalOpen(true);
       } else if (isModifier && e.key === 's') {
         e.preventDefault();
         setIsCheckpointModalOpen(true);
@@ -383,6 +383,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           } else if (msg.type === 'WHITEBOARD_DRAW') {
             if (msg.element) {
               setWhiteboardElements((prev) => [...prev, msg.element]);
+            }
           } else if (msg.type === 'WHITEBOARD_CLEAR') {
             setWhiteboardElements([]);
           } else if (msg.type === 'ROLE_CHANGED') {
@@ -1520,7 +1521,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         onToggleMedia={() => setIsMediaPanelOpen((prev) => !prev)}
         onOpenShare={() => setIsShareModalOpen(true)}
         onOpenGitHubImport={() => setIsGitHubModalOpen(true)}
-        onOpenGitHubExport={() => setIsGitHubExportOpen(true)}
+        onOpenGitHubExport={() => setIsGitHubExportModalOpen(true)}
         onOpenDiagnostics={() => setIsDiagnosticsOpen(true)}
         onOpenAbout={() => setIsAboutModalOpen(true)}
         onOpenReport={() => setIsReportModalOpen(true)}
@@ -1542,7 +1543,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
       {/* GitHub Export / Commit to Repository Modal (CodeX Inspired) */}
       <GitHubExportModal
         isOpen={isGitHubExportModalOpen}
-        onClose={() => setIsGitHubExportOpen(false)}
+        onClose={() => setIsGitHubExportModalOpen(false)}
         activeFileName={
           workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.name ||
           'index.ts'
