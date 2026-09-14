@@ -71,6 +71,7 @@ import { JoinRoomPromptModal } from './JoinRoomPromptModal';
 import { CommandPaletteModal } from './CommandPaletteModal';
 import { WhiteboardModal, type WhiteboardElement } from '../whiteboard';
 import { ParticipantsModal } from './ParticipantsModal';
+import { NetworkDiagnosticsModal } from './NetworkDiagnosticsModal';
 
 interface RoomClientProps {
   roomCode: string;
@@ -1544,6 +1545,16 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         onKickParticipant={handleKickParticipant}
         onToggleMuteParticipant={handleToggleMuteParticipant}
         onToggleRoomLock={handleToggleRoomLock}
+      />
+
+      {/* Network Latency & Connection Diagnostics Modal (CodeX Inspired) */}
+      <NetworkDiagnosticsModal
+        isOpen={isDiagnosticsOpen}
+        onClose={() => setIsDiagnosticsOpen(false)}
+        roomCode={roomCode}
+        currentPingLatency={pingLatency}
+        connectionStatus={connectionStatus}
+        wsRef={wsRef}
       />
     </div>
   );
