@@ -118,6 +118,10 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [editorSettings, setEditorSettings] =
     useState<EditorSettings>(DEFAULT_EDITOR_SETTINGS);
   const [pingLatency, setPingLatency] = useState<number | null>(null);
+  const [cursorPosition, setCursorPosition] = useState<{ line: number; column: number }>({
+    line: 1,
+    column: 1,
+  });
   const [isDeviceSettingsOpen, setIsDeviceSettingsOpen] = useState(false);
   const [isJoinPromptOpen, setIsJoinPromptOpen] = useState(false);
   const [serverDocSnapshot, setServerDocSnapshot] = useState<string | null>(null);
@@ -965,6 +969,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
                   }
                 }}
                 onCursorMove={(cursor) => {
+                  setCursorPosition({ line: cursor.line, column: cursor.column });
                   if (wsRef.current?.readyState === WebSocket.OPEN) {
                     wsRef.current.send(
                       JSON.stringify({
@@ -1113,11 +1118,50 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.name || 'index.ts'
           )
         }
+        cursorLine={cursorPosition.line}
+        cursorColumn={cursorPosition.column}
+        latencyMs={pingLatency ?? 28}
         isConnected={connectionStatus === 'connected'}
         isPreviewOpen={isPreviewOpen}
         isTerminalOpen={isTerminalExpanded}
         onTogglePreview={() => setIsPreviewOpen((prev) => !prev)}
         onToggleTerminal={() => setIsTerminalExpanded((prev) => !prev)}
+        onSelectLanguage={(newLang) => {
+          const activeFile = workspaceState.items.find(
+            (i) => i.id === workspaceState.activeFileId
+          );
+          if (activeFile) {
+            const extMap: Record<string, string> = {
+              TypeScript: '.ts',
+              JavaScript: '.js',
+              Python: '.py',
+              Go: '.go',
+              Rust: '.rs',
+              'C++': '.cpp',
+              C: '.c',
+              Java: '.java',
+              'C#': '.cs',
+              Ruby: '.rb',
+              PHP: '.php',
+              HTML: '.html',
+              CSS: '.css',
+              JSON: '.json',
+              Markdown: '.md',
+              YAML: '.yaml',
+              SQL: '.sql',
+              Bash: '.sh',
+              Dockerfile: 'Dockerfile',
+            };
+            const newExt = extMap[newLang];
+            if (newExt) {
+              const baseName = activeFile.name.includes('.')
+                ? activeFile.name.substring(0, activeFile.name.lastIndexOf('.'))
+                : activeFile.name;
+              const targetName = newExt.startsWith('.') ? `${baseName}${newExt}` : newExt;
+              workspaceManagerRef.current.renameFile(activeFile.id, targetName);
+            }
+          }
+        }}
       />
 
       <CheckpointModal

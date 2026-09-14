@@ -120,13 +120,11 @@ export function CodeEditor({
     return () => clearTimeout(timer);
   }, [isCollaborative, session, onCodeChange]);
 
-  // Handle local text edits with differential Yjs CRDT operations
-  const handleTextChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  // Helper to commit code mutations to Yjs CRDT and textarea selection
+  const updateEditorCode = useCallback(
+    (newText: string, selStart?: number, selEnd?: number) => {
       if (readOnly || !session) return;
-      const newText = e.target.value;
       const oldText = session.ytext.toString();
-
       isLocalUpdateRef.current = true;
       session.doc.transact(() => {
         let start = 0;
@@ -152,11 +150,29 @@ export function CodeEditor({
 
       setCode(newText);
       onCodeChange?.(newText);
+
+      if (selStart !== undefined) {
+        requestAnimationFrame(() => {
+          if (textareaRef.current) {
+            textareaRef.current.setSelectionRange(selStart, selEnd ?? selStart);
+            handleSelectionChange();
+          }
+        });
+      }
+
       setTimeout(() => {
         isLocalUpdateRef.current = false;
       }, 10);
     },
     [readOnly, session, onCodeChange]
+  );
+
+  // Handle local text edits with differential Yjs CRDT operations
+  const handleTextChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      updateEditorCode(e.target.value);
+    },
+    [updateEditorCode]
   );
 
   // Handle cursor positioning & selection
@@ -182,6 +198,158 @@ export function CodeEditor({
   const wordWrap = settings ? settings.wordWrap : false;
   const tabSize = settings ? settings.tabSize : 2;
   const themeClass = settings?.theme === 'hc-black' ? 'bg-black text-white' : 'bg-slate-950 text-slate-200';
+
+  // Smart keyboard ergonomics: Tab indentation, matching bracket auto-closure, Enter auto-indent
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (readOnly || !session) return;
+    const el = e.currentTarget;
+    const { selectionStart: start, selectionEnd: end, value } = el;
+    const tabString = ' '.repeat(tabSize);
+
+    // 1. Tab & Shift+Tab Indentation
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      if (start === end) {
+        if (e.shiftKey) {
+          const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+          const linePrefix = value.slice(lineStart, start);
+          const matchSpaces = linePrefix.match(/^ +/);
+          if (matchSpaces) {
+            const toRemove = Math.min(matchSpaces[0].length, tabSize);
+            const newCode = value.slice(0, lineStart) + value.slice(lineStart + toRemove);
+            updateEditorCode(newCode, Math.max(lineStart, start - toRemove));
+          }
+        } else {
+          const newCode = value.slice(0, start) + tabString + value.slice(end);
+          updateEditorCode(newCode, start + tabSize);
+        }
+      } else {
+        const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+        const lineEnd = value.indexOf('\n', end);
+        const effectiveEnd = lineEnd === -1 ? value.length : lineEnd;
+        const targetLines = value.slice(lineStart, effectiveEnd).split('\n');
+
+        if (e.shiftKey) {
+          let removedFromFirst = 0;
+          let totalRemoved = 0;
+          const updatedLines = targetLines.map((line, idx) => {
+            const match = line.match(/^ +/);
+            if (match) {
+              const count = Math.min(match[0].length, tabSize);
+              totalRemoved += count;
+              if (idx === 0) removedFromFirst = count;
+              return line.slice(count);
+            }
+            return line;
+          });
+          const newCode = value.slice(0, lineStart) + updatedLines.join('\n') + value.slice(effectiveEnd);
+          updateEditorCode(
+            newCode,
+            Math.max(lineStart, start - removedFromFirst),
+            Math.max(lineStart, end - totalRemoved)
+          );
+        } else {
+          const updatedLines = targetLines.map((line) => tabString + line);
+          const addedTotal = targetLines.length * tabSize;
+          const newCode = value.slice(0, lineStart) + updatedLines.join('\n') + value.slice(effectiveEnd);
+          updateEditorCode(newCode, start + tabSize, end + addedTotal);
+        }
+      }
+      return;
+    }
+
+    // 2. Auto-Indent on Enter
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+      const currentLine = value.slice(lineStart, start);
+      const leadingWhitespace = currentLine.match(/^\s*/)?.[0] || '';
+      const trimmedBefore = currentLine.trimEnd();
+      const isBlockOpen =
+        trimmedBefore.endsWith('{') ||
+        trimmedBefore.endsWith('(') ||
+        trimmedBefore.endsWith('[') ||
+        trimmedBefore.endsWith(':');
+      const charAfter = value[end];
+      const isSplittingBrackets =
+        (trimmedBefore.endsWith('{') && charAfter === '}') ||
+        (trimmedBefore.endsWith('(') && charAfter === ')') ||
+        (trimmedBefore.endsWith('[') && charAfter === ']');
+
+      if (isSplittingBrackets) {
+        const extraIndent = leadingWhitespace + tabString;
+        const newCode =
+          value.slice(0, start) + '\n' + extraIndent + '\n' + leadingWhitespace + value.slice(end);
+        updateEditorCode(newCode, start + 1 + extraIndent.length);
+        return;
+      }
+
+      const nextIndent = leadingWhitespace + (isBlockOpen ? tabString : '');
+      const newCode = value.slice(0, start) + '\n' + nextIndent + value.slice(end);
+      updateEditorCode(newCode, start + 1 + nextIndent.length);
+      return;
+    }
+
+    // 3. Auto-close pairs: (), [], {}, "", '', ``
+    const pairs: Record<string, string> = {
+      '(': ')',
+      '[': ']',
+      '{': '}',
+      '"': '"',
+      "'": "'",
+      '`': '`',
+    };
+
+    if (pairs[e.key]) {
+      const open = e.key;
+      const close = pairs[open];
+      if ((open === '"' || open === "'" || open === '`') && value[start] === open && start === end) {
+        e.preventDefault();
+        el.setSelectionRange(start + 1, start + 1);
+        handleSelectionChange();
+        return;
+      }
+
+      e.preventDefault();
+      if (start !== end) {
+        const selected = value.slice(start, end);
+        const newCode = value.slice(0, start) + open + selected + close + value.slice(end);
+        updateEditorCode(newCode, start + 1, end + 1);
+      } else {
+        const newCode = value.slice(0, start) + open + close + value.slice(end);
+        updateEditorCode(newCode, start + 1);
+      }
+      return;
+    }
+
+    // 4. Skip closing bracket if already present immediately next
+    const closingBrackets = [')', ']', '}', '"', "'", '`'];
+    if (closingBrackets.includes(e.key) && start === end && value[start] === e.key) {
+      e.preventDefault();
+      el.setSelectionRange(start + 1, start + 1);
+      handleSelectionChange();
+      return;
+    }
+
+    // 5. Backspace pair deletion
+    if (e.key === 'Backspace' && start === end && start > 0) {
+      const prevChar = value[start - 1];
+      const nextChar = value[start];
+      if (
+        (prevChar === '(' && nextChar === ')') ||
+        (prevChar === '[' && nextChar === ']') ||
+        (prevChar === '{' && nextChar === '}') ||
+        (prevChar === '"' && nextChar === '"') ||
+        (prevChar === "'" && nextChar === "'") ||
+        (prevChar === '`' && nextChar === '`')
+      ) {
+        e.preventDefault();
+        const newCode = value.slice(0, start - 1) + value.slice(start + 1);
+        updateEditorCode(newCode, start - 1);
+        return;
+      }
+    }
+  };
 
   return (
     <div
@@ -215,6 +383,7 @@ export function CodeEditor({
           value={code}
           readOnly={readOnly}
           onChange={handleTextChange}
+          onKeyDown={handleKeyDown}
           onKeyUp={handleSelectionChange}
           onClick={handleSelectionChange}
           onSelect={handleSelectionChange}

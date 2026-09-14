@@ -14,8 +14,32 @@ export interface StatusBarProps {
   isTerminalOpen?: boolean;
   onTogglePreview?: () => void;
   onToggleTerminal?: () => void;
+  onSelectLanguage?: (language: string) => void;
+  onOpenDiagnostics?: () => void;
   className?: string;
 }
+
+export const POPULAR_LANGUAGES = [
+  'TypeScript',
+  'JavaScript',
+  'Python',
+  'Go',
+  'Rust',
+  'C++',
+  'C',
+  'Java',
+  'C#',
+  'Ruby',
+  'PHP',
+  'HTML',
+  'CSS',
+  'JSON',
+  'Markdown',
+  'YAML',
+  'SQL',
+  'Bash',
+  'Dockerfile',
+];
 
 /**
  * Bottom IDE status bar displaying cursor coordinates, language, and connection latency.
@@ -32,9 +56,17 @@ export function StatusBar({
   isTerminalOpen = true,
   onTogglePreview,
   onToggleTerminal,
+  onSelectLanguage,
+  onOpenDiagnostics,
   className = '',
 }: StatusBarProps) {
   const [currentLatency, setCurrentLatency] = useState(latencyMs);
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
+
+  // Sync internal latency with incoming prop
+  useEffect(() => {
+    setCurrentLatency(latencyMs);
+  }, [latencyMs]);
 
   // Subtle real-time jitter simulation around average latency
   useEffect(() => {
@@ -58,7 +90,7 @@ export function StatusBar({
   return (
     <footer
       data-testid="ide-status-bar"
-      className={`h-6 bg-slate-950 border-t border-slate-800/80 px-3 flex items-center justify-between text-[11px] text-slate-400 select-none z-20 ${className}`}
+      className={`relative h-6 bg-slate-950 border-t border-slate-800/80 px-3 flex items-center justify-between text-[11px] text-slate-400 select-none z-20 ${className}`}
     >
       {/* Left: Active file and quick panel toggles */}
       <div className="flex items-center gap-3">
@@ -74,7 +106,7 @@ export function StatusBar({
             onClick={onToggleTerminal}
             title="Toggle Terminal Panel"
             className={`flex items-center gap-1 hover:text-slate-200 transition-colors ${
-              isTerminalOpen ? 'text-indigo-400' : 'text-slate-500'
+              isTerminalOpen ? 'text-indigo-400 font-medium' : 'text-slate-500'
             }`}
           >
             <Terminal className="w-3 h-3" />
@@ -87,7 +119,7 @@ export function StatusBar({
             onClick={onTogglePreview}
             title="Toggle Live Web Preview"
             className={`flex items-center gap-1 hover:text-slate-200 transition-colors ${
-              isPreviewOpen ? 'text-indigo-400' : 'text-slate-500'
+              isPreviewOpen ? 'text-indigo-400 font-medium' : 'text-slate-500'
             }`}
           >
             <Globe className="w-3 h-3" />
@@ -98,7 +130,7 @@ export function StatusBar({
 
       {/* Right: Line/Col, Encoding, Language, Latency */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 font-mono text-slate-300">
           <span>Ln {cursorLine}, Col {cursorColumn}</span>
         </div>
 
@@ -112,15 +144,69 @@ export function StatusBar({
 
         <div className="h-3 w-[1px] bg-slate-800" />
 
-        <span className="font-medium text-slate-300 capitalize">{language}</span>
+        {/* Language Selection Popover */}
+        <div className="relative">
+          <button
+            type="button"
+            data-testid="status-bar-language"
+            onClick={() => setIsLangMenuOpen((prev) => !prev)}
+            title="Select Language Mode"
+            className="font-medium text-slate-300 hover:text-brand-300 transition-colors capitalize hover:bg-slate-900 px-1 py-0.5 rounded cursor-pointer"
+          >
+            {language}
+          </button>
+
+          {isLangMenuOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-30"
+                onClick={() => setIsLangMenuOpen(false)}
+              />
+              <div
+                data-testid="language-select-dropdown"
+                className="absolute right-0 bottom-7 z-40 w-44 max-h-60 overflow-y-auto bg-slate-900 border border-slate-700/80 rounded-lg shadow-2xl py-1 text-slate-200"
+              >
+                <div className="px-3 py-1.5 text-[10px] uppercase tracking-wider text-slate-500 font-bold border-b border-slate-800">
+                  Select Language
+                </div>
+                {POPULAR_LANGUAGES.map((lang) => (
+                  <button
+                    key={lang}
+                    type="button"
+                    onClick={() => {
+                      onSelectLanguage?.(lang);
+                      setIsLangMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-1.5 text-xs hover:bg-slate-800 transition-colors flex items-center justify-between ${
+                      lang.toLowerCase() === language.toLowerCase()
+                        ? 'text-brand-400 font-semibold bg-brand-500/10'
+                        : 'text-slate-300'
+                    }`}
+                  >
+                    <span>{lang}</span>
+                    {lang.toLowerCase() === language.toLowerCase() && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-brand-400" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
 
         <div className="h-3 w-[1px] bg-slate-800" />
 
         {/* Real-time Connection & Latency Indicator */}
-        <div
+        <button
+          type="button"
           data-testid="latency-indicator"
-          title={isConnected ? `Realtime Sync: ${currentLatency}ms latency` : 'Disconnected'}
-          className={`flex items-center gap-1 font-mono ${latencyColor}`}
+          onClick={onOpenDiagnostics}
+          title={
+            isConnected
+              ? `Realtime Sync: ${currentLatency}ms latency • Click for Network Diagnostics`
+              : 'Disconnected • Click for Network Diagnostics'
+          }
+          className={`flex items-center gap-1 font-mono hover:bg-slate-900 px-1 py-0.5 rounded transition-colors cursor-pointer ${latencyColor}`}
         >
           {isConnected ? (
             <>
@@ -133,7 +219,7 @@ export function StatusBar({
               <span>Offline</span>
             </>
           )}
-        </div>
+        </button>
       </div>
     </footer>
   );
