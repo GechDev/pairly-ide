@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { ThemeProvider } from '../components/theme/ThemeProvider';
-import { Header } from '../components/layout/Header';
-import { Footer } from '../components/layout/Footer';
+import { AppShell } from '../components/layout/AppShell';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://pairly.dev'),
@@ -53,9 +52,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen font-sans bg-canvas text-canvas-fg antialiased flex flex-col">
         <ThemeProvider defaultTheme="system" storageKey="pairly-theme">
-          <Header />
-          <main className="flex-1 flex flex-col">{children}</main>
-          <Footer />
+          <AppShell>{children}</AppShell>
         </ThemeProvider>
       </body>
     </html>

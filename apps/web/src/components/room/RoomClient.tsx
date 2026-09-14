@@ -703,7 +703,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
     <div
       id="room-workspace-root"
       data-testid="room-ide"
-      className="flex flex-col h-[calc(100vh-4rem)] bg-slate-950 text-slate-100 overflow-hidden font-sans"
+      className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 overflow-hidden font-sans fixed inset-0 select-none"
     >
       {/* Room Toolbar Header */}
       <header className="h-12 border-b border-slate-800 bg-slate-900/90 px-4 flex items-center justify-between select-none">
@@ -725,6 +725,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
               {roomCode}
             </span>
             <button
+              type="button"
               id="copy-room-link-btn"
               onClick={copyRoomLink}
               title="Copy invite link"
@@ -742,6 +743,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         {/* Center: Play / Run Controls & Checkpoint Snapshots */}
         <div className="flex items-center gap-2">
           <button
+            type="button"
             id="run-code-btn"
             data-testid="run-code-btn"
             onClick={handleRunCode}
@@ -754,6 +756,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           </button>
 
           <button
+            type="button"
             id="checkpoint-modal-btn"
             data-testid="checkpoint-btn"
             onClick={() => setIsCheckpointModalOpen(true)}
@@ -765,6 +768,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           </button>
 
           <button
+            type="button"
             id="toggle-preview-btn"
             data-testid="toggle-preview-btn"
             onClick={() => setIsPreviewOpen((prev) => !prev)}
@@ -780,6 +784,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           </button>
 
           <button
+            type="button"
             id="toggle-chat-btn"
             data-testid="toggle-chat-btn"
             onClick={() => {
@@ -803,6 +808,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           </button>
 
           <button
+            type="button"
             id="toggle-notepad-btn"
             data-testid="toggle-notepad-btn"
             onClick={() => setIsNotepadOpen((prev) => !prev)}
@@ -818,6 +824,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           </button>
 
           <button
+            type="button"
             id="toggle-whiteboard-btn"
             data-testid="toggle-whiteboard-btn"
             onClick={() => setIsWhiteboardOpen((prev) => !prev)}
@@ -833,6 +840,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           </button>
 
           <button
+            type="button"
             id="toggle-participants-btn"
             data-testid="toggle-participants-btn"
             onClick={() => setIsParticipantsModalOpen(true)}
@@ -847,6 +855,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           </button>
 
           <button
+            type="button"
             id="toggle-ai-btn"
             data-testid="toggle-ai-btn"
             onClick={() => setIsAiPanelOpen((prev) => !prev)}
@@ -862,6 +871,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           </button>
 
           <button
+            type="button"
             id="toggle-media-btn"
             data-testid="toggle-media-btn"
             onClick={() => setIsMediaPanelOpen((prev) => !prev)}
@@ -984,6 +994,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           />
 
           <button
+            type="button"
             id="report-abuse-btn"
             data-testid="report-abuse-btn"
             onClick={() => setIsReportModalOpen(true)}
@@ -995,6 +1006,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           </button>
 
           <button
+            type="button"
             id="share-room-btn"
             data-testid="share-room-btn"
             onClick={() => setIsShareModalOpen(true)}
@@ -1006,6 +1018,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           </button>
 
           <button
+            type="button"
             id="command-palette-btn"
             data-testid="command-palette-btn"
             onClick={() => setIsCommandPaletteOpen(true)}
@@ -1020,6 +1033,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           </button>
 
           <button
+            type="button"
             id="about-btn"
             data-testid="about-btn"
             onClick={() => setIsAboutModalOpen(true)}
@@ -1030,6 +1044,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           </button>
 
           <button
+            type="button"
             id="editor-settings-btn"
             data-testid="editor-settings-btn"
             onClick={() => setIsSettingsModalOpen(true)}
@@ -1040,6 +1055,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           </button>
 
           <button
+            type="button"
             id="leave-room-btn"
             data-testid="leave-room-btn"
             onClick={() => setIsLeaveModalOpen(true)}
