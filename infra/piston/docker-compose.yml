@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   piston:
     image: ghcr.io/engineer-man/piston:latest
