@@ -38,7 +38,7 @@ const features = [
     category: 'COLLABORATION',
     title: 'Instant Guest Room Lifecycle',
     description:
-      'Start a collaboration session with one click. Invite peers via unguessable short links with temporary identities—no registration required.',
+      'Start a collaboration session with one click. Invite peers via unguessable short links with temporary identities with zero registration required.',
     badge: 'Zero Setup',
   },
   {

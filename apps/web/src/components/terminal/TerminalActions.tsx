@@ -16,7 +16,7 @@ export interface TerminalActionsProps {
 export function TerminalActions({
   exitCode,
   status,
-  terminalOutput,
+  terminalOutput: _terminalOutput,
   onExplainAndFix,
   isLoading = false,
   className = '',
@@ -32,7 +32,7 @@ export function TerminalActions({
   return (
     <div
       data-testid="terminal-actions-bar"
-      className={`flex items-center justify-between border-t border-rose-900/40 bg-gradient-to-r from-rose-950/40 via-purple-950/30 to-slate-950 px-3 py-1.5 text-xs ${className}`}
+      className={`flex items-center justify-between border-t border-rose-900/50 bg-rose-950/25 px-3 py-1.5 text-xs ${className}`}
     >
       <div className="flex items-center gap-2 truncate">
         <AlertTriangle className="h-4 w-4 text-rose-400 flex-shrink-0 animate-pulse" />
@@ -50,7 +50,7 @@ export function TerminalActions({
         disabled={isLoading}
         onClick={onExplainAndFix}
         title="Analyze execution stack trace and propose reviewable diff patch (FR-AI-09)"
-        className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-3 py-1 font-bold text-white shadow-md hover:from-purple-500 hover:to-indigo-500 hover:shadow-purple-500/20 active:scale-95 transition-all disabled:opacity-50 flex-shrink-0 ml-2"
+        className="flex items-center gap-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-slate-100 border border-slate-700 px-3 py-1 font-semibold shadow-sm active:scale-95 transition-all disabled:opacity-50 flex-shrink-0 ml-2"
       >
         {isLoading ? (
           <>

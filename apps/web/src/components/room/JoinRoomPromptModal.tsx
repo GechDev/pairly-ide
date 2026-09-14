@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { User, ArrowRight, Sparkles, Hash } from 'lucide-react';
+import { User, ArrowRight, Code2 } from 'lucide-react';
 
 export interface JoinRoomPromptModalProps {
   isOpen: boolean;
@@ -42,8 +42,8 @@ export function JoinRoomPromptModal({
         aria-labelledby="join-prompt-title"
       >
         <div className="flex flex-col items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-            <Sparkles className="w-6 h-6 text-indigo-400" />
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <Code2 className="w-6 h-6 stroke-[2.5]" />
           </div>
           <div>
             <h2
@@ -54,7 +54,7 @@ export function JoinRoomPromptModal({
             </h2>
             <div className="flex items-center justify-center gap-1.5 mt-1.5 text-xs text-slate-400">
               <span>Room Code:</span>
-              <span className="font-mono font-semibold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
+              <span className="font-mono font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
                 {roomCode}
               </span>
             </div>
@@ -63,7 +63,7 @@ export function JoinRoomPromptModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
               <User className="w-4 h-4" />
             </div>
             <input
@@ -76,7 +76,7 @@ export function JoinRoomPromptModal({
                 if (error) setError(null);
               }}
               placeholder="Your display name (e.g. Alice)"
-              className="w-full pl-9 pr-4 py-2.5 bg-slate-950 border border-slate-700/80 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-medium"
+              className="w-full pl-9 pr-4 py-2.5 bg-slate-950 border border-slate-700/80 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all font-medium"
             />
           </div>
 
@@ -87,7 +87,7 @@ export function JoinRoomPromptModal({
           <button
             type="submit"
             data-testid="submit-join-room-btn"
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white text-sm font-semibold rounded-xl shadow-lg shadow-indigo-600/30 transition-all"
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-emerald-400 hover:bg-emerald-300 active:bg-emerald-500 text-slate-950 text-sm font-bold rounded-xl shadow-md shadow-emerald-400/20 active:scale-[0.99] transition-all"
           >
             <span>Enter Room</span>
             <ArrowRight className="w-4 h-4" />
