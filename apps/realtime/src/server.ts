@@ -128,6 +128,17 @@ export function buildServer(options: ServerOptions = {}): FastifyInstance {
           })
         );
 
+        // 3e. Send whiteboard state snapshot for late joiners
+        const whiteboardElements = roomManager.getWhiteboardElements(roomCode);
+        if (whiteboardElements.length > 0) {
+          socket.send(
+            JSON.stringify({
+              type: 'WHITEBOARD_SNAPSHOT',
+              elements: whiteboardElements,
+            })
+          );
+        }
+
         // 4. Broadcast participant presence to peers
         roomManager.broadcast(
           roomCode,
@@ -446,6 +457,35 @@ export function buildServer(options: ServerOptions = {}): FastifyInstance {
                   color: currentParticipant.color,
                   x: data.x,
                   y: data.y,
+                },
+                currentParticipant.id
+              );
+              return;
+            }
+
+            // Collaborative Whiteboard: Peer Drawing (code-editor inspired)
+            if (data.type === 'WHITEBOARD_DRAW' && data.element) {
+              roomManager.addWhiteboardElement(roomCode, data.element);
+              roomManager.broadcast(
+                roomCode,
+                {
+                  type: 'WHITEBOARD_DRAW',
+                  element: data.element,
+                  senderId: currentParticipant.id,
+                },
+                currentParticipant.id
+              );
+              return;
+            }
+
+            // Collaborative Whiteboard: Clear Canvas
+            if (data.type === 'WHITEBOARD_CLEAR') {
+              roomManager.clearWhiteboard(roomCode);
+              roomManager.broadcast(
+                roomCode,
+                {
+                  type: 'WHITEBOARD_CLEAR',
+                  senderId: currentParticipant.id,
                 },
                 currentParticipant.id
               );

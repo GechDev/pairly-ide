@@ -21,6 +21,7 @@ import {
   LogOut,
   Info,
   CornerDownLeft,
+  Palette,
 } from 'lucide-react';
 import type { WorkspaceItem } from '../workspace/workspaceState';
 
@@ -46,6 +47,7 @@ export interface CommandPaletteModalProps {
   onOpenSettings: () => void;
   onToggleChat: () => void;
   onToggleNotepad: () => void;
+  onToggleWhiteboard?: () => void;
   onToggleAi: () => void;
   onToggleMedia: () => void;
   onOpenShare: () => void;
@@ -68,6 +70,7 @@ export function CommandPaletteModal({
   onOpenSettings,
   onToggleChat,
   onToggleNotepad,
+  onToggleWhiteboard,
   onToggleAi,
   onToggleMedia,
   onOpenShare,
@@ -156,6 +159,18 @@ export function CommandPaletteModal({
       icon: FileText,
       action: onToggleNotepad,
     },
+    ...(onToggleWhiteboard
+      ? [
+          {
+            id: 'cmd-whiteboard',
+            label: 'Architecture Whiteboard',
+            description: 'Collaborative real-time canvas for system diagrams and wireframes',
+            category: 'Collaboration' as const,
+            icon: Palette,
+            action: onToggleWhiteboard,
+          },
+        ]
+      : []),
     {
       id: 'cmd-chat',
       label: 'Room Chat',

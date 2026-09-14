@@ -22,6 +22,7 @@ import {
   LogOut,
   Info,
   Search,
+  Palette,
 } from 'lucide-react';
 import type {
   ParticipantIdentity,
@@ -66,6 +67,7 @@ import { AboutModal } from './AboutModal';
 import { FilePreviewModal } from '../workspace/FilePreviewModal';
 import { JoinRoomPromptModal } from './JoinRoomPromptModal';
 import { CommandPaletteModal } from './CommandPaletteModal';
+import { WhiteboardModal, type WhiteboardElement } from '../whiteboard';
 
 interface RoomClientProps {
   roomCode: string;
@@ -115,6 +117,8 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
+  const [isWhiteboardOpen, setIsWhiteboardOpen] = useState(false);
+  const [whiteboardElements, setWhiteboardElements] = useState<WhiteboardElement[]>([]);
   const [filePreviewData, setFilePreviewData] = useState<{
     fileName: string;
     content: string;
@@ -362,6 +366,14 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             } else if (typeof msg.content === 'string' && notepadSessionRef.current) {
               notepadSessionRef.current.setText(msg.content);
             }
+          } else if (msg.type === 'WHITEBOARD_SNAPSHOT') {
+            setWhiteboardElements(msg.elements || []);
+          } else if (msg.type === 'WHITEBOARD_DRAW') {
+            if (msg.element) {
+              setWhiteboardElements((prev) => [...prev, msg.element]);
+            }
+          } else if (msg.type === 'WHITEBOARD_CLEAR') {
+            setWhiteboardElements([]);
           } else if (msg.type === 'PONG') {
             if (msg.clientTimestamp) {
               setPingLatency(Math.max(1, Date.now() - msg.clientTimestamp));
@@ -509,6 +521,20 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           update: updateBase64,
         })
       );
+    }
+  };
+
+  const handleAddWhiteboardElement = (element: WhiteboardElement) => {
+    setWhiteboardElements((prev) => [...prev, element]);
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'WHITEBOARD_DRAW', element }));
+    }
+  };
+
+  const handleClearWhiteboard = () => {
+    setWhiteboardElements([]);
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'WHITEBOARD_CLEAR' }));
     }
   };
 
@@ -689,6 +715,21 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           >
             <FileText className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden sm:inline">Notes</span>
+          </button>
+
+          <button
+            id="toggle-whiteboard-btn"
+            data-testid="toggle-whiteboard-btn"
+            onClick={() => setIsWhiteboardOpen((prev) => !prev)}
+            title="Toggle Collaborative Architecture Whiteboard"
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border transition-colors shadow-sm ${
+              isWhiteboardOpen
+                ? 'bg-emerald-600/30 text-emerald-300 border-emerald-500/50'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+            }`}
+          >
+            <Palette className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="hidden sm:inline">Whiteboard</span>
           </button>
 
           <button
@@ -1360,6 +1401,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           setUnreadCount(0);
         }}
         onToggleNotepad={() => setIsNotepadOpen((prev) => !prev)}
+        onToggleWhiteboard={() => setIsWhiteboardOpen((prev) => !prev)}
         onToggleAi={() => setIsAiPanelOpen((prev) => !prev)}
         onToggleMedia={() => setIsMediaPanelOpen((prev) => !prev)}
         onOpenShare={() => setIsShareModalOpen(true)}
@@ -1368,6 +1410,16 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         onOpenAbout={() => setIsAboutModalOpen(true)}
         onOpenReport={() => setIsReportModalOpen(true)}
         onOpenLeave={() => setIsLeaveModalOpen(true)}
+      />
+
+      {/* Collaborative Architecture Whiteboard Modal */}
+      <WhiteboardModal
+        isOpen={isWhiteboardOpen}
+        onClose={() => setIsWhiteboardOpen(false)}
+        roomCode={roomCode}
+        elements={whiteboardElements}
+        onAddElement={handleAddWhiteboardElement}
+        onClearElements={handleClearWhiteboard}
       />
     </div>
   );

@@ -9,11 +9,27 @@ export interface RoomParticipantSession {
   latencyMs: number;
 }
 
+export interface WhiteboardElement {
+  id: string;
+  type: 'pen' | 'rect' | 'circle' | 'line' | 'text' | 'eraser';
+  points?: { x: number; y: number }[];
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  color: string;
+  strokeWidth: number;
+  text?: string;
+  authorId?: string;
+  createdAt?: number;
+}
+
 export interface ActiveRoom {
   code: string;
   createdAt: number;
   isLocked: boolean;
   participants: Map<string, RoomParticipantSession>;
+  whiteboardElements: WhiteboardElement[];
 }
 
 export class RoomManager {
@@ -30,6 +46,7 @@ export class RoomManager {
         createdAt: Date.now(),
         isLocked: false,
         participants: new Map(),
+        whiteboardElements: [],
       };
       this.rooms.set(roomCode, room);
     }
@@ -188,6 +205,35 @@ export class RoomManager {
     }
 
     return sentCount;
+  }
+
+  /**
+   * Returns current whiteboard elements for late joiners.
+   */
+  public getWhiteboardElements(roomCode: string): WhiteboardElement[] {
+    const room = this.rooms.get(roomCode);
+    return room?.whiteboardElements ?? [];
+  }
+
+  /**
+   * Adds a whiteboard element and caps history at 1000 elements.
+   */
+  public addWhiteboardElement(roomCode: string, element: WhiteboardElement): void {
+    const room = this.getOrCreateRoom(roomCode);
+    room.whiteboardElements.push(element);
+    if (room.whiteboardElements.length > 1000) {
+      room.whiteboardElements.shift();
+    }
+  }
+
+  /**
+   * Clears all whiteboard elements in a room.
+   */
+  public clearWhiteboard(roomCode: string): void {
+    const room = this.rooms.get(roomCode);
+    if (room) {
+      room.whiteboardElements = [];
+    }
   }
 
   /**
