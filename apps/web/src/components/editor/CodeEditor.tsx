@@ -11,6 +11,7 @@ import type { EditorSettings } from '../room/EditorSettingsModal';
 
 export interface CodeEditorProps {
   initialCode?: string;
+  initialUpdate?: string;
   language?: string;
   readOnly?: boolean;
   participant: ParticipantIdentity;
@@ -22,6 +23,7 @@ export interface CodeEditorProps {
 
 export function CodeEditor({
   initialCode = '',
+  initialUpdate,
   language = 'typescript',
   readOnly = false,
   participant,
@@ -39,7 +41,13 @@ export function CodeEditor({
 
   // Initialize collaborative Yjs CRDT session
   useEffect(() => {
-    const colabSession = createCollaborativeSession(initialCodeRef.current, participant);
+    const colabSession = createCollaborativeSession(
+      initialUpdate ? '' : initialCodeRef.current,
+      participant
+    );
+    if (initialUpdate) {
+      colabSession.applyEncodedUpdate(initialUpdate);
+    }
     setSession(colabSession);
 
     // Initial content

@@ -63,6 +63,7 @@ import {
 } from './EditorSettingsModal';
 import { AboutModal } from './AboutModal';
 import { FilePreviewModal } from '../workspace/FilePreviewModal';
+import { JoinRoomPromptModal } from './JoinRoomPromptModal';
 
 interface RoomClientProps {
   roomCode: string;
@@ -118,6 +119,8 @@ export function RoomClient({ roomCode }: RoomClientProps) {
     useState<EditorSettings>(DEFAULT_EDITOR_SETTINGS);
   const [pingLatency, setPingLatency] = useState<number | null>(null);
   const [isDeviceSettingsOpen, setIsDeviceSettingsOpen] = useState(false);
+  const [isJoinPromptOpen, setIsJoinPromptOpen] = useState(false);
+  const [serverDocSnapshot, setServerDocSnapshot] = useState<string | null>(null);
   const [remotePointers, setRemotePointers] = useState<Record<string, RemotePointer>>({});
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const liveKit = useLiveKit({
@@ -212,8 +215,9 @@ export function RoomClient({ roomCode }: RoomClientProps) {
       currentParticipant = generateGuestIdentity('EDITOR', storedUsername);
       sessionStorage.setItem(`pairly_guest_${roomCode}`, JSON.stringify(currentParticipant));
     } else {
-      // Instant Guest Access: generate identity directly so any browser profile or shared link joins immediately
-      currentParticipant = generateGuestIdentity('EDITOR', storedUsername || undefined);
+      // Prompt user for their display name
+      setIsJoinPromptOpen(true);
+      currentParticipant = generateGuestIdentity('EDITOR');
       sessionStorage.setItem(`pairly_guest_${roomCode}`, JSON.stringify(currentParticipant));
     }
 
@@ -280,6 +284,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           if (msg.type === 'ROOM_JOINED') {
             setActiveParticipants(msg.participants || [currentParticipant]);
             if (msg.docUpdate) {
+              setServerDocSnapshot(msg.docUpdate);
               if (activeSessionRef.current) {
                 activeSessionRef.current.applyEncodedUpdate(msg.docUpdate);
               } else {
@@ -314,6 +319,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             }
           } else if (msg.type === 'DOC_UPDATE') {
             if (msg.update) {
+              setServerDocSnapshot(msg.update);
               if (activeSessionRef.current) {
                 activeSessionRef.current.applyEncodedUpdate(msg.update);
               } else {
@@ -990,6 +996,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
                     }
                   });
                 }}
+                initialUpdate={serverDocSnapshot || undefined}
                 initialCode={
                   workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.content ||
                   `// Welcome to Pairly Room ${roomCode}`
@@ -1253,6 +1260,30 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           }}
         />
       )}
+
+      {/* Join Room Name Prompt Modal */}
+      <JoinRoomPromptModal
+        isOpen={isJoinPromptOpen}
+        roomCode={roomCode}
+        onJoin={(chosenName) => {
+          sessionStorage.setItem('pairly_username', chosenName);
+          const updated = generateGuestIdentity('EDITOR', chosenName);
+          sessionStorage.setItem(`pairly_guest_${roomCode}`, JSON.stringify(updated));
+          setParticipant(updated);
+          setIsJoinPromptOpen(false);
+
+          if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+            wsRef.current.send(
+              JSON.stringify({
+                type: 'PRESENCE_UPDATE',
+                participantId: updated.id,
+                displayName: updated.displayName,
+                fileId: workspaceState.activeFileId,
+              })
+            );
+          }
+        }}
+      />
     </div>
   );
 }

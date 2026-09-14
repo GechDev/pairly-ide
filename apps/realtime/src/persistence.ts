@@ -39,6 +39,8 @@ export function createPersistenceManager(
     let doc = roomDocs.get(roomId);
     if (!doc) {
       doc = new Y.Doc();
+      const initialText = `// Welcome to Pairly Collaborative IDE\n// Real-time collaborative pair programming environment\n\nfunction main() {\n  console.log("Collaborative session active!");\n}\n\nmain();`;
+      doc.getText('contents').insert(0, initialText);
       roomDocs.set(roomId, doc);
     }
     return doc;
@@ -48,7 +50,7 @@ export function createPersistenceManager(
     try {
       const doc = getOrCreateDoc(roomId);
       const updateBytes = Buffer.from(updateBase64, 'base64');
-      Y.applyUpdate(doc, new Uint8Array(updateBytes));
+      Y.applyUpdate(doc, updateBytes);
       dirtyRooms.add(roomId);
     } catch (err) {
       console.error(`[Persistence] Failed to apply update to room ${roomId}:`, err);
@@ -87,9 +89,8 @@ export function createPersistenceManager(
     return snapshots.get(roomId)?.find((s) => s.id === snapshotId);
   };
 
-  const getLatestState = (roomId: string): string | null => {
-    const doc = roomDocs.get(roomId);
-    if (!doc) return null;
+  const getLatestState = (roomId: string): string => {
+    const doc = getOrCreateDoc(roomId);
     return Buffer.from(Y.encodeStateAsUpdate(doc)).toString('base64');
   };
 
