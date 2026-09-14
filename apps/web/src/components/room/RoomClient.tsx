@@ -56,6 +56,7 @@ import { AiAssistantPanel, AIProposalModal } from '../ai';
 import { computeUnifiedDiff } from '@pairly/ai';
 import { useLiveKit, VideoGrid, MediaBar, DeviceSettingsModal } from '../media';
 import { GitHubImportModal } from '../workspace/GitHubImportModal';
+import { GitHubExportModal } from '../workspace/GitHubExportModal';
 import type { GitHubImportFile } from '../../lib/githubClient';
 import { AbuseReportModal } from './AbuseReportModal';
 import { ShareRoomModal } from './ShareRoomModal';
@@ -114,6 +115,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [isAiExplaining, setIsAiExplaining] = useState(false);
   const [isMediaPanelOpen, setIsMediaPanelOpen] = useState(false);
   const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
+  const [isGitHubExportOpen, setIsGitHubExportOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
@@ -187,6 +189,9 @@ export function RoomClient({ roomCode }: RoomClientProps) {
       } else if (isModifier && e.key === 'Enter') {
         e.preventDefault();
         handleRunCode();
+      } else if (isModifier && e.shiftKey && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        setIsGitHubExportOpen(true);
       } else if (isModifier && e.key === 's') {
         e.preventDefault();
         setIsCheckpointModalOpen(true);
@@ -1515,10 +1520,36 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         onToggleMedia={() => setIsMediaPanelOpen((prev) => !prev)}
         onOpenShare={() => setIsShareModalOpen(true)}
         onOpenGitHubImport={() => setIsGitHubModalOpen(true)}
+        onOpenGitHubExport={() => setIsGitHubExportOpen(true)}
         onOpenDiagnostics={() => setIsDiagnosticsOpen(true)}
         onOpenAbout={() => setIsAboutModalOpen(true)}
         onOpenReport={() => setIsReportModalOpen(true)}
         onOpenLeave={() => setIsLeaveModalOpen(true)}
+      />
+
+      {/* GitHub Repository Import Modal */}
+      <GitHubImportModal
+        isOpen={isGitHubModalOpen}
+        onClose={() => setIsGitHubModalOpen(false)}
+        onImportFiles={(files) => {
+          files.forEach((file) => {
+            workspaceManagerRef.current.createFile(file.path, file.isFolder, null, file.content);
+          });
+          setIsGitHubModalOpen(false);
+        }}
+      />
+
+      {/* GitHub Export / Commit to Repository Modal (CodeX Inspired) */}
+      <GitHubExportModal
+        isOpen={isGitHubExportModalOpen}
+        onClose={() => setIsGitHubExportOpen(false)}
+        activeFileName={
+          workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.name ||
+          'index.ts'
+        }
+        activeFileContent={
+          workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.content || ''
+        }
       />
 
       {/* Collaborative Architecture Whiteboard Modal */}

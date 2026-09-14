@@ -54,6 +54,7 @@ export interface CommandPaletteModalProps {
   onToggleMedia: () => void;
   onOpenShare: () => void;
   onOpenGitHubImport: () => void;
+  onOpenGitHubExport?: () => void;
   onOpenDiagnostics: () => void;
   onOpenAbout: () => void;
   onOpenReport: () => void;
@@ -218,6 +219,19 @@ export function CommandPaletteModal({
       icon: Github,
       action: onOpenGitHubImport,
     },
+    ...(onOpenGitHubExport
+      ? [
+          {
+            id: 'cmd-github-export',
+            label: 'Save / Commit to GitHub',
+            description: 'Commit active file changes directly to GitHub repository branch',
+            category: 'Workspace' as const,
+            shortcut: 'Ctrl+Shift+S',
+            icon: Github,
+            action: onOpenGitHubExport,
+          },
+        ]
+      : []),
     {
       id: 'cmd-diagnostics',
       label: 'Network Latency & Connection Diagnostics',
