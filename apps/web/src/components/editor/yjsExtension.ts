@@ -29,6 +29,35 @@ export interface CollaborativeSession {
 }
 
 /**
+ * Robust isomorphic byte array <-> base64 utilities.
+ * Ensures compatibility across both Node.js server/testing and web browsers without Buffer polyfill.
+ */
+export function uint8ArrayToBase64(bytes: Uint8Array): string {
+  if (typeof Buffer !== 'undefined') {
+    return Buffer.from(bytes).toString('base64');
+  }
+  let binary = '';
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]!);
+  }
+  return btoa(binary);
+}
+
+export function base64ToUint8Array(base64: string): Uint8Array {
+  if (typeof Buffer !== 'undefined') {
+    return new Uint8Array(Buffer.from(base64, 'base64'));
+  }
+  const binary = atob(base64);
+  const len = binary.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+/**
  * Initializes a collaborative editing session powered by Yjs CRDTs.
  * Per SRS FR-EDIT-01 and FR-EDIT-05.
  */
@@ -51,7 +80,7 @@ export function createCollaborativeSession(
   >();
 
   const updateHandler = (update: Uint8Array, origin: any) => {
-    const base64 = Buffer.from(update).toString('base64');
+    const base64 = uint8ArrayToBase64(update);
     for (const listener of onUpdateListeners) {
       listener(base64, origin);
     }
@@ -89,13 +118,13 @@ export function createCollaborativeSession(
 
   const getEncodedState = (): string => {
     const state = Y.encodeStateAsUpdate(doc);
-    return Buffer.from(state).toString('base64');
+    return uint8ArrayToBase64(state);
   };
 
   const applyEncodedUpdate = (base64Update: string): void => {
     try {
-      const bytes = Buffer.from(base64Update, 'base64');
-      Y.applyUpdate(doc, new Uint8Array(bytes), 'remote');
+      const bytes = base64ToUint8Array(base64Update);
+      Y.applyUpdate(doc, bytes, 'remote');
     } catch (err) {
       console.error('[Yjs] Failed to apply remote update:', err);
     }

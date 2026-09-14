@@ -7,6 +7,9 @@ import { authorizeAction } from './rbac/guard.js';
 import { defaultTerminalManager } from './pty/runner.js';
 import { defaultChatManager } from './chat.js';
 import { defaultNotepadManager } from './notepad.js';
+import { createPersistenceManager } from './persistence.js';
+
+const defaultPersistenceManager = createPersistenceManager();
 
 export interface ServerOptions {
   roomManager?: RoomManager;
@@ -81,6 +84,17 @@ export function buildServer(options: ServerOptions = {}): FastifyInstance {
             participants: roomManager.getParticipants(roomCode),
           })
         );
+
+        // 3a. Send current code document snapshot for late joiners (FR-EDIT-01)
+        const latestDocState = defaultPersistenceManager.getLatestState(roomCode);
+        if (latestDocState) {
+          socket.send(
+            JSON.stringify({
+              type: 'DOC_UPDATE',
+              update: latestDocState,
+            })
+          );
+        }
 
         // 3b. Send recent terminal history for late joiners (FR-EXEC-08)
         const history = defaultTerminalManager.getRoomHistory(roomCode);
@@ -232,7 +246,11 @@ export function buildServer(options: ServerOptions = {}): FastifyInstance {
             }
 
             // Enforce RBAC on Document Updates (FR-ROOM-05..07, AT-03)
-            if (data.type === 'DOCUMENT_UPDATE' || data.type === 'YJS_UPDATE') {
+            if (
+              data.type === 'DOCUMENT_UPDATE' ||
+              data.type === 'YJS_UPDATE' ||
+              data.type === 'DOC_UPDATE'
+            ) {
               const auth = authorizeAction('DOCUMENT_UPDATE', {
                 role: currentParticipant.role,
                 isRoomLocked,
@@ -248,6 +266,28 @@ export function buildServer(options: ServerOptions = {}): FastifyInstance {
                 );
                 return; // Discard unauthorized edit
               }
+
+              const updateData = data.update || data.data;
+              if (updateData) {
+                defaultPersistenceManager.bufferUpdate(roomCode, updateData);
+              }
+
+              // Relay document update to peers
+              roomManager.broadcast(roomCode, data, participant.id);
+              return;
+            }
+
+            // Realtime Collaborative Cursor Sync (FR-EDIT-05)
+            if (data.type === 'CURSOR_UPDATE') {
+              roomManager.broadcast(
+                roomCode,
+                {
+                  type: 'CURSOR_UPDATE',
+                  cursor: data.cursor,
+                },
+                participant.id
+              );
+              return;
             }
 
             // Enforce RBAC on Code Execution (FR-EXEC-01)

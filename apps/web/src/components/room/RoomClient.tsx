@@ -18,6 +18,9 @@ import {
   Sparkles,
   Video,
   ShieldAlert,
+  Settings,
+  LogOut,
+  Info,
 } from 'lucide-react';
 import type {
   ParticipantIdentity,
@@ -52,6 +55,14 @@ import { GitHubImportModal } from '../workspace/GitHubImportModal';
 import type { GitHubImportFile } from '../../lib/githubClient';
 import { AbuseReportModal } from './AbuseReportModal';
 import { ShareRoomModal } from './ShareRoomModal';
+import { LeaveRoomModal } from './LeaveRoomModal';
+import {
+  EditorSettingsModal,
+  DEFAULT_EDITOR_SETTINGS,
+  type EditorSettings,
+} from './EditorSettingsModal';
+import { AboutModal } from './AboutModal';
+import { FilePreviewModal } from '../workspace/FilePreviewModal';
 
 interface RoomClientProps {
   roomCode: string;
@@ -66,6 +77,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   >('connecting');
   const [activeParticipants, setActiveParticipants] = useState<ParticipantIdentity[]>([]);
   const activeSessionRef = React.useRef<CollaborativeSession | null>(null);
+  const pendingDocUpdatesRef = React.useRef<string[]>([]);
   const wsRef = React.useRef<WebSocket | null>(null);
   const workspaceManagerRef = React.useRef(createWorkspaceManager());
   const [workspaceState, setWorkspaceState] = useState<WorkspaceState>(
@@ -95,6 +107,16 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
+  const [filePreviewData, setFilePreviewData] = useState<{
+    fileName: string;
+    content: string;
+  } | null>(null);
+  const [editorSettings, setEditorSettings] =
+    useState<EditorSettings>(DEFAULT_EDITOR_SETTINGS);
+  const [pingLatency, setPingLatency] = useState<number | null>(null);
   const [isDeviceSettingsOpen, setIsDeviceSettingsOpen] = useState(false);
   const [remotePointers, setRemotePointers] = useState<Record<string, RemotePointer>>({});
   const editorContainerRef = useRef<HTMLDivElement>(null);
@@ -115,6 +137,42 @@ export function RoomClient({ roomCode }: RoomClientProps) {
       unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('pairly_editor_settings');
+      if (saved) {
+        try {
+          setEditorSettings((prev) => ({ ...prev, ...JSON.parse(saved) }));
+        } catch {}
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isModifier = e.ctrlKey || e.metaKey;
+      if (isModifier && e.key === 'Enter') {
+        e.preventDefault();
+        handleRunCode();
+      } else if (isModifier && e.key === 's') {
+        e.preventDefault();
+        setIsCheckpointModalOpen(true);
+      } else if (isModifier && e.key === 'p') {
+        e.preventDefault();
+        setIsPreviewOpen((prev) => !prev);
+      } else if (isModifier && e.key === '`') {
+        e.preventDefault();
+        setIsTerminalExpanded((prev) => !prev);
+      } else if (isModifier && e.key === ',') {
+        e.preventDefault();
+        setIsSettingsModalOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [workspaceState, participant, roomCode]);
 
   useEffect(() => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN && participant) {
@@ -191,6 +249,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
       `pairly_mock_${encodedPayload}`;
 
     let ws: WebSocket | null = null;
+    let pingInterval: ReturnType<typeof setInterval> | null = null;
     try {
       const wsProtocol =
         typeof window !== 'undefined' && window.location.protocol === 'https:'
@@ -206,13 +265,29 @@ export function RoomClient({ roomCode }: RoomClientProps) {
 
       ws.onopen = () => {
         setConnectionStatus('connected');
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'PING', timestamp: Date.now() }));
+        }
       };
+
+      pingInterval = setInterval(() => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'PING', timestamp: Date.now() }));
+        }
+      }, 5000);
 
       ws.onmessage = (event) => {
         try {
           const msg = JSON.parse(event.data);
           if (msg.type === 'ROOM_JOINED') {
             setActiveParticipants(msg.participants || [currentParticipant]);
+            if (msg.docUpdate) {
+              if (activeSessionRef.current) {
+                activeSessionRef.current.applyEncodedUpdate(msg.docUpdate);
+              } else {
+                pendingDocUpdatesRef.current.push(msg.docUpdate);
+              }
+            }
           } else if (msg.type === 'USER_JOINED') {
             setActiveParticipants((prev) => {
               if (prev.some((p) => p.id === msg.participant.id)) return prev;
@@ -240,7 +315,13 @@ export function RoomClient({ roomCode }: RoomClientProps) {
               follow.updateFollowedState(msg.fileId, msg.cursor?.line, msg.cursor?.column);
             }
           } else if (msg.type === 'DOC_UPDATE') {
-            activeSessionRef.current?.applyEncodedUpdate(msg.update);
+            if (msg.update) {
+              if (activeSessionRef.current) {
+                activeSessionRef.current.applyEncodedUpdate(msg.update);
+              } else {
+                pendingDocUpdatesRef.current.push(msg.update);
+              }
+            }
           } else if (msg.type === 'CURSOR_UPDATE') {
             activeSessionRef.current?.setRemoteCursor(msg.cursor);
           } else if (msg.type === 'TERMINAL_CHUNK') {
@@ -266,6 +347,10 @@ export function RoomClient({ roomCode }: RoomClientProps) {
               notepadSessionRef.current.applyUpdate(msg.update);
             } else if (typeof msg.content === 'string' && notepadSessionRef.current) {
               notepadSessionRef.current.setText(msg.content);
+            }
+          } else if (msg.type === 'PONG') {
+            if (msg.clientTimestamp) {
+              setPingLatency(Math.max(1, Date.now() - msg.clientTimestamp));
             }
           } else if (msg.type === 'POINTER_UPDATE' && msg.participantId) {
             setRemotePointers((prev) => ({
@@ -296,6 +381,9 @@ export function RoomClient({ roomCode }: RoomClientProps) {
     }
 
     return () => {
+      if (pingInterval) {
+        clearInterval(pingInterval);
+      }
       if (ws && ws.readyState === WebSocket.OPEN) {
         ws.close();
       }
@@ -688,6 +776,15 @@ export function RoomClient({ roomCode }: RoomClientProps) {
               <WifiOff className="w-3.5 h-3.5 text-rose-400" />
             )}
             <span className="hidden md:inline capitalize">{connectionStatus}</span>
+            {pingLatency !== null && connectionStatus === 'connected' && (
+              <span
+                data-testid="ping-latency-badge"
+                title="Round-trip network latency to coordinator"
+                className="hidden lg:inline text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-emerald-400 border border-slate-700/50"
+              >
+                {pingLatency}ms
+              </span>
+            )}
           </div>
 
           <PresenceBar
@@ -734,6 +831,37 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             <Share2 className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Share</span>
           </button>
+
+          <button
+            id="about-btn"
+            data-testid="about-btn"
+            onClick={() => setIsAboutModalOpen(true)}
+            title="About Pairly & Keyboard Shortcuts"
+            className="inline-flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors"
+          >
+            <Info className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            id="editor-settings-btn"
+            data-testid="editor-settings-btn"
+            onClick={() => setIsSettingsModalOpen(true)}
+            title="Editor Settings (Font, Tab Size, Themes)"
+            className="inline-flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors"
+          >
+            <Settings className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            id="leave-room-btn"
+            data-testid="leave-room-btn"
+            onClick={() => setIsLeaveModalOpen(true)}
+            title="Leave or Terminate Room"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-medium transition-colors"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Leave</span>
+          </button>
         </div>
       </header>
 
@@ -767,6 +895,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
               }
             }}
             onOpenGitHubImport={() => setIsGitHubModalOpen(true)}
+            onOpenFilePreview={(file) => setFilePreviewData(file)}
           />
         </aside>
 
@@ -817,6 +946,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
                 key={workspaceState.activeFileId || 'empty'}
                 language="typescript"
                 participant={participant}
+                settings={editorSettings}
                 readOnly={participant.role === 'VIEWER'}
                 onCodeChange={(newCode) => {
                   if (workspaceState.activeFileId) {
@@ -826,8 +956,22 @@ export function RoomClient({ roomCode }: RoomClientProps) {
                     );
                   }
                 }}
+                onCursorMove={(cursor) => {
+                  if (wsRef.current?.readyState === WebSocket.OPEN) {
+                    wsRef.current.send(
+                      JSON.stringify({
+                        type: 'CURSOR_UPDATE',
+                        cursor,
+                      })
+                    );
+                  }
+                }}
                 onSessionReady={(session) => {
                   activeSessionRef.current = session;
+                  while (pendingDocUpdatesRef.current.length > 0) {
+                    const pending = pendingDocUpdatesRef.current.shift()!;
+                    session.applyEncodedUpdate(pending);
+                  }
                   session.onUpdate((base64Update, origin) => {
                     if (
                       origin === 'local' &&
@@ -835,7 +979,11 @@ export function RoomClient({ roomCode }: RoomClientProps) {
                       wsRef.current.readyState === WebSocket.OPEN
                     ) {
                       wsRef.current.send(
-                        JSON.stringify({ type: 'DOC_UPDATE', update: base64Update })
+                        JSON.stringify({
+                          type: 'DOC_UPDATE',
+                          fileId: workspaceState.activeFileId,
+                          update: base64Update,
+                        })
                       );
                     }
                   });
@@ -1043,6 +1191,66 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         roomCode={roomCode}
         isHost={participant?.role === 'HOST'}
       />
+
+      {/* Editor Settings Modal (CodeX Inspired) */}
+      <EditorSettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        settings={editorSettings}
+        onUpdateSettings={setEditorSettings}
+      />
+
+      {/* About & Keyboard Shortcuts Modal (CodeX Inspired) */}
+      <AboutModal
+        isOpen={isAboutModalOpen}
+        onClose={() => setIsAboutModalOpen(false)}
+      />
+
+      {/* Leave Room Modal (CodeX Inspired) */}
+      <LeaveRoomModal
+        isOpen={isLeaveModalOpen}
+        onClose={() => setIsLeaveModalOpen(false)}
+        roomCode={roomCode}
+        isHost={participant?.role === 'HOST'}
+      />
+
+      {/* File Diff & Preview Modal (code-editor Inspired) */}
+      {filePreviewData && (
+        <FilePreviewModal
+          isOpen={!!filePreviewData}
+          onClose={() => setFilePreviewData(null)}
+          fileName={filePreviewData.fileName}
+          fileContent={filePreviewData.content}
+          currentCode={
+            workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.content || ''
+          }
+          currentFileName={
+            workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.name ||
+            'active file'
+          }
+          onAppend={(content) => {
+            const activeFile = workspaceState.items.find(
+              (i) => i.id === workspaceState.activeFileId
+            );
+            if (activeFile) {
+              const merged =
+                (activeFile.content ? activeFile.content + '\n\n' : '') + content;
+              workspaceManagerRef.current.updateFileContent(activeFile.id, merged);
+            }
+          }}
+          onReplace={(content) => {
+            const activeFile = workspaceState.items.find(
+              (i) => i.id === workspaceState.activeFileId
+            );
+            if (activeFile) {
+              workspaceManagerRef.current.updateFileContent(activeFile.id, content);
+            }
+          }}
+          onSaveAsNewFile={(name, content) => {
+            workspaceManagerRef.current.createFile(name, false, null, content);
+          }}
+        />
+      )}
     </div>
   );
 }

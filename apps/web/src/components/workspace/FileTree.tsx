@@ -24,6 +24,7 @@ export interface FileTreeProps {
   onDeleteFile: (fileId: string) => void;
   onImportItems: (items: WorkspaceItem[]) => void;
   onOpenGitHubImport?: () => void;
+  onOpenFilePreview?: (file: { name: string; content: string }) => void;
 }
 
 export function FileTree({
@@ -34,6 +35,7 @@ export function FileTree({
   onDeleteFile,
   onImportItems,
   onOpenGitHubImport,
+  onOpenFilePreview,
 }: FileTreeProps) {
   const [openFolders, setOpenFolders] = useState<Record<string, boolean>>({
     'folder-src': true,
@@ -62,14 +64,24 @@ export function FileTree({
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      try {
-        const imported = await importZipToWorkspace(file);
-        if (imported.length > 0) {
-          onImportItems(imported);
+      if (file.name.endsWith('.zip')) {
+        try {
+          const imported = await importZipToWorkspace(file);
+          if (imported.length > 0) {
+            onImportItems(imported);
+          }
+        } catch (err) {
+          console.error('Failed to import zip:', err);
         }
-      } catch (err) {
-        console.error('Failed to import zip:', err);
+      } else if (onOpenFilePreview) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const content = event.target?.result as string;
+          onOpenFilePreview({ name: file.name, content: content || '' });
+        };
+        reader.readAsText(file);
       }
+      e.target.value = '';
     }
   };
 
@@ -179,13 +191,13 @@ export function FileTree({
             </button>
           )}
           <label
-            title="Import ZIP"
+            title="Upload file or ZIP (Preview & Diff)"
             className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <Upload className="w-3.5 h-3.5" />
             <input
               type="file"
-              accept=".zip"
+              accept=".zip,.ts,.tsx,.js,.jsx,.py,.cpp,.c,.rs,.go,.java,.json,.html,.css,.md,.txt"
               onChange={handleFileUpload}
               className="hidden"
             />

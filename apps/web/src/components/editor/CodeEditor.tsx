@@ -7,6 +7,7 @@ import {
   type CollaborativeSession,
   type RemoteCursor,
 } from './yjsExtension';
+import type { EditorSettings } from '../room/EditorSettingsModal';
 
 export interface CodeEditorProps {
   initialCode?: string;
@@ -15,6 +16,8 @@ export interface CodeEditorProps {
   participant: ParticipantIdentity;
   onCodeChange?: (newCode: string) => void;
   onSessionReady?: (session: CollaborativeSession) => void;
+  onCursorMove?: (cursor: RemoteCursor) => void;
+  settings?: EditorSettings;
 }
 
 export function CodeEditor({
@@ -24,16 +27,19 @@ export function CodeEditor({
   participant,
   onCodeChange,
   onSessionReady,
+  onCursorMove,
+  settings,
 }: CodeEditorProps) {
   const [session, setSession] = useState<CollaborativeSession | null>(null);
   const [code, setCode] = useState(initialCode);
   const [cursors, setCursors] = useState<RemoteCursor[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isLocalUpdateRef = useRef(false);
+  const initialCodeRef = useRef(initialCode);
 
   // Initialize collaborative Yjs CRDT session
   useEffect(() => {
-    const colabSession = createCollaborativeSession(initialCode, participant);
+    const colabSession = createCollaborativeSession(initialCodeRef.current, participant);
     setSession(colabSession);
 
     // Initial content
@@ -44,8 +50,18 @@ export function CodeEditor({
       if (origin !== 'local') {
         const updatedText = colabSession.ytext.toString();
         isLocalUpdateRef.current = true;
+        const textarea = textareaRef.current;
+        const selStart = textarea?.selectionStart;
+        const selEnd = textarea?.selectionEnd;
         setCode(updatedText);
         onCodeChange?.(updatedText);
+        if (textarea && selStart !== undefined && selEnd !== undefined) {
+          requestAnimationFrame(() => {
+            if (textareaRef.current) {
+              textareaRef.current.setSelectionRange(selStart, selEnd);
+            }
+          });
+        }
         setTimeout(() => {
           isLocalUpdateRef.current = false;
         }, 10);
@@ -64,18 +80,36 @@ export function CodeEditor({
       unbindCursors();
       colabSession.destroy();
     };
-  }, [participant.id, initialCode]);
+  }, [participant.id]);
 
-  // Handle local text edits
+  // Handle local text edits with differential Yjs CRDT operations
   const handleTextChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       if (readOnly || !session) return;
       const newText = e.target.value;
+      const oldText = session.ytext.toString();
 
       isLocalUpdateRef.current = true;
       session.doc.transact(() => {
-        session.ytext.delete(0, session.ytext.length);
-        session.ytext.insert(0, newText);
+        let start = 0;
+        while (start < oldText.length && start < newText.length && oldText[start] === newText[start]) {
+          start++;
+        }
+        let endOld = oldText.length;
+        let endNew = newText.length;
+        while (endOld > start && endNew > start && oldText[endOld - 1] === newText[endNew - 1]) {
+          endOld--;
+          endNew--;
+        }
+        const deleteCount = endOld - start;
+        const insertText = newText.slice(start, endNew);
+
+        if (deleteCount > 0) {
+          session.ytext.delete(start, deleteCount);
+        }
+        if (insertText.length > 0) {
+          session.ytext.insert(start, insertText);
+        }
       }, 'local');
 
       setCode(newText);
@@ -100,30 +134,39 @@ export function CodeEditor({
     const currentLineText = linesArr[linesArr.length - 1] ?? '';
     const column = currentLineText.length + 1;
 
-    session.updateLocalCursor(line, column);
-  }, [session]);
+    const cursor = session.updateLocalCursor(line, column);
+    onCursorMove?.(cursor);
+  }, [session, onCursorMove]);
 
   const lines = code.split('\n');
+  const showLineNumbers = settings ? settings.lineNumbers : true;
+  const fontSize = settings ? settings.fontSize : 14;
+  const wordWrap = settings ? settings.wordWrap : false;
+  const tabSize = settings ? settings.tabSize : 2;
+  const themeClass = settings?.theme === 'hc-black' ? 'bg-black text-white' : 'bg-slate-950 text-slate-200';
 
   return (
     <div
       id="code-editor-container"
       data-testid="code-editor"
       data-language={language}
-      className="relative flex-1 flex h-full w-full bg-slate-950 font-mono text-sm overflow-hidden select-text"
+      className={`relative flex-1 flex h-full w-full ${themeClass} font-mono overflow-hidden select-text`}
+      style={{ fontSize: `${fontSize}px` }}
     >
       {/* Line Numbers Gutter */}
-      <div
-        id="editor-gutter"
-        aria-hidden="true"
-        className="w-12 select-none border-r border-slate-800 bg-slate-950/80 py-4 pr-3 text-right text-xs text-slate-600 flex flex-col font-mono"
-      >
-        {lines.map((_, i) => (
-          <div key={i} className="h-6 leading-6">
-            {i + 1}
-          </div>
-        ))}
-      </div>
+      {showLineNumbers && (
+        <div
+          id="editor-gutter"
+          aria-hidden="true"
+          className="w-12 select-none border-r border-slate-800 bg-slate-950/80 py-4 pr-3 text-right text-xs text-slate-600 flex flex-col font-mono"
+        >
+          {lines.map((_, i) => (
+            <div key={i} className="h-6 leading-6">
+              {i + 1}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Editor Viewport & Remote Cursors Overlay */}
       <div className="relative flex-1 h-full overflow-auto">
@@ -140,7 +183,10 @@ export function CodeEditor({
           spellCheck={false}
           autoCapitalize="off"
           autoComplete="off"
-          className="absolute inset-0 w-full h-full p-4 resize-none bg-transparent text-slate-200 caret-brand-400 font-mono text-sm leading-6 outline-none border-0 overflow-auto z-10 selection:bg-brand-500/30"
+          style={{ tabSize }}
+          className={`absolute inset-0 w-full h-full p-4 resize-none bg-transparent ${themeClass} caret-brand-400 font-mono leading-6 outline-none border-0 overflow-auto z-10 selection:bg-brand-500/30 ${
+            wordWrap ? 'whitespace-pre-wrap' : 'whitespace-pre'
+          }`}
           placeholder={readOnly ? 'Viewing mode (read-only)...' : 'Type your code here...'}
         />
 
