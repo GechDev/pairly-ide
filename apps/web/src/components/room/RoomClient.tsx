@@ -23,12 +23,14 @@ import {
   Info,
   Search,
   Palette,
+  Users,
 } from 'lucide-react';
 import type {
   ParticipantIdentity,
   ExecutionOutputChunk,
   ExecutionStatus,
   AiProposal,
+  RoomRole,
 } from '@pairly/contracts';
 import { detectLanguageFromFilename } from '@pairly/execution';
 import { generateGuestIdentity } from '../../lib/guest';
@@ -68,6 +70,7 @@ import { FilePreviewModal } from '../workspace/FilePreviewModal';
 import { JoinRoomPromptModal } from './JoinRoomPromptModal';
 import { CommandPaletteModal } from './CommandPaletteModal';
 import { WhiteboardModal, type WhiteboardElement } from '../whiteboard';
+import { ParticipantsModal } from './ParticipantsModal';
 
 interface RoomClientProps {
   roomCode: string;
@@ -119,6 +122,9 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
   const [isWhiteboardOpen, setIsWhiteboardOpen] = useState(false);
   const [whiteboardElements, setWhiteboardElements] = useState<WhiteboardElement[]>([]);
+  const [isParticipantsModalOpen, setIsParticipantsModalOpen] = useState(false);
+  const [isRoomLocked, setIsRoomLocked] = useState(false);
+  const [mutedParticipantIds, setMutedParticipantIds] = useState<string[]>([]);
   const [filePreviewData, setFilePreviewData] = useState<{
     fileName: string;
     content: string;
@@ -371,9 +377,37 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           } else if (msg.type === 'WHITEBOARD_DRAW') {
             if (msg.element) {
               setWhiteboardElements((prev) => [...prev, msg.element]);
-            }
           } else if (msg.type === 'WHITEBOARD_CLEAR') {
             setWhiteboardElements([]);
+          } else if (msg.type === 'ROLE_CHANGED') {
+            setActiveParticipants((prev) =>
+              prev.map((p) => (p.id === msg.targetParticipantId ? { ...p, role: msg.newRole } : p))
+            );
+            if (participant && participant.id === msg.targetParticipantId) {
+              setParticipant((prev) => (prev ? { ...prev, role: msg.newRole } : null));
+            }
+          } else if (msg.type === 'ROOM_LOCK_UPDATED') {
+            setIsRoomLocked(Boolean(msg.isLocked));
+          } else if (msg.type === 'USER_MUTED') {
+            setMutedParticipantIds((prev) => {
+              if (msg.isMuted) {
+                return prev.includes(msg.targetParticipantId) ? prev : [...prev, msg.targetParticipantId];
+              } else {
+                return prev.filter((id) => id !== msg.targetParticipantId);
+              }
+            });
+            if (participant && participant.id === msg.targetParticipantId && msg.isMuted) {
+              if (liveKitRef.current?.isAudioEnabled) {
+                liveKitRef.current.toggleAudio();
+              }
+            }
+          } else if (msg.type === 'USER_KICKED') {
+            setActiveParticipants((prev) => prev.filter((p) => p.id !== msg.targetParticipantId));
+          } else if (msg.type === 'KICKED_FROM_ROOM') {
+            if (typeof window !== 'undefined') {
+              alert(msg.reason || 'You have been removed from this room by the host.');
+              window.location.href = '/';
+            }
           } else if (msg.type === 'PONG') {
             if (msg.clientTimestamp) {
               setPingLatency(Math.max(1, Date.now() - msg.clientTimestamp));
@@ -535,6 +569,65 @@ export function RoomClient({ roomCode }: RoomClientProps) {
     setWhiteboardElements([]);
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ type: 'WHITEBOARD_CLEAR' }));
+    }
+  };
+
+  const handleChangeRole = (targetParticipantId: string, newRole: RoomRole) => {
+    setActiveParticipants((prev) =>
+      prev.map((p) => (p.id === targetParticipantId ? { ...p, role: newRole } : p))
+    );
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(
+        JSON.stringify({
+          type: 'ROLE_CHANGE',
+          targetParticipantId,
+          newRole,
+        })
+      );
+    }
+  };
+
+  const handleKickParticipant = (targetParticipantId: string, reason?: string) => {
+    setActiveParticipants((prev) => prev.filter((p) => p.id !== targetParticipantId));
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(
+        JSON.stringify({
+          type: 'USER_KICK',
+          targetParticipantId,
+          reason,
+        })
+      );
+    }
+  };
+
+  const handleToggleMuteParticipant = (targetParticipantId: string, isMuted: boolean) => {
+    setMutedParticipantIds((prev) => {
+      if (isMuted) {
+        return prev.includes(targetParticipantId) ? prev : [...prev, targetParticipantId];
+      } else {
+        return prev.filter((id) => id !== targetParticipantId);
+      }
+    });
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(
+        JSON.stringify({
+          type: 'USER_MUTE',
+          targetParticipantId,
+          isMuted,
+        })
+      );
+    }
+  };
+
+  const handleToggleRoomLock = (isLocked: boolean) => {
+    setIsRoomLocked(isLocked);
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(
+        JSON.stringify({
+          type: 'ROOM_LOCK_TOGGLE',
+          isLocked,
+        })
+      );
     }
   };
 
@@ -730,6 +823,20 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           >
             <Palette className="w-3.5 h-3.5 text-emerald-400" />
             <span className="hidden sm:inline">Whiteboard</span>
+          </button>
+
+          <button
+            id="toggle-participants-btn"
+            data-testid="toggle-participants-btn"
+            onClick={() => setIsParticipantsModalOpen(true)}
+            title="Room Participants & Permissions"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700 transition-colors shadow-sm"
+          >
+            <Users className="w-3.5 h-3.5 text-indigo-400" />
+            <span className="hidden sm:inline">People</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-500/20 text-indigo-300 font-mono">
+              {activeParticipants.length}
+            </span>
           </button>
 
           <button
@@ -1402,6 +1509,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         }}
         onToggleNotepad={() => setIsNotepadOpen((prev) => !prev)}
         onToggleWhiteboard={() => setIsWhiteboardOpen((prev) => !prev)}
+        onOpenParticipants={() => setIsParticipantsModalOpen(true)}
         onToggleAi={() => setIsAiPanelOpen((prev) => !prev)}
         onToggleMedia={() => setIsMediaPanelOpen((prev) => !prev)}
         onOpenShare={() => setIsShareModalOpen(true)}
@@ -1420,6 +1528,22 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         elements={whiteboardElements}
         onAddElement={handleAddWhiteboardElement}
         onClearElements={handleClearWhiteboard}
+      />
+
+      {/* Room Participants & Moderation Modal */}
+      <ParticipantsModal
+        isOpen={isParticipantsModalOpen}
+        onClose={() => setIsParticipantsModalOpen(false)}
+        roomCode={roomCode}
+        currentParticipant={participant}
+        participants={activeParticipants}
+        participantPresenceMap={participantPresenceMap}
+        isRoomLocked={isRoomLocked}
+        mutedParticipantIds={mutedParticipantIds}
+        onChangeRole={handleChangeRole}
+        onKickParticipant={handleKickParticipant}
+        onToggleMuteParticipant={handleToggleMuteParticipant}
+        onToggleRoomLock={handleToggleRoomLock}
       />
     </div>
   );

@@ -22,6 +22,7 @@ import {
   Info,
   CornerDownLeft,
   Palette,
+  Users,
 } from 'lucide-react';
 import type { WorkspaceItem } from '../workspace/workspaceState';
 
@@ -48,6 +49,7 @@ export interface CommandPaletteModalProps {
   onToggleChat: () => void;
   onToggleNotepad: () => void;
   onToggleWhiteboard?: () => void;
+  onOpenParticipants?: () => void;
   onToggleAi: () => void;
   onToggleMedia: () => void;
   onOpenShare: () => void;
@@ -168,6 +170,19 @@ export function CommandPaletteModal({
             category: 'Collaboration' as const,
             icon: Palette,
             action: onToggleWhiteboard,
+          },
+        ]
+      : []),
+    ...(onOpenParticipants
+      ? [
+          {
+            id: 'cmd-participants',
+            label: 'Room Participants & Moderation',
+            description: 'View members, manage roles, mute audio, or remove participants',
+            category: 'Collaboration' as const,
+            shortcut: 'Shift+P',
+            icon: Users,
+            action: onOpenParticipants,
           },
         ]
       : []),

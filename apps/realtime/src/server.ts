@@ -256,6 +256,68 @@ export function buildServer(options: ServerOptions = {}): FastifyInstance {
               return;
             }
 
+            // Handle Participant Kick / Removal (FR-ROOM-07)
+            if (data.type === 'USER_KICK') {
+              const auth = authorizeAction('KICK_PARTICIPANT', {
+                role: currentParticipant.role,
+              });
+              if (!auth.allowed) {
+                socket.send(
+                  JSON.stringify({
+                    type: 'ERROR',
+                    code: auth.code || 'UNAUTHORIZED_ACTION',
+                    message: auth.message,
+                  })
+                );
+                return;
+              }
+
+              const { targetParticipantId, reason } = data;
+              const targetSession = roomManager.getParticipantSession(roomCode, targetParticipantId);
+              if (targetSession) {
+                targetSession.socket.send(
+                  JSON.stringify({
+                    type: 'KICKED_FROM_ROOM',
+                    reason: reason || 'Removed by room host',
+                  })
+                );
+                targetSession.socket.close(4003, 'Kicked by host');
+              }
+              roomManager.leaveRoom(roomCode, targetParticipantId);
+              roomManager.broadcast(roomCode, {
+                type: 'USER_KICKED',
+                targetParticipantId,
+                reason: reason || 'Removed by room host',
+                kickedBy: currentParticipant.id,
+              });
+              return;
+            }
+
+            // Handle Participant Audio Mute (Host Moderation)
+            if (data.type === 'USER_MUTE') {
+              const auth = authorizeAction('MUTE_PARTICIPANT', {
+                role: currentParticipant.role,
+              });
+              if (!auth.allowed) {
+                socket.send(
+                  JSON.stringify({
+                    type: 'ERROR',
+                    code: auth.code || 'UNAUTHORIZED_ACTION',
+                    message: auth.message,
+                  })
+                );
+                return;
+              }
+
+              roomManager.broadcast(roomCode, {
+                type: 'USER_MUTED',
+                targetParticipantId: data.targetParticipantId,
+                isMuted: Boolean(data.isMuted),
+                mutedBy: currentParticipant.id,
+              });
+              return;
+            }
+
             // Enforce RBAC on Document Updates (FR-ROOM-05..07, AT-03)
             if (
               data.type === 'DOCUMENT_UPDATE' ||
