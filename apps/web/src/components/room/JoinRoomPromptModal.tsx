@@ -42,7 +42,7 @@ export function JoinRoomPromptModal({
         aria-labelledby="join-prompt-title"
       >
         <div className="flex flex-col items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+          <div className="w-12 h-12 rounded-2xl bg-[#FF0000]/10 border border-[#FF0000]/20 flex items-center justify-center text-[#FF0000]">
             <Code2 className="w-6 h-6 stroke-[2.5]" />
           </div>
           <div>
@@ -54,7 +54,7 @@ export function JoinRoomPromptModal({
             </h2>
             <div className="flex items-center justify-center gap-1.5 mt-1.5 text-xs text-slate-400">
               <span>Room Code:</span>
-              <span className="font-mono font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+              <span className="font-mono font-semibold text-[#FF0000] bg-[#FF0000]/10 px-2 py-0.5 rounded border border-[#FF0000]/20">
                 {roomCode}
               </span>
             </div>
@@ -76,7 +76,7 @@ export function JoinRoomPromptModal({
                 if (error) setError(null);
               }}
               placeholder="Your display name (e.g. Alice)"
-              className="w-full pl-9 pr-4 py-2.5 bg-slate-950 border border-slate-700/80 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all font-medium"
+              className="w-full pl-9 pr-4 py-2.5 bg-slate-950 border border-slate-700/80 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-[#FF0000] focus:ring-1 focus:ring-[#FF0000] transition-all font-medium"
             />
           </div>
 
@@ -87,7 +87,7 @@ export function JoinRoomPromptModal({
           <button
             type="submit"
             data-testid="submit-join-room-btn"
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-emerald-400 hover:bg-emerald-300 active:bg-emerald-500 text-slate-950 text-sm font-bold rounded-xl shadow-md shadow-emerald-400/20 active:scale-[0.99] transition-all"
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#FF0000] hover:bg-[#e60000] text-white text-sm font-bold rounded-xl shadow-md shadow-red-500/20 active:scale-[0.99] transition-all"
           >
             <span>Enter Room</span>
             <ArrowRight className="w-4 h-4" />

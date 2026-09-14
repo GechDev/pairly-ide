@@ -39,7 +39,7 @@ const ROLE_CONFIG: Record<
   { label: string; colorClass: string; icon: React.ComponentType<{ className?: string }> }
 > = {
   HOST: { label: 'Host', colorClass: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40', icon: ShieldCheck },
-  EDITOR: { label: 'Editor', colorClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40', icon: UserCheck },
+  EDITOR: { label: 'Editor', colorClass: 'bg-[#FF0000]/20 text-red-300 border-[#FF0000]/40', icon: UserCheck },
   COMMENTER: { label: 'Commenter', colorClass: 'bg-amber-500/20 text-amber-300 border-amber-500/40', icon: MessageSquare },
   VIEWER: { label: 'Viewer', colorClass: 'bg-slate-500/20 text-slate-300 border-slate-500/40', icon: Eye },
 };

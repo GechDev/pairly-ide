@@ -82,7 +82,7 @@ export function StatusBar({
   const latencyColor = !isConnected
     ? 'text-rose-400'
     : currentLatency < 80
-    ? 'text-emerald-400'
+    ? 'text-[#FF0000]'
     : currentLatency < 200
     ? 'text-amber-400'
     : 'text-rose-400';

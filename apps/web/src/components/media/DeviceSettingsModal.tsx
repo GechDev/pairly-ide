@@ -142,7 +142,7 @@ export function DeviceSettingsModal({
           {/* Microphone Selection */}
           <div className="flex flex-col gap-1.5">
             <label className="font-medium text-slate-300 flex items-center gap-1.5">
-              <Mic className="w-3.5 h-3.5 text-emerald-400" />
+              <Mic className="w-3.5 h-3.5 text-[#FF0000]" />
               Microphone
             </label>
             <select
@@ -151,7 +151,7 @@ export function DeviceSettingsModal({
                 setCurrentAudio(e.target.value);
                 onSelectAudioDevice?.(e.target.value);
               }}
-              className="bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#FF0000]"
             >
               {availableDevices.audioInputs.length === 0 ? (
                 <option value="">Default Microphone</option>
@@ -169,7 +169,7 @@ export function DeviceSettingsModal({
               <span className="text-[10px] text-slate-400">Input Level:</span>
               <div className="flex-1 h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
                 <div
-                  className="h-full bg-emerald-500 transition-all duration-75 rounded-full"
+                  className="h-full bg-[#FF0000] transition-all duration-75 rounded-full"
                   style={{ width: `${Math.min(100, micLevel)}%` }}
                 />
               </div>

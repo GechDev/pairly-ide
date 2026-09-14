@@ -170,7 +170,7 @@ export function WebPreview({ items }: WebPreviewProps) {
               className="p-0.5 rounded text-slate-500 hover:text-slate-300 transition-colors ml-1"
             >
               {copied ? (
-                <Check className="w-3 h-3 text-emerald-400" />
+                <Check className="w-3 h-3 text-[#FF0000]" />
               ) : (
                 <Copy className="w-3 h-3" />
               )}
@@ -243,7 +243,7 @@ export function WebPreview({ items }: WebPreviewProps) {
             title={enableTailwind ? 'Tailwind CDN Enabled' : 'Enable Tailwind CSS via CDN'}
             className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium border transition-colors ${
               enableTailwind
-                ? 'bg-teal-500/20 text-teal-300 border-teal-500/40'
+                ? 'bg-[#FF0000]/20 text-red-300 border-[#FF0000]/40'
                 : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-300'
             }`}
           >

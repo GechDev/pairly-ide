@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   Code2,
@@ -24,6 +25,7 @@ import {
   Search,
   Palette,
   Users,
+  ChevronDown,
 } from 'lucide-react';
 import type {
   ParticipantIdentity,
@@ -73,6 +75,9 @@ import { CommandPaletteModal } from './CommandPaletteModal';
 import { WhiteboardModal, type WhiteboardElement } from '../whiteboard';
 import { ParticipantsModal } from './ParticipantsModal';
 import { NetworkDiagnosticsModal } from './NetworkDiagnosticsModal';
+import { RecordingsModal, useSessionRecording } from '../recordings';
+import { RunArgsModal } from './RunArgsModal';
+import { RoomLobby } from './RoomLobby';
 
 interface RoomClientProps {
   roomCode: string;
@@ -81,6 +86,7 @@ interface RoomClientProps {
 export function RoomClient({ roomCode }: RoomClientProps) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
+  const [view, setView] = useState<'lobby' | 'editor'>('lobby');
   const [participant, setParticipant] = useState<ParticipantIdentity | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<
     'connecting' | 'connected' | 'disconnected'
@@ -138,6 +144,14 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [cursorPosition, setCursorPosition] = useState<{ line: number; column: number }>({
     line: 1,
     column: 1,
+  });
+  const [isRecordingsModalOpen, setIsRecordingsModalOpen] = useState(false);
+  const [executionArgs, setExecutionArgs] = useState<string[]>([]);
+  const [executionStdin, setExecutionStdin] = useState<string>('');
+  const [isRunArgsModalOpen, setIsRunArgsModalOpen] = useState(false);
+  const sessionRecording = useSessionRecording({
+    roomCode,
+    currentUsername: participant?.displayName || participant?.name || 'Guest User',
   });
   const [isDeviceSettingsOpen, setIsDeviceSettingsOpen] = useState(false);
   const [isJoinPromptOpen, setIsJoinPromptOpen] = useState(false);
@@ -467,20 +481,30 @@ export function RoomClient({ roomCode }: RoomClientProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleRunCode = async () => {
+  const handleRunCode = async (overrideArgs?: string[], overrideStdin?: string) => {
     const activeItem = workspaceState.items.find((i) => i.id === workspaceState.activeFileId);
     const filename = activeItem?.name || 'main.js';
     const content = activeItem?.content || '// empty';
     const language = detectLanguageFromFilename(filename);
 
-    const runParams = {
+    const activeArgs = overrideArgs !== undefined ? overrideArgs : executionArgs;
+    const activeStdin = overrideStdin !== undefined ? overrideStdin : executionStdin;
+
+    const runParams: any = {
       language,
       files: [{ name: filename, content, encoding: 'utf-8' as const }],
       limits: { timeoutMs: 10000, memoryLimitMb: 256, networkEnabled: false as const },
     };
+    if (activeArgs && activeArgs.length > 0) {
+      runParams.args = activeArgs;
+    }
+    if (activeStdin && activeStdin.trim().length > 0) {
+      runParams.stdin = activeStdin;
+    }
 
     setTerminalStatus('RUNNING');
     setIsTerminalExpanded(true);
+    sessionRecording.addEvent('terminal', `Run executed for ${filename}`);
 
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ type: 'RUN_START', params: runParams }));
@@ -536,6 +560,9 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const handleSendChatMessage = (content: string) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ type: 'CHAT_SEND', content }));
+      sessionRecording.addEvent('chat', content, {
+        senderName: participant?.displayName || participant?.name,
+      });
     } else if (participant) {
       const localMsg: ChatMessageItem = {
         id: `local_${Date.now()}`,
@@ -699,28 +726,82 @@ export function RoomClient({ roomCode }: RoomClientProps) {
     }
   };
 
+  // Show lobby landing experience first; editor opens only when user clicks "Open Editor"
+  if (participant && view === 'lobby') {
+    return (
+      <>
+        <RoomLobby
+          roomCode={roomCode}
+          participant={participant}
+          activeParticipants={activeParticipants}
+          connectionStatus={connectionStatus}
+          pingLatency={pingLatency}
+          onEnterEditor={() => setView('editor')}
+          onShare={() => setIsShareModalOpen(true)}
+        />
+        {/* Modals still accessible from lobby */}
+        <JoinRoomPromptModal
+          isOpen={isJoinPromptOpen}
+          roomCode={roomCode}
+          onJoin={(chosenName) => {
+            sessionStorage.setItem('pairly_username', chosenName);
+            const updated = generateGuestIdentity('EDITOR', chosenName);
+            sessionStorage.setItem(`pairly_guest_${roomCode}`, JSON.stringify(updated));
+            setParticipant(updated);
+            setActiveParticipants([updated]);
+            setIsJoinPromptOpen(false);
+          }}
+        />
+        <ShareRoomModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          roomCode={roomCode}
+          isHost={participant?.role === 'HOST'}
+        />
+      </>
+    );
+  }
+
   return (
     <div
       id="room-workspace-root"
       data-testid="room-ide"
-      className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 overflow-hidden font-sans fixed inset-0 select-none"
+      className="flex flex-col h-screen w-screen overflow-hidden font-sans fixed inset-0 select-none text-[var(--fg-primary)]"
+      style={{ backgroundColor: 'var(--canvas)' }}
     >
-      {/* Room Toolbar Header */}
-      <header className="h-12 border-b border-slate-800 bg-slate-900/90 px-4 flex items-center justify-between select-none">
-        <div className="flex items-center gap-3">
+      {/* ── Refined Editor Header ── */}
+      <header
+        className="h-11 px-4 flex items-center justify-between select-none border-b"
+        style={{
+          backgroundColor: 'rgba(9, 10, 13, 0.97)',
+          borderColor: 'rgba(255,255,255,0.07)',
+        }}
+      >
+        {/* Left: Identity — logo · room code */}
+        <div className="flex items-center gap-3 shrink-0">
           <Link
             href="/"
-            className="flex items-center gap-2 font-bold text-sm tracking-tight text-brand-400 hover:text-brand-300 transition-colors"
+            onClick={() => setView('lobby')}
+            className="flex items-center gap-2 group transition-opacity hover:opacity-80"
+            title="Back to room overview"
           >
-            <Code2 className="w-5 h-5" />
-            <span className="hidden sm:inline">Pairly</span>
+            <div
+              className="w-5 h-5 flex items-center justify-center border"
+              style={{ backgroundColor: '#111114', borderColor: 'rgba(255,255,255,0.08)' }}
+            >
+              <Image src="/logo.png" alt="Pairly" width={13} height={13} className="object-contain" />
+            </div>
+            <span className="hidden sm:inline font-bold text-[12px] tracking-[-0.02em] text-[#f0ede8]">Pairly</span>
           </Link>
-          <span className="text-slate-600">/</span>
-          <div className="flex items-center gap-2">
+
+          <span className="text-white/10 text-xs">/</span>
+
+          <div className="flex items-center gap-1.5">
             <span
               id="room-code-badge"
               data-testid="room-code"
-              className="px-2 py-0.5 rounded text-xs font-mono font-medium bg-slate-800 text-slate-200 border border-slate-700"
+              className="font-mono text-[11px] font-semibold tracking-widest uppercase"
+              style={{ color: '#a09a92' }}
             >
               {roomCode}
             </span>
@@ -729,247 +810,106 @@ export function RoomClient({ roomCode }: RoomClientProps) {
               id="copy-room-link-btn"
               onClick={copyRoomLink}
               title="Copy invite link"
-              className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+              className="p-0.5 text-[#5c5651] hover:text-[#a09a92] transition-colors"
             >
-              {copied ? (
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
-              ) : (
-                <Copy className="w-3.5 h-3.5" />
-              )}
+              {copied ? <Check className="w-3 h-3 text-[#FF0000]" /> : <Copy className="w-3 h-3" />}
             </button>
           </div>
         </div>
 
-        {/* Center: Play / Run Controls & Checkpoint Snapshots */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            id="run-code-btn"
-            data-testid="run-code-btn"
-            onClick={handleRunCode}
-            disabled={terminalStatus === 'RUNNING' || participant?.role === 'VIEWER'}
-            title={participant?.role === 'VIEWER' ? 'Viewers cannot run code' : 'Execute code in sandbox'}
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-medium transition-colors shadow-sm"
+        {/* Center: Primary run action */}
+        <div className="flex items-center gap-1.5">
+          {/* Run split button */}
+          <div
+            className="inline-flex items-center overflow-hidden"
+            style={{ backgroundColor: '#FF0000' }}
           >
-            <Play className="w-3.5 h-3.5 fill-current" />
-            <span>Run</span>
-          </button>
+            <button
+              type="button"
+              id="run-code-btn"
+              data-testid="run-code-btn"
+              onClick={() => handleRunCode()}
+              disabled={terminalStatus === 'RUNNING' || participant?.role === 'VIEWER'}
+              title={participant?.role === 'VIEWER' ? 'Viewers cannot run code' : 'Run (Ctrl+Enter)'}
+              className="inline-flex items-center gap-1.5 px-3 py-[5px] hover:opacity-90 disabled:opacity-40 text-white text-[11px] font-bold transition-opacity"
+            >
+              <Play className="w-3 h-3 fill-current" />
+              <span>Run</span>
+            </button>
+            <button
+              type="button"
+              id="run-args-btn"
+              data-testid="run-args-btn"
+              onClick={() => setIsRunArgsModalOpen(true)}
+              title="Configure CLI args & stdin"
+              className="relative px-1.5 py-[5px] text-white hover:bg-black/15 border-l border-white/20 transition-colors"
+            >
+              <ChevronDown className="w-3 h-3" />
+              {(executionArgs.length > 0 || executionStdin.trim().length > 0) && (
+                <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-amber-400" />
+              )}
+            </button>
+          </div>
 
+          {/* Separator */}
+          <div className="w-px h-4 bg-white/[0.08] mx-1" />
+
+          {/* Panel toggles — icon-only with active state */}
+          {([
+            { id: 'toggle-preview-btn', icon: Globe, label: 'Preview (Ctrl+P)', active: isPreviewOpen, onClick: () => setIsPreviewOpen(p => !p) },
+            { id: 'toggle-chat-btn', icon: MessageSquare, label: 'Chat', active: isChatOpen, badge: (!isChatOpen && unreadCount > 0) ? unreadCount : 0, onClick: () => { setIsChatOpen(p => !p); setUnreadCount(0); } },
+            { id: 'toggle-notepad-btn', icon: FileText, label: 'Notes', active: isNotepadOpen, onClick: () => setIsNotepadOpen(p => !p) },
+            { id: 'toggle-whiteboard-btn', icon: Palette, label: 'Whiteboard', active: isWhiteboardOpen, onClick: () => setIsWhiteboardOpen(p => !p) },
+            { id: 'toggle-ai-btn', icon: Sparkles, label: 'AI Agent', active: isAiPanelOpen, onClick: () => setIsAiPanelOpen(p => !p) },
+            { id: 'toggle-media-btn', icon: Video, label: 'Call', active: isMediaPanelOpen, dot: liveKit.isConnected, onClick: () => setIsMediaPanelOpen(p => !p) },
+          ] as Array<{id:string;icon:React.ElementType;label:string;active:boolean;badge?:number;dot?:boolean;onClick:()=>void}>).map(({ id, icon: Icon, label, active, badge, dot, onClick }) => (
+            <button
+              key={id}
+              type="button"
+              id={id}
+              data-testid={id}
+              onClick={onClick}
+              title={label}
+              className="relative p-1.5 transition-colors"
+              style={{
+                color: active ? '#FF0000' : '#5c5651',
+                backgroundColor: active ? 'rgba(255,0,0,0.08)' : 'transparent',
+              }}
+              onMouseEnter={(e) => { if (!active) e.currentTarget.style.color = '#a09a92'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = active ? '#FF0000' : '#5c5651'; }}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              {badge ? (
+                <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 flex items-center justify-center rounded-full text-[8px] bg-[#FF0000] text-white font-bold">
+                  {badge}
+                </span>
+              ) : dot ? (
+                <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-[#FF0000]" />
+              ) : null}
+            </button>
+          ))}
+
+          {/* Separator */}
+          <div className="w-px h-4 bg-white/[0.08] mx-1" />
+
+          {/* Checkpoint */}
           <button
             type="button"
             id="checkpoint-modal-btn"
             data-testid="checkpoint-btn"
             onClick={() => setIsCheckpointModalOpen(true)}
-            title="Manage Workspace Checkpoints"
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition-colors shadow-sm"
+            title="Checkpoints (Ctrl+S)"
+            className="p-1.5 text-[#5c5651] hover:text-[#a09a92] transition-colors"
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#a09a92')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = '#5c5651')}
           >
-            <History className="w-3.5 h-3.5 text-brand-400" />
-            <span className="hidden sm:inline">Checkpoints</span>
-          </button>
-
-          <button
-            type="button"
-            id="toggle-preview-btn"
-            data-testid="toggle-preview-btn"
-            onClick={() => setIsPreviewOpen((prev) => !prev)}
-            title="Toggle Live Web Preview"
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border transition-colors shadow-sm ${
-              isPreviewOpen
-                ? 'bg-brand-600 text-white border-brand-500'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
-            }`}
-          >
-            <Globe className="w-3.5 h-3.5 text-brand-300" />
-            <span className="hidden sm:inline">Preview</span>
-          </button>
-
-          <button
-            type="button"
-            id="toggle-chat-btn"
-            data-testid="toggle-chat-btn"
-            onClick={() => {
-              setIsChatOpen((prev) => !prev);
-              setUnreadCount(0);
-            }}
-            title="Toggle Room Chat"
-            className={`relative inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border transition-colors shadow-sm ${
-              isChatOpen
-                ? 'bg-brand-600 text-white border-brand-500'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
-            }`}
-          >
-            <MessageSquare className="w-3.5 h-3.5 text-brand-300" />
-            <span className="hidden sm:inline">Chat</span>
-            {unreadCount > 0 && !isChatOpen && (
-              <span className="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full text-[9px] bg-brand-500 text-white font-bold">
-                {unreadCount}
-              </span>
-            )}
-          </button>
-
-          <button
-            type="button"
-            id="toggle-notepad-btn"
-            data-testid="toggle-notepad-btn"
-            onClick={() => setIsNotepadOpen((prev) => !prev)}
-            title="Toggle Collaborative Markdown Notes (Isolated from Workspace Code)"
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border transition-colors shadow-sm ${
-              isNotepadOpen
-                ? 'bg-amber-600/30 text-amber-300 border-amber-500/50'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
-            }`}
-          >
-            <FileText className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden sm:inline">Notes</span>
-          </button>
-
-          <button
-            type="button"
-            id="toggle-whiteboard-btn"
-            data-testid="toggle-whiteboard-btn"
-            onClick={() => setIsWhiteboardOpen((prev) => !prev)}
-            title="Toggle Collaborative Architecture Whiteboard"
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border transition-colors shadow-sm ${
-              isWhiteboardOpen
-                ? 'bg-emerald-600/30 text-emerald-300 border-emerald-500/50'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
-            }`}
-          >
-            <Palette className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden sm:inline">Whiteboard</span>
-          </button>
-
-          <button
-            type="button"
-            id="toggle-participants-btn"
-            data-testid="toggle-participants-btn"
-            onClick={() => setIsParticipantsModalOpen(true)}
-            title="Room Participants & Permissions"
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700 transition-colors shadow-sm"
-          >
-            <Users className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="hidden sm:inline">People</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-500/20 text-indigo-300 font-mono">
-              {activeParticipants.length}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            id="toggle-ai-btn"
-            data-testid="toggle-ai-btn"
-            onClick={() => setIsAiPanelOpen((prev) => !prev)}
-            title="Toggle Pairly Agent AI Assistant (FR-AI-01)"
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border transition-colors shadow-sm ${
-              isAiPanelOpen
-                ? 'bg-purple-600/30 text-purple-300 border-purple-500/50'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-            <span className="hidden sm:inline">AI Agent</span>
-          </button>
-
-          <button
-            type="button"
-            id="toggle-media-btn"
-            data-testid="toggle-media-btn"
-            onClick={() => setIsMediaPanelOpen((prev) => !prev)}
-            title="Toggle WebRTC Audio/Video Call (FR-COMM-03..07)"
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border transition-colors shadow-sm ${
-              isMediaPanelOpen
-                ? 'bg-indigo-600/30 text-indigo-300 border-indigo-500/50'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
-            }`}
-          >
-            <Video className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="hidden sm:inline">Call</span>
-            {liveKit.isConnected && (
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse ml-0.5" />
-            )}
+            <History className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        {/* Right: Presence and Connection Status */}
-        <div className="flex items-center gap-3">
-          {participant && (
-            <button
-              type="button"
-              id="current-user-badge"
-              data-testid="current-user-badge"
-              onClick={() => {
-                const newName = window.prompt(
-                  'Enter your new display name:',
-                  participant.displayName
-                );
-                if (
-                  !newName ||
-                  !newName.trim() ||
-                  newName.trim() === participant.displayName
-                )
-                  return;
-                const cleanName = newName.trim();
-                const updated: ParticipantIdentity = {
-                  ...participant,
-                  displayName: cleanName,
-                };
-                setParticipant(updated);
-                sessionStorage.setItem('pairly_username', cleanName);
-                sessionStorage.setItem(
-                  `pairly_guest_${roomCode}`,
-                  JSON.stringify(updated)
-                );
-                setActiveParticipants((prev) =>
-                  prev.map((p) => (p.id === updated.id ? updated : p))
-                );
-                if (
-                  wsRef.current &&
-                  wsRef.current.readyState === WebSocket.OPEN
-                ) {
-                  wsRef.current.send(
-                    JSON.stringify({
-                      type: 'PRESENCE_UPDATE',
-                      participantId: updated.id,
-                      displayName: updated.displayName,
-                      fileId: workspaceState.activeFileId,
-                    })
-                  );
-                }
-              }}
-              title="Click to change your display name"
-              className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded text-xs bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 transition-colors cursor-pointer"
-            >
-              <span
-                className="w-2 h-2 rounded-full shrink-0"
-                style={{ backgroundColor: participant.color }}
-              />
-              <span className="font-medium text-slate-200">
-                {participant.displayName}
-              </span>
-              <span className="text-[10px] text-slate-400">
-                ({participant.role})
-              </span>
-            </button>
-          )}
-
-          <div className="flex items-center gap-1.5 text-xs text-slate-400">
-            {connectionStatus === 'connected' ? (
-              <Wifi className="w-3.5 h-3.5 text-emerald-400" />
-            ) : (
-              <WifiOff className="w-3.5 h-3.5 text-rose-400" />
-            )}
-            <span className="hidden md:inline capitalize">{connectionStatus}</span>
-            {pingLatency !== null && connectionStatus === 'connected' && (
-              <span
-                data-testid="ping-latency-badge"
-                title="Round-trip network latency to coordinator"
-                className="hidden lg:inline text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-emerald-400 border border-slate-700/50"
-              >
-                {pingLatency}ms
-              </span>
-            )}
-          </div>
-
+        {/* Right: Presence · status · utility */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Participant presence */}
           <PresenceBar
             currentParticipant={participant}
             participants={activeParticipants.map((p) => ({
@@ -983,86 +923,86 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             onUnfollow={follow.stopFollowing}
             onToggleSpotlight={(targetId) => {
               if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-                wsRef.current.send(
-                  JSON.stringify({
-                    type: 'SPOTLIGHT_TOGGLE',
-                    targetParticipantId: targetId,
-                  })
-                );
+                wsRef.current.send(JSON.stringify({ type: 'SPOTLIGHT_TOGGLE', targetParticipantId: targetId }));
               }
             }}
           />
 
-          <button
-            type="button"
-            id="report-abuse-btn"
-            data-testid="report-abuse-btn"
-            onClick={() => setIsReportModalOpen(true)}
-            title="Report Abuse or Security Incident (FR-ADMIN-01)"
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-rose-950/40 hover:text-rose-300 text-slate-400 text-xs font-medium border border-slate-700/60 transition-colors"
-          >
-            <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
-            <span className="hidden sm:inline">Report</span>
-          </button>
+          {/* Connection status */}
+          <div className="flex items-center gap-1 text-[#5c5651]">
+            {connectionStatus === 'connected' ? (
+              <Wifi className="w-3 h-3 text-[#FF0000]" />
+            ) : (
+              <WifiOff className="w-3 h-3" />
+            )}
+            {pingLatency !== null && connectionStatus === 'connected' && (
+              <span
+                data-testid="ping-latency-badge"
+                className="hidden lg:inline text-[10px] font-mono text-[#5c5651]"
+              >
+                {pingLatency}ms
+              </span>
+            )}
+          </div>
 
-          <button
-            type="button"
-            id="share-room-btn"
-            data-testid="share-room-btn"
-            onClick={() => setIsShareModalOpen(true)}
-            title="Share Room and View QR Code"
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition-colors"
-          >
-            <Share2 className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Share</span>
-          </button>
+          {/* Separator */}
+          <div className="w-px h-4 bg-white/[0.08]" />
 
-          <button
-            type="button"
-            id="command-palette-btn"
-            data-testid="command-palette-btn"
-            onClick={() => setIsCommandPaletteOpen(true)}
-            title="Command Palette (Ctrl+K / Cmd+K)"
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700/60 transition-colors"
-          >
-            <Search className="w-3.5 h-3.5 text-slate-400" />
-            <span className="hidden lg:inline text-slate-400">Commands</span>
-            <kbd className="hidden lg:inline-flex px-1 py-0.2 rounded text-[9px] font-mono bg-slate-900 border border-slate-700 text-slate-400">
-              ⌘K
-            </kbd>
-          </button>
+          {/* Recording indicator / button */}
+          {sessionRecording.isRecording ? (
+            <button
+              type="button"
+              id="recording-indicator-btn"
+              data-testid="recording-indicator-btn"
+              onClick={() => setIsRecordingsModalOpen(true)}
+              title="Recording in progress"
+              className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-mono font-bold text-rose-400 animate-pulse"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+              {Math.floor(sessionRecording.recordingSeconds / 60).toString().padStart(2, '0')}:{(sessionRecording.recordingSeconds % 60).toString().padStart(2, '0')}
+            </button>
+          ) : (
+            <button
+              type="button"
+              id="open-recordings-btn"
+              data-testid="open-recordings-btn"
+              onClick={() => setIsRecordingsModalOpen(true)}
+              title="Recordings"
+              className="p-1.5 text-[#5c5651] hover:text-[#a09a92] transition-colors"
+            >
+              <Video className="w-3.5 h-3.5" />
+            </button>
+          )}
 
-          <button
-            type="button"
-            id="about-btn"
-            data-testid="about-btn"
-            onClick={() => setIsAboutModalOpen(true)}
-            title="About Pairly & Keyboard Shortcuts"
-            className="inline-flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors"
-          >
-            <Info className="w-3.5 h-3.5" />
-          </button>
+          {/* Separator */}
+          <div className="w-px h-4 bg-white/[0.08]" />
 
-          <button
-            type="button"
-            id="editor-settings-btn"
-            data-testid="editor-settings-btn"
-            onClick={() => setIsSettingsModalOpen(true)}
-            title="Editor Settings (Font, Tab Size, Themes)"
-            className="inline-flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors"
-          >
-            <Settings className="w-3.5 h-3.5" />
+          {/* Utility buttons — icon only */}
+          <button type="button" id="share-room-btn" data-testid="share-room-btn" onClick={() => setIsShareModalOpen(true)} title="Share & Invite" className="p-1.5 text-[#5c5651] hover:text-[#a09a92] transition-colors"><Share2 className="w-3.5 h-3.5" /></button>
+          <button type="button" id="toggle-participants-btn" data-testid="toggle-participants-btn" onClick={() => setIsParticipantsModalOpen(true)} title={`Participants (${activeParticipants.length})`} className="relative p-1.5 text-[#5c5651] hover:text-[#a09a92] transition-colors">
+            <Users className="w-3.5 h-3.5" />
+            {activeParticipants.length > 1 && (
+              <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 flex items-center justify-center rounded-full text-[8px] font-mono bg-white/10 text-[#a09a92]">{activeParticipants.length}</span>
+            )}
           </button>
+          <button type="button" id="command-palette-btn" data-testid="command-palette-btn" onClick={() => setIsCommandPaletteOpen(true)} title="Command Palette (Ctrl+K)" className="p-1.5 text-[#5c5651] hover:text-[#a09a92] transition-colors"><Search className="w-3.5 h-3.5" /></button>
+          <button type="button" id="editor-settings-btn" data-testid="editor-settings-btn" onClick={() => setIsSettingsModalOpen(true)} title="Editor Settings" className="p-1.5 text-[#5c5651] hover:text-[#a09a92] transition-colors"><Settings className="w-3.5 h-3.5" /></button>
+          <button type="button" id="report-abuse-btn" data-testid="report-abuse-btn" onClick={() => setIsReportModalOpen(true)} title="Report" className="p-1.5 text-[#5c5651] hover:text-rose-400 transition-colors"><ShieldAlert className="w-3.5 h-3.5" /></button>
+          <button type="button" id="about-btn" data-testid="about-btn" onClick={() => setIsAboutModalOpen(true)} title="About & Shortcuts" className="p-1.5 text-[#5c5651] hover:text-[#a09a92] transition-colors"><Info className="w-3.5 h-3.5" /></button>
 
+          {/* Separator */}
+          <div className="w-px h-4 bg-white/[0.08]" />
+
+          {/* Leave */}
           <button
             type="button"
             id="leave-room-btn"
             data-testid="leave-room-btn"
             onClick={() => setIsLeaveModalOpen(true)}
-            title="Leave or Terminate Room"
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-medium transition-colors"
+            title="Leave Room"
+            className="inline-flex items-center gap-1 px-2.5 py-[5px] text-rose-400/70 hover:text-rose-300 hover:bg-rose-500/10 text-[11px] font-medium border border-rose-500/20 hover:border-rose-500/40 transition-all"
           >
-            <LogOut className="w-3.5 h-3.5" />
+            <LogOut className="w-3 h-3" />
             <span className="hidden sm:inline">Leave</span>
           </button>
         </div>
@@ -1158,6 +1098,12 @@ export function RoomClient({ roomCode }: RoomClientProps) {
                       workspaceState.activeFileId,
                       newCode
                     );
+                    const file = workspaceState.items.find(
+                      (i) => i.id === workspaceState.activeFileId
+                    );
+                    sessionRecording.addEvent('code', newCode, {
+                      fileName: file?.name || 'main.ts',
+                    });
                   }
                 }}
                 onCursorMove={(cursor) => {
@@ -1447,6 +1393,34 @@ export function RoomClient({ roomCode }: RoomClientProps) {
       />
 
       {/* About & Keyboard Shortcuts Modal (CodeX Inspired) */}
+      {/* Session Recordings & Interactive Event Timeline Replay Studio (FR-HIST-03..07) */}
+      <RecordingsModal
+        isOpen={isRecordingsModalOpen}
+        onClose={() => setIsRecordingsModalOpen(false)}
+        roomCode={roomCode}
+        currentUsername={participant?.displayName || participant?.name || 'Guest User'}
+        isRecording={sessionRecording.isRecording}
+        recordingSeconds={sessionRecording.recordingSeconds}
+        recordings={sessionRecording.recordings}
+        onStartRecording={(title) => {
+          const activeFile = workspaceState.items.find(
+            (i) => i.id === workspaceState.activeFileId
+          );
+          sessionRecording.startRecording(
+            title,
+            activeFile?.content || '',
+            activeFile?.name || 'main.ts'
+          );
+        }}
+        onStopRecording={() => sessionRecording.stopRecording()}
+        onDeleteRecording={(id) => sessionRecording.deleteRecording(id)}
+        onRestoreCodeToWorkspace={(code) => {
+          if (workspaceState.activeFileId) {
+            workspaceManagerRef.current.updateFileContent(workspaceState.activeFileId, code);
+          }
+        }}
+      />
+
       <AboutModal
         isOpen={isAboutModalOpen}
         onClose={() => setIsAboutModalOpen(false)}
@@ -1458,6 +1432,23 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         onClose={() => setIsLeaveModalOpen(false)}
         roomCode={roomCode}
         isHost={participant?.role === 'HOST'}
+      />
+
+      {/* Program Arguments & Stdin Configuration Modal (CodeX Parity) */}
+      <RunArgsModal
+        isOpen={isRunArgsModalOpen}
+        onClose={() => setIsRunArgsModalOpen(false)}
+        args={executionArgs}
+        stdin={executionStdin}
+        onSave={(newArgs, newStdin) => {
+          setExecutionArgs(newArgs);
+          setExecutionStdin(newStdin);
+        }}
+        onRunWithArgs={(newArgs, newStdin) => {
+          setExecutionArgs(newArgs);
+          setExecutionStdin(newStdin);
+          handleRunCode(newArgs, newStdin);
+        }}
       />
 
       {/* File Diff & Preview Modal (code-editor Inspired) */}
@@ -1538,6 +1529,8 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         onOpenShare={() => setIsShareModalOpen(true)}
         onOpenGitHubImport={() => setIsGitHubModalOpen(true)}
         onOpenGitHubExport={() => setIsGitHubExportModalOpen(true)}
+        onOpenRecordings={() => setIsRecordingsModalOpen(true)}
+        onOpenRunArgs={() => setIsRunArgsModalOpen(true)}
         onOpenDiagnostics={() => setIsDiagnosticsOpen(true)}
         onOpenAbout={() => setIsAboutModalOpen(true)}
         onOpenReport={() => setIsReportModalOpen(true)}

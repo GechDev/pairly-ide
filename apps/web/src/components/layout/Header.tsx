@@ -1,145 +1,153 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ThemeToggle } from '../theme/ThemeToggle';
-import { Code2, ArrowRight, Menu, X, BookOpen, Layers, PlayCircle, ShieldCheck } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowRight, Menu, X } from 'lucide-react';
+
+const NAV_LINKS = [
+  { label: 'Capabilities', href: '#features' },
+  { label: 'Demo', href: '#demo' },
+  { label: 'Architecture', href: '/docs#architecture' },
+  { label: 'Docs', href: '/docs' },
+];
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800/80 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
-        {/* Brand */}
-        <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500 text-slate-950 flex items-center justify-center font-bold shadow-sm group-hover:bg-emerald-400 transition-colors">
-              <Code2 className="w-4 h-4 stroke-[2.5]" />
-            </div>
-            <span className="font-bold text-lg tracking-tight text-slate-900 dark:text-white">
-              Pairly
-            </span>
-          </Link>
-          <span className="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800">
-            v1.0 Preview
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? 'bg-[#0a0a0b]/90 backdrop-blur-xl border-b border-white/[0.06]'
+          : 'bg-transparent'
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 h-[60px] flex items-center justify-between">
+        {/* Brand mark */}
+        <Link href="/" className="flex items-center gap-2.5 group" aria-label="Pairly home">
+          {/* Logo mark */}
+          <div className="relative w-8 h-8 flex items-center justify-center border transition-all group-hover:border-[#FF0000]" style={{ backgroundColor: 'var(--canvas-2)', borderColor: 'var(--canvas-border)' }}>
+            <Image
+              src="/logo.png"
+              alt="Pairly"
+              width={24}
+              height={24}
+              className="object-contain"
+              priority
+            />
+          </div>
+          <span
+            className="font-bold text-[15px] tracking-[-0.02em] text-[var(--fg-primary)] group-hover:text-[#FF0000] transition-colors duration-200"
+          >
+            Pairly
           </span>
-        </div>
+        </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-7 text-xs font-mono uppercase tracking-wider text-slate-600 dark:text-slate-400">
-          <a
-            href="#features"
-            className="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors"
-          >
-            Capabilities
-          </a>
-          <a
-            href="#demo"
-            className="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors"
-          >
-            Interactive Demo
-          </a>
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-1" role="navigation">
+          {NAV_LINKS.map(({ label, href }) => (
+            href.startsWith('#') ? (
+              <a
+                key={label}
+                href={href}
+                className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] hover:bg-white/[0.04] transition-all duration-150"
+              >
+                {label}
+              </a>
+            ) : (
+              <Link
+                key={label}
+                href={href}
+                className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] hover:bg-white/[0.04] transition-all duration-150"
+              >
+                {label}
+              </Link>
+            )
+          ))}
           <Link
-            href="/docs#architecture"
-            className="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors"
+            href="/settings"
+            className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] hover:bg-white/[0.04] transition-all duration-150"
           >
-            Architecture
-          </Link>
-          <Link
-            href="/docs"
-            className="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors"
-          >
-            Docs
+            Settings
           </Link>
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          <ThemeToggle />
+        <div className="flex items-center gap-3">
+          <Link
+            href="/login"
+            className="hidden sm:inline-flex text-xs font-medium text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] px-3 py-1.5 transition-colors"
+          >
+            Sign in
+          </Link>
 
+          {/* Primary CTA */}
           <Link
             href="/room/new"
             id="header-start-room-btn"
-            className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-950 bg-emerald-400 hover:bg-emerald-300 active:bg-emerald-500 transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+            className="
+              inline-flex items-center gap-1.5 px-4 py-[7px] rounded-lg
+              text-xs font-semibold text-white
+              bg-[var(--accent-teal)] hover:opacity-90
+              transition-all duration-150
+              shadow-[0_0_20px_rgba(255,0,0,0.25)]
+            "
           >
             <span>Start a room</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile toggle */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle navigation menu"
-            className="md:hidden p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
+            className="md:hidden p-1.5 rounded-md text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] transition-colors"
           >
-            {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 pt-3 pb-5 space-y-3 animate-in slide-in-from-top-2 duration-150">
-          <div className="grid grid-cols-2 gap-2 text-xs font-medium">
-            <a
-              href="#features"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800"
-            >
-              <Layers className="w-3.5 h-3.5 text-emerald-500" />
-              <span>Capabilities</span>
-            </a>
-            <a
-              href="#demo"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800"
-            >
-              <PlayCircle className="w-3.5 h-3.5 text-emerald-500" />
-              <span>Live Demo</span>
-            </a>
-            <Link
-              href="/docs#architecture"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-              <span>Architecture</span>
-            </Link>
-            <Link
-              href="/docs"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800"
-            >
-              <BookOpen className="w-3.5 h-3.5 text-emerald-500" />
-              <span>Docs</span>
-            </Link>
-          </div>
+        <div
+          className="md:hidden border-t border-white/[0.06] bg-[#0a0a0b]/95 backdrop-blur-xl px-5 pt-4 pb-6 space-y-1 animate-fade-in"
+        >
+          {NAV_LINKS.map(({ label, href }) => (
+            href.startsWith('#') ? (
+              <a
+                key={label}
+                href={href}
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2.5 rounded-md text-sm font-medium text-[#a09a92] hover:text-[#f0ede8] hover:bg-white/[0.04] transition-colors"
+              >
+                {label}
+              </a>
+            ) : (
+              <Link
+                key={label}
+                href={href}
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2.5 rounded-md text-sm font-medium text-[#a09a92] hover:text-[#f0ede8] hover:bg-white/[0.04] transition-colors"
+              >
+                {label}
+              </Link>
+            )
+          ))}
 
-          <div className="pt-2 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <Link
-              href="/privacy"
-              onClick={() => setMobileMenuOpen(false)}
-              className="hover:underline"
-            >
-              Privacy
-            </Link>
-            <Link
-              href="/terms"
-              onClick={() => setMobileMenuOpen(false)}
-              className="hover:underline"
-            >
-              Terms
-            </Link>
-            <a
-              href="https://github.com/GechDev/pairly-ide"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:underline"
-            >
-              GitHub
-            </a>
+          <div className="pt-3 border-t border-white/[0.06] mt-3 flex items-center gap-3 text-xs text-[#5c5651]">
+            <Link href="/privacy" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#a09a92] transition-colors">Privacy</Link>
+            <Link href="/terms" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#a09a92] transition-colors">Terms</Link>
+            <a href="https://github.com/GechDev/pairly-ide" target="_blank" rel="noopener noreferrer" className="hover:text-[#a09a92] transition-colors">GitHub</a>
           </div>
         </div>
       )}

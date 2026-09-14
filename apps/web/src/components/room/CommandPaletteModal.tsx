@@ -23,6 +23,7 @@ import {
   CornerDownLeft,
   Palette,
   Users,
+  SlidersHorizontal,
 } from 'lucide-react';
 import type { WorkspaceItem } from '../workspace/workspaceState';
 
@@ -55,6 +56,8 @@ export interface CommandPaletteModalProps {
   onOpenShare: () => void;
   onOpenGitHubImport: () => void;
   onOpenGitHubExport?: () => void;
+  onOpenRecordings?: () => void;
+  onOpenRunArgs?: () => void;
   onOpenDiagnostics: () => void;
   onOpenAbout: () => void;
   onOpenReport: () => void;
@@ -80,6 +83,8 @@ export function CommandPaletteModal({
   onOpenShare,
   onOpenGitHubImport,
   onOpenGitHubExport,
+  onOpenRecordings,
+  onOpenRunArgs,
   onOpenDiagnostics,
   onOpenAbout,
   onOpenReport,
@@ -121,6 +126,18 @@ export function CommandPaletteModal({
       icon: Play,
       action: onRunCode,
     },
+    ...(onOpenRunArgs
+      ? [
+          {
+            id: 'cmd-run-args',
+            label: 'Configure Run Arguments & Stdin',
+            description: 'Pass CLI arguments and piped standard input to runner (CodeX)',
+            category: 'Tools' as const,
+            icon: SlidersHorizontal,
+            action: onOpenRunArgs,
+          },
+        ]
+      : []),
     {
       id: 'cmd-preview',
       label: 'Toggle Live Web Preview',
@@ -173,6 +190,19 @@ export function CommandPaletteModal({
             category: 'Collaboration' as const,
             icon: Palette,
             action: onToggleWhiteboard,
+          },
+        ]
+      : []),
+    ...(onOpenRecordings
+      ? [
+          {
+            id: 'cmd-recordings',
+            label: 'Session Recordings & Replay Studio',
+            description: 'Capture workspace sessions, scrub event timelines, and export WebM video',
+            category: 'Tools' as const,
+            shortcut: 'Shift+R',
+            icon: Video,
+            action: onOpenRecordings,
           },
         ]
       : []),

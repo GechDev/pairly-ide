@@ -14,6 +14,7 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
+  Download,
 } from 'lucide-react';
 import type { ExecutionOutputChunk, ExecutionStatus } from '@pairly/contracts';
 import { TerminalActions } from './TerminalActions';
@@ -87,6 +88,19 @@ export function SharedTerminal({
     }
   };
 
+  const handleDownloadOutput = () => {
+    const fullText = chunks.map((c) => c.data).join('');
+    const blob = new Blob([fullText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `terminal-output-${new Date().toISOString().replace(/[:.]/g, '-')}.log`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div
       data-testid="shared-terminal"
@@ -145,7 +159,7 @@ export function SharedTerminal({
           )}
 
           {status === 'COMPLETED' && (
-            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] bg-[#FF0000]/10 text-[#FF0000] border border-[#FF0000]/20">
               <CheckCircle2 className="w-3 h-3" />
               <span>Finished (exit {exitCode ?? 0})</span>
             </div>
@@ -184,10 +198,19 @@ export function SharedTerminal({
             className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
           >
             {copied ? (
-              <Check className="w-3.5 h-3.5 text-emerald-400" />
+              <Check className="w-3.5 h-3.5 text-[#FF0000]" />
             ) : (
               <Copy className="w-3.5 h-3.5" />
             )}
+          </button>
+
+          <button
+            onClick={handleDownloadOutput}
+            title="Download terminal output"
+            aria-label="Download terminal output"
+            className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+          >
+            <Download className="w-3.5 h-3.5" />
           </button>
 
           {onToggleExpand && (

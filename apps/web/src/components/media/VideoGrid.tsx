@@ -65,7 +65,7 @@ export function VideoGrid({
           data-testid="local-video-tile"
           className={`relative flex flex-col items-center justify-center rounded-xl border aspect-video overflow-hidden shadow-lg transition-all duration-300 ${
             isSpeaking
-              ? 'border-emerald-500 ring-2 ring-emerald-500/40 bg-slate-900'
+              ? 'border-[#FF0000] ring-2 ring-[#FF0000]/40 bg-slate-900'
               : 'border-slate-800 bg-slate-900/90'
           }`}
         >
@@ -89,7 +89,7 @@ export function VideoGrid({
             <div className="flex items-center gap-1.5 min-w-0">
               <span className="font-semibold text-slate-200 text-[11px] truncate">{localName} (You)</span>
               {isSpeaking && (
-                <span className="flex items-center text-[10px] text-emerald-400 font-mono">
+                <span className="flex items-center text-[10px] text-[#FF0000] font-mono">
                   <Volume2 className="w-3 h-3 mr-0.5 animate-pulse" />
                   {audioVolume}%
                 </span>
@@ -110,7 +110,7 @@ export function VideoGrid({
                 className={`p-1 rounded ${
                   isMicMuted
                     ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                    : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                    : 'bg-[#FF0000]/20 text-red-300 border border-[#FF0000]/30'
                 }`}
               >
                 {isMicMuted ? <MicOff className="h-3 w-3" /> : <Mic className="h-3 w-3" />}
@@ -126,7 +126,7 @@ export function VideoGrid({
             data-testid={`remote-tile-${peer.identity}`}
             className={`relative flex flex-col items-center justify-center rounded-xl border aspect-video overflow-hidden shadow-lg ${
               peer.isSpeaking
-                ? 'border-emerald-500 ring-2 ring-emerald-500/40 bg-slate-900'
+                ? 'border-[#FF0000] ring-2 ring-[#FF0000]/40 bg-slate-900'
                 : 'border-slate-800 bg-slate-900/90'
             }`}
           >
@@ -140,7 +140,7 @@ export function VideoGrid({
                 >
                   {peer.name.slice(0, 2).toUpperCase()}
                 </div>
-                <div className="flex items-center gap-1.5 mt-2 text-[11px] text-emerald-400 font-medium">
+                <div className="flex items-center gap-1.5 mt-2 text-[11px] text-[#FF0000] font-medium">
                   <Video className="w-3.5 h-3.5" />
                   <span>Camera Active (Connecting...)</span>
                 </div>
@@ -174,7 +174,7 @@ export function VideoGrid({
                   className={`p-1 rounded ${
                     !peer.isAudioActive
                       ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                      : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                      : 'bg-[#FF0000]/20 text-red-300 border border-[#FF0000]/30'
                   }`}
                 >
                   {!peer.isAudioActive ? <MicOff className="h-3 w-3" /> : <Mic className="h-3 w-3" />}

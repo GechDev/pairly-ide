@@ -1,128 +1,111 @@
 import React from 'react';
 import Link from 'next/link';
-import { Code2, Github, CheckCircle2 } from 'lucide-react';
+import Image from 'next/image';
+import { Github } from 'lucide-react';
+
+const FOOTER_LINKS = {
+  Product: [
+    { label: 'Capabilities', href: '#features' },
+    { label: 'Interactive Demo', href: '#demo' },
+    { label: 'Start a Room', href: '/room/new' },
+    { label: 'Documentation', href: '/docs' },
+  ],
+  Engineering: [
+    { label: 'Yjs CRDT Engine', href: '/docs#crdt' },
+    { label: 'Sandbox Specs', href: '/docs#sandbox' },
+    { label: 'Role-Based Access', href: '/docs#rbac' },
+    { label: 'Architecture', href: '/docs#architecture' },
+  ],
+  Legal: [
+    { label: 'Privacy Policy', href: '/privacy' },
+    { label: 'Terms of Service', href: '/terms' },
+    { label: 'Data & GDPR', href: '/settings' },
+  ],
+};
 
 export function Footer() {
   return (
-    <footer className="w-full border-t border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-950 py-12 md:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 lg:gap-12 pb-12 border-b border-slate-200 dark:border-slate-800/80">
-          {/* Brand Info */}
-          <div className="md:col-span-2 space-y-4">
-            <Link href="/" className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-emerald-500 text-slate-950 flex items-center justify-center font-bold">
-                <Code2 className="w-4 h-4 stroke-[2.5]" />
+    <footer className="relative border-t" style={{ backgroundColor: 'var(--canvas)', borderColor: 'var(--border-subtle)' }}>
+      {/* Top accent line */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[50%] h-px bg-[#FF0000] opacity-30" />
+
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 pt-16 pb-12">
+        {/* Main grid */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-10 lg:gap-16 pb-14 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+          {/* Brand */}
+          <div className="md:col-span-2 space-y-5">
+            <Link href="/" className="inline-flex items-center gap-2.5 group" aria-label="Pairly home">
+              <div className="relative w-8 h-8 flex items-center justify-center border transition-all group-hover:border-[#FF0000]" style={{ backgroundColor: 'var(--canvas-2)', borderColor: 'var(--canvas-border)' }}>
+                <Image
+                  src="/logo.png"
+                  alt="Pairly"
+                  width={24}
+                  height={24}
+                  className="object-contain"
+                />
               </div>
-              <span className="font-bold text-base tracking-tight text-slate-900 dark:text-white">
-                Pairly IDE
-              </span>
+              <span className="font-bold text-[15px] tracking-[-0.02em] text-[var(--fg-primary)]">Pairly</span>
             </Link>
-            <p className="text-xs text-slate-600 dark:text-slate-400 max-w-sm leading-relaxed">
-              Real-time collaborative developer workspace engineered for high-bandwidth pairing.
-              Sub-50ms conflict-free CRDT sync, multi-language sandboxes, and host governance.
+
+            <p className="text-xs text-[var(--fg-muted)] leading-relaxed max-w-[34ch]">
+              High-performance collaborative development workspace. Sub-50ms conflict-free CRDT sync, multi-language container sandboxes, and server-enforced access control.
             </p>
-            <div className="flex items-center gap-2 text-xs font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-md w-fit">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Realtime Coordinator: Operational</span>
+
+            {/* Status indicator */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border" style={{ backgroundColor: 'var(--canvas-subtle)', borderColor: 'var(--border-subtle)' }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-teal)] animate-pulse" />
+              <span className="font-mono text-[11px] text-[var(--fg-secondary)]">Distributed Coordinator: Operational</span>
+            </div>
+
+            {/* GitHub */}
+            <div>
+              <a
+                href="https://github.com/GechDev/pairly-ide"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-xs text-[var(--fg-muted)] hover:text-[var(--accent-teal)] transition-colors"
+              >
+                <Github className="w-3.5 h-3.5" />
+                <span className="font-mono">pairly-ide / open-source</span>
+              </a>
             </div>
           </div>
 
-          {/* Product Links */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-mono font-semibold uppercase tracking-wider text-slate-900 dark:text-slate-200">
-              Product
-            </h4>
-            <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-400">
-              <li>
-                <a href="#features" className="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors">
-                  Capabilities
-                </a>
-              </li>
-              <li>
-                <a href="#demo" className="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors">
-                  Interactive Demo
-                </a>
-              </li>
-              <li>
-                <Link href="/room/new" className="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors">
-                  Start Instant Room
-                </Link>
-              </li>
-              <li>
-                <Link href="/docs" className="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors">
-                  Documentation
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Architecture Links */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-mono font-semibold uppercase tracking-wider text-slate-900 dark:text-slate-200">
-              Engineering
-            </h4>
-            <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-400">
-              <li>
-                <Link href="/docs#crdt" className="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors">
-                  Yjs CRDT Engine
-                </Link>
-              </li>
-              <li>
-                <Link href="/docs#sandbox" className="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors">
-                  Isolated Runner Specs
-                </Link>
-              </li>
-              <li>
-                <Link href="/docs#rbac" className="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors">
-                  Role-Based Access
-                </Link>
-              </li>
-              <li>
-                <a
-                  href="https://github.com/GechDev/pairly-ide"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors"
-                >
-                  <Github className="w-3.5 h-3.5" />
-                  <span>GitHub Repository</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Legal Links */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-mono font-semibold uppercase tracking-wider text-slate-900 dark:text-slate-200">
-              Trust & Legal
-            </h4>
-            <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-400">
-              <li>
-                <Link href="/privacy" className="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors">
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link href="/settings" className="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors">
-                  Data & GDPR Settings
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {/* Link columns */}
+          {Object.entries(FOOTER_LINKS).map(([section, links]) => (
+            <div key={section} className="space-y-4">
+              <h4 className="text-[11px] font-mono font-semibold uppercase tracking-[0.1em] text-[var(--fg-primary)]">
+                {section}
+              </h4>
+              <ul className="space-y-2.5">
+                {links.map(({ label, href }) => (
+                  <li key={label}>
+                    {href.startsWith('#') ? (
+                      <a
+                        href={href}
+                        className="text-xs text-[var(--fg-secondary)] hover:text-[var(--accent-teal)] transition-colors"
+                      >
+                        {label}
+                      </a>
+                    ) : (
+                      <Link
+                        href={href}
+                        className="text-xs text-[var(--fg-secondary)] hover:text-[var(--accent-teal)] transition-colors"
+                      >
+                        {label}
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
         {/* Bottom bar */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-500">
-          <p>© 2026 Pairly IDE. Built for collaborative engineering teams.</p>
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Encrypted WebSockets & Sandboxed Execution</span>
-          </div>
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--fg-muted)]">
+          <p>© 2026 Pairly. Designed for modern pair-programming teams.</p>
+          <p className="font-mono text-[11px]">Encrypted WebSockets · Sandboxed Isolation · Zero Setup</p>
         </div>
       </div>
     </footer>

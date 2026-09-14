@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   BookOpen,
   Download,
+  Upload,
   Copy,
   Check,
   RotateCcw,
@@ -114,6 +115,7 @@ export function SharedNotepad({
   const [content, setContent] = useState(initialContent);
   const [copied, setCopied] = useState(false);
   const sessionRef = useRef<NotepadSession | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const session = createNotepadSession(initialContent);
@@ -140,6 +142,21 @@ export function SharedNotepad({
     const val = e.target.value;
     setContent(val);
     sessionRef.current?.setText(val);
+  };
+
+  const handleOpenNoteFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result;
+      if (typeof text === 'string') {
+        setContent(text);
+        sessionRef.current?.setText(text);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   const handleExportDownload = () => {
@@ -217,9 +234,29 @@ export function SharedNotepad({
 
           {/* Action buttons */}
           <div className="flex items-center gap-1.5 text-xs">
+            {/* Open / Import Note File (CodeX Parity) */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".md,.markdown,.txt,text/*"
+              onChange={handleOpenNoteFile}
+              className="hidden"
+              data-testid="open-note-input"
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              title="Open markdown file from disk (CodeX Parity)"
+              data-testid="open-note-btn"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Open .md</span>
+            </button>
+
             <button
               onClick={handleExportDownload}
               title="Download as .md file (FR-BOARD-04)"
+              data-testid="export-note-btn"
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
             >
               <Download className="w-3.5 h-3.5" />
@@ -232,7 +269,7 @@ export function SharedNotepad({
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
             >
               {copied ? (
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <Check className="w-3.5 h-3.5 text-[#FF0000]" />
               ) : (
                 <Copy className="w-3.5 h-3.5" />
               )}
@@ -281,7 +318,9 @@ export function SharedNotepad({
         {/* Footer */}
         <div className="h-8 px-4 border-t border-slate-800 bg-slate-900/60 flex items-center justify-between text-[11px] text-slate-500">
           <span>Synced via isolated Yjs CRDT</span>
-          <span>{content.length} characters</span>
+          <span>
+            {content.length} characters · {content.trim() ? content.trim().split(/\s+/).length : 0} words
+          </span>
         </div>
       </div>
     </div>

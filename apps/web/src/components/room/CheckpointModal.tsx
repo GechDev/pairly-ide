@@ -184,7 +184,7 @@ export function CheckpointModal({
           <div
             className={`px-4 py-2 text-xs flex items-center gap-2 border-b ${
               statusMessage.type === 'success'
-                ? 'bg-emerald-950/40 text-emerald-300 border-emerald-900/50'
+                ? 'bg-[#FF0000]/10 text-red-300 border-[#FF0000]/20'
                 : 'bg-rose-950/40 text-rose-300 border-rose-900/50'
             }`}
           >

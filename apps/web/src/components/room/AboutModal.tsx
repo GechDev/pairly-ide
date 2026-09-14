@@ -154,11 +154,11 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
           </div>
 
           {/* Security & Isolation */}
-          <div className="p-3.5 rounded-lg bg-emerald-950/20 border border-emerald-500/20 flex items-start gap-3">
-            <Shield className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+          <div className="p-3.5 rounded-lg bg-[#FF0000]/10 border border-[#FF0000]/20 flex items-start gap-3">
+            <Shield className="w-5 h-5 text-[#FF0000] shrink-0 mt-0.5" />
             <div className="text-xs space-y-1">
-              <span className="font-semibold text-emerald-300">Isolated & Secure Sandbox</span>
-              <p className="text-emerald-400/80 leading-relaxed">
+              <span className="font-semibold text-red-300">Isolated & Secure Sandbox</span>
+              <p className="text-red-400/80 leading-relaxed">
                 Code execution is strictly containerized with strict memory, CPU, and network resource
                 limits. All collaborative socket payloads enforce role-based access control (HOST, EDITOR, VIEWER).
               </p>

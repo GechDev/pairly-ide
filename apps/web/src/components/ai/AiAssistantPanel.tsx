@@ -57,7 +57,7 @@ export function AiAssistantPanel({
     { id: 'EXPLAIN', label: 'Explain Code', icon: <BookOpen className="h-3.5 w-3.5" /> },
     { id: 'FIND_BUGS', label: 'Find Bugs', icon: <Bug className="h-3.5 w-3.5 text-rose-400" /> },
     { id: 'REFACTOR', label: 'Refactor', icon: <Wrench className="h-3.5 w-3.5 text-amber-400" /> },
-    { id: 'GENERATE_TESTS', label: 'Generate Tests', icon: <TestTube className="h-3.5 w-3.5 text-emerald-400" /> },
+    { id: 'GENERATE_TESTS', label: 'Generate Tests', icon: <TestTube className="h-3.5 w-3.5 text-[#FF0000]" /> },
     { id: 'DOCUMENT', label: 'Add Docs', icon: <FileText className="h-3.5 w-3.5 text-blue-400" /> },
     { id: 'GENERATE_CODE', label: 'Generate Code', icon: <Code2 className="h-3.5 w-3.5 text-purple-400" /> },
   ];
@@ -270,7 +270,7 @@ export function AiAssistantPanel({
                 onClick={handleCopy}
                 className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-gray-200 transition-colors"
               >
-                {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                {copied ? <Check className="h-3.5 w-3.5 text-[#FF0000]" /> : <Copy className="h-3.5 w-3.5" />}
                 <span>{copied ? 'Copied' : 'Copy'}</span>
               </button>
             </div>

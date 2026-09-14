@@ -156,7 +156,7 @@ export function GitHubExportModal({
         {commitSuccessUrl ? (
           /* Success Screen */
           <div className="p-6 text-center space-y-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto">
+            <div className="w-12 h-12 rounded-full bg-[#FF0000]/10 border border-[#FF0000]/30 text-[#FF0000] flex items-center justify-center mx-auto">
               <Check className="w-6 h-6" />
             </div>
             <div>
@@ -251,7 +251,7 @@ export function GitHubExportModal({
 
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                  <FileCode className="w-3.5 h-3.5 text-emerald-400" />
+                  <FileCode className="w-3.5 h-3.5 text-[#FF0000]" />
                   <span>File Path in Repo</span>
                 </label>
                 <input

@@ -49,9 +49,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen font-sans bg-canvas text-canvas-fg antialiased flex flex-col">
-        <ThemeProvider defaultTheme="system" storageKey="pairly-theme">
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="min-h-screen font-sans antialiased flex flex-col selection:bg-[#FF0000]/25 selection:text-[#FF0000]" style={{ backgroundColor: 'var(--canvas)', color: 'var(--fg-primary)' }}>
+        <ThemeProvider defaultTheme="dark" storageKey="pairly-theme">
           <AppShell>{children}</AppShell>
         </ThemeProvider>
       </body>

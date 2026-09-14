@@ -113,8 +113,8 @@ export function AbuseReportModal({
         {/* Form Body */}
         {success ? (
           <div className="p-8 text-center space-y-3">
-            <CheckCircle2 className="h-10 w-10 text-emerald-400 mx-auto animate-in zoom-in-50 duration-200" />
-            <h4 className="text-sm font-bold text-emerald-300">Report Submitted</h4>
+            <CheckCircle2 className="h-10 w-10 text-[#FF0000] mx-auto animate-in zoom-in-50 duration-200" />
+            <h4 className="text-sm font-bold text-red-300">Report Submitted</h4>
             <p className="text-xs text-slate-400">
               Thank you for keeping Pairly safe. Our moderation system will review this report.
             </p>

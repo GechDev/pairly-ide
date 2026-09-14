@@ -1,50 +1,105 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Code2, ShieldCheck, Zap } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+
+const TRUST_ITEMS = [
+  'Sub-50ms CRDT sync',
+  'Sandboxed execution',
+  'Zero installs',
+  'Encrypted WebSockets',
+  'Instant guest sessions',
+  'Server-enforced RBAC',
+];
 
 export function FinalCTASection() {
+  const ref = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('is-visible'); }),
+      { rootMargin: '0px 0px -60px 0px' }
+    );
+    const el = ref.current;
+    if (el) el.querySelectorAll('.reveal').forEach((r) => observer.observe(r));
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <section className="py-24 bg-white dark:bg-slate-950 text-center relative overflow-hidden">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="p-8 sm:p-12 rounded-3xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-xl">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-slate-950 flex items-center justify-center font-bold mx-auto mb-6 shadow-md shadow-emerald-500/20">
-            <Code2 className="w-6 h-6 stroke-[2.5]" />
-          </div>
+    <section ref={ref} className="py-[clamp(5rem,10vw,9rem)] bg-[#0a0a0b] relative overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 h-px bg-white/[0.06]" />
 
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            Ready to pair with your team?
-          </h2>
-          <p className="mt-4 text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-xl mx-auto leading-relaxed">
-            Provision a collaborative room in seconds. No credit card, no account required,
-            and no local dependencies to install.
-          </p>
+      {/* Radial glow */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `radial-gradient(ellipse 70% 60% at 50% 100%, rgba(255,0,0,0.08) 0%, transparent 70%)`,
+        }}
+      />
 
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              href="/room/new"
-              id="final-cta-start-btn"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-400 hover:bg-emerald-300 active:bg-emerald-500 text-slate-950 font-bold text-sm shadow-md shadow-emerald-400/20 transition-all active:scale-95"
-            >
-              <span>Start an Instant Room</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            <a
-              href="#features"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold text-sm border border-slate-200 dark:border-slate-700 transition-all"
-            >
-              <span>Explore Features</span>
-            </a>
-          </div>
+      <div className="relative z-10 max-w-4xl mx-auto px-5 sm:px-8 text-center">
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-500 font-mono">
-            <span className="flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-emerald-500" />
-              <span>Instant Guest Lifecycle</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-              <span>Isolated Execution Sandbox</span>
-            </span>
+
+
+        {/* Headline */}
+        <h2
+          className="reveal text-[clamp(2.5rem,7vw,6rem)] font-extrabold tracking-[-0.04em] leading-[0.95] text-[#f0ede8]"
+        >
+          Ready to pair
+          <br />
+          with your team?
+        </h2>
+
+        <p className="reveal mt-7 text-[16px] text-[#a09a92] leading-[1.65] max-w-[42ch] mx-auto font-[380]">
+          Provision a collaborative room in seconds. Invite partners via a
+          single link. No account, no setup, no local dependencies.
+        </p>
+
+        {/* CTAs */}
+        <div className="reveal mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Link
+            href="/room/new"
+            id="final-cta-start-btn"
+            className="
+              inline-flex items-center justify-center gap-2
+              px-7 py-3.5 rounded-xl
+              text-[15px] font-semibold text-white
+              bg-[#FF0000] hover:bg-[#e60000]
+              transition-all duration-150 btn-press
+              shadow-accent-glow
+            "
+          >
+            <span>Start an Instant Room</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+
+          <Link
+            href="/docs"
+            className="
+              inline-flex items-center justify-center gap-2
+              px-6 py-3.5 rounded-xl
+              text-[15px] font-semibold text-[#a09a92]
+              border border-white/[0.1] hover:border-white/[0.18] hover:text-[#f0ede8]
+              transition-all duration-150
+            "
+          >
+            <span>Read the docs</span>
+          </Link>
+        </div>
+
+        {/* Trust ticker */}
+        <div className="reveal mt-14 overflow-hidden">
+          <div className="ticker-track select-none">
+            {[...TRUST_ITEMS, ...TRUST_ITEMS].map((item, idx) => (
+              <span key={idx} className="inline-flex items-center gap-3 px-5">
+                <span className="w-1 h-1 rounded-full bg-[#FF0000]/40" />
+                <span className="text-[12px] font-mono text-[#5c5651] uppercase tracking-wider whitespace-nowrap">
+                  {item}
+                </span>
+              </span>
+            ))}
           </div>
         </div>
       </div>

@@ -142,20 +142,20 @@ export function FilePreviewModal({
               </div>
 
               {/* Right Diff Section: Incoming Code */}
-              <div className="flex flex-col bg-slate-900/80 rounded-xl border border-emerald-500/30 overflow-hidden">
-                <div className="px-3 py-2 bg-emerald-500/10 border-b border-emerald-500/20 text-emerald-300 font-semibold text-xs flex items-center justify-between">
+              <div className="flex flex-col bg-slate-900/80 rounded-xl border border-[#FF0000]/30 overflow-hidden">
+                <div className="px-3 py-2 bg-[#FF0000]/10 border-b border-[#FF0000]/20 text-red-300 font-semibold text-xs flex items-center justify-between">
                   <span>Uploaded File ({fileName})</span>
-                  <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-200">
+                  <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[#FF0000]/20 text-red-200">
                     {incomingLines.length} lines
                   </span>
                 </div>
-                <div className="p-3 overflow-x-auto whitespace-pre font-mono text-emerald-300/90 flex-1 leading-relaxed">
+                <div className="p-3 overflow-x-auto whitespace-pre font-mono text-red-300/90 flex-1 leading-relaxed">
                   {incomingLines.map((line, idx) => (
-                    <div key={idx} className="flex gap-3 hover:bg-emerald-500/5 px-1 rounded">
-                      <span className="text-emerald-700/60 select-none w-8 text-right shrink-0">
+                    <div key={idx} className="flex gap-3 hover:bg-[#FF0000]/5 px-1 rounded">
+                      <span className="text-red-700/60 select-none w-8 text-right shrink-0">
                         {idx + 1}
                       </span>
-                      <span className="text-emerald-200">{line || ' '}</span>
+                      <span className="text-red-200">{line || ' '}</span>
                     </div>
                   ))}
                 </div>
@@ -211,7 +211,7 @@ export function FilePreviewModal({
                 onReplace(fileContent);
                 onClose();
               }}
-              className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg text-xs transition-colors shadow-md shadow-emerald-900/30 flex items-center gap-1.5"
+              className="px-4 py-1.5 bg-[#FF0000] hover:bg-[#e60000] text-white font-semibold rounded-lg text-xs transition-colors shadow-md shadow-red-900/30 flex items-center gap-1.5"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               Replace Active Content

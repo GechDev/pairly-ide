@@ -43,30 +43,30 @@ describe('Startup Public Landing & Legal Pages', () => {
 
   it('renders InteractiveProductDemo with code tabs and run button', () => {
     render(<InteractiveProductDemo />);
-    expect(screen.getByText('See Pairly in action')).toBeDefined();
+    expect(screen.getByText(/See Pairly in action/i)).toBeDefined();
     expect(screen.getByText('index.ts')).toBeDefined();
     expect(screen.getByText('Run Code')).toBeDefined();
   });
 
   it('renders ArchitectureSection with 3 distributed system tiers', () => {
     render(<ArchitectureSection />);
-    expect(screen.getByText('Designed for deterministic collaboration')).toBeDefined();
-    expect(screen.getByText(/Yjs CRDT & Monaco Core/i)).toBeDefined();
+    expect(screen.getByText(/Deterministic collaboration/i)).toBeDefined();
+    expect(screen.getByText(/Yjs CRDT & Monaco/i)).toBeDefined();
     expect(screen.getByText(/Fastify & Redis Pub\/Sub/i)).toBeDefined();
     expect(screen.getByText(/Container Sandboxing/i)).toBeDefined();
   });
 
   it('renders FAQSection with developer questions and toggleable answers', () => {
     render(<FAQSection />);
-    expect(screen.getByText('Answers for developers')).toBeDefined();
+    expect(screen.getByText('Questions, answered.')).toBeDefined();
     expect(
-      screen.getByText(/Do my pairing partners need to install any software or extensions/i)
+      screen.getByText(/Do partners need to install anything/i)
     ).toBeDefined();
   });
 
   it('renders FinalCTASection with room launch link', () => {
     render(<FinalCTASection />);
-    expect(screen.getByText('Ready to pair with your team?')).toBeDefined();
+    expect(screen.getByText(/Ready to pair/i)).toBeDefined();
     expect(screen.getByText('Start an Instant Room')).toBeDefined();
   });
 

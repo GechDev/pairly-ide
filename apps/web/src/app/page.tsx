@@ -1,5 +1,6 @@
 import React from 'react';
 import { HeroSection } from '../components/landing/HeroSection';
+import { TechTicker } from '../components/landing/TechTicker';
 import { InteractiveProductDemo } from '../components/landing/InteractiveProductDemo';
 import { FeatureGrid } from '../components/landing/FeatureGrid';
 import { ArchitectureSection } from '../components/landing/ArchitectureSection';
@@ -16,6 +17,7 @@ export default function HomePage({ searchParams }: HomePageProps) {
   return (
     <div className="flex flex-col w-full">
       <HeroSection initialRoomId={searchParams?.room} />
+      <TechTicker />
       <InteractiveProductDemo />
       <FeatureGrid />
       <ArchitectureSection />

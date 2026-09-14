@@ -31,7 +31,7 @@ export function AppShell({ children }: AppShellProps) {
 
   if (isRoom) {
     return (
-      <main className="h-screen w-screen overflow-hidden fixed inset-0 flex flex-col bg-slate-950">
+      <main className="h-screen w-screen overflow-hidden fixed inset-0 flex flex-col bg-[#0a0a0b]">
         {children}
       </main>
     );

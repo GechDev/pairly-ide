@@ -48,13 +48,13 @@ const ANIMALS = [
 
 const CURATED_COLORS = [
   '#3b82f6', // blue
-  '#10b981', // emerald
+  '#FF0000', // red
   '#f59e0b', // amber
   '#ec4899', // pink
   '#8b5cf6', // purple
   '#06b6d4', // cyan
   '#f43f5e', // rose
-  '#14b8a6', // teal
+  '#e11d48', // rose
   '#6366f1', // indigo
 ];
 

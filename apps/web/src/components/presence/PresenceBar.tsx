@@ -76,14 +76,14 @@ export function PresenceBar({
         <div
           id="follow-mode-badge"
           data-testid="follow-mode-indicator"
-          className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono"
+          className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#FF0000]/10 border border-[#FF0000]/30 text-[#FF0000] text-xs font-mono"
         >
           <Eye className="w-3.5 h-3.5" />
           <span>Following {followedParticipant.participant.displayName}</span>
           <button
             onClick={onUnfollow}
             title="Stop following"
-            className="ml-1 p-0.5 rounded hover:bg-emerald-500/20 text-emerald-300"
+            className="ml-1 p-0.5 rounded hover:bg-[#FF0000]/20 text-red-300"
           >
             <EyeOff className="w-3 h-3" />
           </button>
@@ -108,7 +108,7 @@ export function PresenceBar({
                   isSpotlighted
                     ? 'border-amber-400 ring-2 ring-amber-400/50'
                     : isFollowed
-                    ? 'border-emerald-400 ring-2 ring-emerald-400/50'
+                    ? 'border-[#FF0000] ring-2 ring-[#FF0000]/50'
                     : 'border-slate-900'
                 }`}
                 style={{ backgroundColor: participant.color }}

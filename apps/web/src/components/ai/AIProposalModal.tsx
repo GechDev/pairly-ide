@@ -149,7 +149,7 @@ export function AIProposalModal({
                       </p>
                     )}
                     {rebasedContent && (
-                      <p className="mt-2 text-emerald-400 font-semibold flex items-center gap-1">
+                      <p className="mt-2 text-[#FF0000] font-semibold flex items-center gap-1">
                         <CheckCircle2 className="h-4 w-4" />
                         Successfully rebased against current workspace version!
                       </p>

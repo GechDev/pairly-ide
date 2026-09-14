@@ -137,7 +137,7 @@ ${tailwindScript}
       if (!banner) {
         banner = document.createElement('div');
         banner.id = '__pairly_error_banner__';
-        banner.style.cssText = 'position:fixed;bottom:10px;left:10px;right:10px;background:#881337;color:#ffe4e6;padding:10px 14px;border-radius:8px;font-family:ui-monospace,monospace;font-size:12px;z-index:999999;box-shadow:0 10px 25px rgba(0,0,0,0.5);border:1px solid #e11d48;';
+        banner.style.cssText = 'position:fixed;bottom:10px;left:10px;right:10px;background:#881337;color:#ffe4e6;padding:10px 14px;border-radius:0px;font-family:ui-monospace,monospace;font-size:12px;z-index:999999;box-shadow:0 10px 25px rgba(0,0,0,0.5);border:1px solid #e11d48;';
         document.body ? document.body.appendChild(banner) : document.documentElement.appendChild(banner);
       }
       banner.innerHTML = '<strong>Preview Error:</strong> ' + String(msg) + (line ? ' (Line ' + line + ':' + (col||0) + ')' : '');

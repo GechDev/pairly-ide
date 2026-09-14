@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Settings, X, Sliders, Type, AlignLeft, Sun, Moon } from 'lucide-react';
+import { Settings, X, Sliders, Type, AlignLeft, Sun, Moon, Download, Upload, Check } from 'lucide-react';
 
 export interface EditorSettings {
   fontSize: number;
@@ -47,6 +47,48 @@ export function EditorSettingsModal({
     if (typeof window !== 'undefined') {
       localStorage.setItem('pairly_editor_settings', JSON.stringify(updated));
     }
+  };
+
+  const handleExportSettings = () => {
+    const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'pairly-editor-settings.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const handleImportSettings = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target?.result as string);
+        if (typeof parsed === 'object' && parsed !== null) {
+          const validated: EditorSettings = {
+            fontSize: typeof parsed.fontSize === 'number' ? parsed.fontSize : settings.fontSize,
+            tabSize: typeof parsed.tabSize === 'number' ? parsed.tabSize : settings.tabSize,
+            wordWrap: typeof parsed.wordWrap === 'boolean' ? parsed.wordWrap : settings.wordWrap,
+            lineNumbers: typeof parsed.lineNumbers === 'boolean' ? parsed.lineNumbers : settings.lineNumbers,
+            theme: ['vs-dark', 'vs-light', 'hc-black'].includes(parsed.theme) ? parsed.theme : settings.theme,
+          };
+          onUpdateSettings(validated);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('pairly_editor_settings', JSON.stringify(validated));
+          }
+        }
+      } catch (err) {
+        console.error('Failed to parse settings JSON:', err);
+      }
+    };
+    reader.readAsText(file);
+    if (e.target) e.target.value = '';
   };
 
   return (
@@ -142,7 +184,7 @@ export function EditorSettingsModal({
               onClick={() => handleChange('wordWrap', !settings.wordWrap)}
               className={`px-4 py-1.5 rounded-xl font-bold transition-all border ${
                 settings.wordWrap
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                  ? 'bg-[#FF0000]/20 text-red-300 border-[#FF0000]/30'
                   : 'bg-slate-800 text-slate-400 border-slate-700'
               }`}
             >
@@ -161,7 +203,7 @@ export function EditorSettingsModal({
               onClick={() => handleChange('lineNumbers', !settings.lineNumbers)}
               className={`px-4 py-1.5 rounded-xl font-bold transition-all border ${
                 settings.lineNumbers
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                  ? 'bg-[#FF0000]/20 text-red-300 border-[#FF0000]/30'
                   : 'bg-slate-800 text-slate-400 border-slate-700'
               }`}
             >
@@ -202,12 +244,43 @@ export function EditorSettingsModal({
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex justify-end pt-3 border-t border-slate-800/80">
+        {/* Footer: Export/Import & Done */}
+        <div className="flex items-center justify-between pt-3 border-t border-slate-800/80">
+          <div className="flex items-center gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImportSettings}
+              accept=".json"
+              className="hidden"
+              data-testid="import-settings-input"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              title="Import settings from JSON file"
+              data-testid="import-settings-btn"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors border border-slate-700"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span>Import</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleExportSettings}
+              title="Export settings to JSON file"
+              data-testid="export-settings-btn"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors border border-slate-700"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Export</span>
+            </button>
+          </div>
+
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition-all active:scale-95"
+            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition-all active:scale-95 shadow-sm"
           >
             Done
           </button>

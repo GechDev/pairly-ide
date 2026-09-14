@@ -40,7 +40,7 @@ export interface WhiteboardModalProps {
 }
 
 const COLOR_PALETTE = [
-  { name: 'Emerald', value: '#10b981' },
+  { name: 'Red', value: '#FF0000' },
   { name: 'Cyan', value: '#06b6d4' },
   { name: 'Blue', value: '#3b82f6' },
   { name: 'Purple', value: '#a855f7' },
@@ -67,7 +67,7 @@ export function WhiteboardModal({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [tool, setTool] = useState<'pen' | 'rect' | 'circle' | 'line' | 'text' | 'eraser'>('pen');
-  const [color, setColor] = useState('#10b981');
+  const [color, setColor] = useState('#FF0000');
   const [strokeWidth, setStrokeWidth] = useState(3);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentPoints, setCurrentPoints] = useState<{ x: number; y: number }[]>([]);
@@ -355,7 +355,7 @@ export function WhiteboardModal({
         <header className="h-14 px-4 border-b border-slate-800 bg-slate-900/95 flex items-center justify-between gap-3 select-none z-10">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <Palette className="w-4 h-4 text-emerald-400" />
+              <Palette className="w-4 h-4 text-rose-400" />
               <span className="text-xs font-bold text-slate-100">Architecture Whiteboard</span>
               <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 border border-slate-700">
                 {roomCode}
@@ -504,7 +504,7 @@ export function WhiteboardModal({
               data-testid="whiteboard-export-btn"
               onClick={handleExportPng}
               title="Export as High-Resolution PNG"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium shadow-sm transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FF0000] hover:bg-[#e60000] text-white text-xs font-medium shadow-sm transition-colors"
             >
               <Download className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Export PNG</span>

@@ -75,7 +75,7 @@ export function DiffViewer({ diffText, filePath = 'code.ts', className = '' }: D
           <FileCode className="h-4 w-4 text-purple-400" />
           <span className="font-mono text-xs font-semibold text-gray-300">{filePath}</span>
           <div className="flex items-center gap-1.5 ml-3">
-            <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 border border-emerald-500/20">
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-[#FF0000]/10 px-2 py-0.5 text-[10px] font-semibold text-[#FF0000] border border-[#FF0000]/20">
               <Plus className="h-3 w-3" />
               {addCount}
             </span>
@@ -141,7 +141,7 @@ export function DiffViewer({ diffText, filePath = 'code.ts', className = '' }: D
                     key={idx}
                     className={`transition-colors ${
                       isAdd
-                        ? 'bg-emerald-950/30 hover:bg-emerald-900/40 text-emerald-200'
+                        ? 'bg-red-950/30 hover:bg-red-900/40 text-red-200'
                         : isDel
                           ? 'bg-rose-950/30 hover:bg-rose-900/40 text-rose-200'
                           : 'hover:bg-gray-900/50 text-gray-300'
@@ -214,7 +214,7 @@ export function DiffViewer({ diffText, filePath = 'code.ts', className = '' }: D
                   return (
                     <tr
                       key={`right-${idx}`}
-                      className={line.type === 'add' ? 'bg-emerald-950/30 text-emerald-200' : 'text-gray-300'}
+                      className={line.type === 'add' ? 'bg-red-950/30 text-red-200' : 'text-gray-300'}
                     >
                       <td className="w-10 select-none text-right pr-2 text-gray-600 font-mono text-[11px] border-r border-gray-800/80">
                         {line.newNum}

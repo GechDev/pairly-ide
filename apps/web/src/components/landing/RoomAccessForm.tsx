@@ -15,6 +15,8 @@ import {
 
 interface RoomAccessFormProps {
   initialRoomId?: string;
+  isModal?: boolean;
+  onClose?: () => void;
 }
 
 const DASH_PATTERN = /-/g;
@@ -34,7 +36,11 @@ export const formatRoomCode = (value: string): string => {
  * Direct architectural alignment with CodeX room-access-form component.
  * Allows creating rooms with a custom name or joining existing rooms by Room ID.
  */
-export function RoomAccessForm({ initialRoomId = '' }: RoomAccessFormProps) {
+export function RoomAccessForm({
+  initialRoomId = '',
+  isModal = false,
+  onClose,
+}: RoomAccessFormProps) {
   const router = useRouter();
   const [roomId, setRoomId] = useState(initialRoomId);
   const [createName, setCreateName] = useState('');
@@ -138,16 +144,16 @@ export function RoomAccessForm({ initialRoomId = '' }: RoomAccessFormProps) {
   // 1. If invited with a specific Room ID (CodeX InvitedSection pattern)
   if (roomId) {
     return (
-      <div className="w-full max-w-md mx-auto rounded-2xl border border-slate-800 bg-slate-900/95 backdrop-blur-xl p-6 sm:p-7 shadow-2xl text-left animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex items-center gap-2.5 mb-5 pb-4 border-b border-slate-800">
-          <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+      <div className="w-full max-w-md mx-auto rounded-xl border border-white/[0.08] bg-[#111114] p-6 sm:p-7 shadow-[0_20px_60px_rgba(0,0,0,0.7)] text-left animate-fade-in">
+        <div className="flex items-center gap-3 mb-5 pb-4 border-b border-white/[0.06]">
+          <div className="p-2 rounded-lg border border-[#FF0000]/20 bg-[#FF0000]/08 text-[#FF0000]">
             <LogIn className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-white">Join Collaboration Room</h2>
-            <p className="text-xs text-slate-400">
+            <h2 className="text-[15px] font-bold text-[#f0ede8]">Join Collaboration Room</h2>
+            <p className="text-[12px] text-[#5c5651]">
               Room ID:{' '}
-              <span className="font-mono font-bold text-emerald-400 text-sm">
+              <span className="font-mono font-bold text-[#FF0000]">
                 {roomId}
               </span>
             </p>
@@ -161,9 +167,9 @@ export function RoomAccessForm({ initialRoomId = '' }: RoomAccessFormProps) {
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="invited-name"
-              className="text-xs font-semibold text-slate-300 flex items-center gap-1.5"
+              className="text-[12px] font-semibold text-[#a09a92] flex items-center gap-1.5"
             >
-              <User className="w-3.5 h-3.5 text-slate-400" />
+              <User className="w-3.5 h-3.5 text-[#5c5651]" />
               <span>Your Name</span>
             </label>
             <input
@@ -176,12 +182,12 @@ export function RoomAccessForm({ initialRoomId = '' }: RoomAccessFormProps) {
               maxLength={32}
               required
               disabled={isJoining}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+              className="w-full bg-[#0a0a0b] border border-white/[0.08] rounded-lg px-3.5 py-2.5 text-[14px] text-[#f0ede8] placeholder-[#5c5651] focus:outline-none focus:ring-2 focus:ring-[#FF0000]/40 transition-all"
             />
           </div>
 
           {error && (
-            <div className="flex items-center gap-2 p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs">
+            <div className="flex items-center gap-2 p-2.5 rounded-lg bg-[#e8533a]/10 border border-[#e8533a]/20 text-[#e8533a] text-[12px]">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
@@ -195,7 +201,7 @@ export function RoomAccessForm({ initialRoomId = '' }: RoomAccessFormProps) {
                 router.replace('/');
               }}
               disabled={isJoining}
-              className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-800 bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-all"
+              className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg border border-white/[0.08] bg-[#18181c] hover:bg-white/[0.06] text-[#a09a92] text-[13px] font-semibold transition-all"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back</span>
@@ -203,12 +209,12 @@ export function RoomAccessForm({ initialRoomId = '' }: RoomAccessFormProps) {
             <button
               type="submit"
               disabled={isJoining}
-              className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 active:bg-emerald-500 text-slate-950 text-xs font-bold transition-all shadow-md shadow-emerald-400/20"
+              className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-[#FF0000] hover:bg-[#e60000] text-white text-[13px] font-bold transition-all btn-press"
             >
               {isJoining ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Joining Room...</span>
+                  <span>Joining…</span>
                 </>
               ) : (
                 <>
@@ -223,16 +229,27 @@ export function RoomAccessForm({ initialRoomId = '' }: RoomAccessFormProps) {
     );
   }
 
-  // 2. Default Home: Create Room + Join Room (CodeX dual section pattern)
+  // 2. Default Home: Create Room + Join Room
+  const containerClasses = isModal
+    ? 'w-full text-left space-y-6'
+    : 'w-full max-w-xl mx-auto rounded-2xl border p-6 sm:p-7 text-left shadow-2xl';
+
+  const containerStyle = isModal
+    ? {}
+    : {
+        backgroundColor: 'var(--canvas-subtle)',
+        borderColor: 'var(--border-prominent)',
+      };
+
   return (
-    <div className="w-full max-w-xl mx-auto rounded-2xl border border-slate-800 bg-slate-900/90 backdrop-blur-xl p-6 sm:p-7 shadow-2xl text-left">
+    <div className={containerClasses} style={containerStyle}>
       {/* Create Room Section */}
       <section aria-labelledby="create-room-heading" className="space-y-3.5">
         <div className="flex items-center gap-2">
-          <CirclePlus className="w-4 h-4 text-emerald-400" />
+          <CirclePlus className="w-4 h-4 text-[var(--accent-teal)]" />
           <h2
             id="create-room-heading"
-            className="text-sm font-bold tracking-tight text-white uppercase text-xs tracking-wider"
+            className="text-[11px] font-semibold text-[var(--accent-teal)] uppercase tracking-[0.1em] font-mono"
           >
             Create a New Room
           </h2>
@@ -245,10 +262,16 @@ export function RoomAccessForm({ initialRoomId = '' }: RoomAccessFormProps) {
                 type="text"
                 value={createName}
                 onChange={(e) => setCreateName(e.target.value)}
-                placeholder="Enter your name (optional)"
+                placeholder="Your name (optional)"
                 maxLength={32}
                 disabled={isCreating || isJoining}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                className="w-full rounded-xl px-3.5 py-2.5 text-xs text-[var(--fg-primary)] placeholder-[var(--fg-muted)] transition-all focus:outline-none"
+                style={{
+                  backgroundColor: 'var(--canvas-elevated)',
+                  border: '1px solid var(--border-prominent)',
+                }}
+                onFocus={(e) => (e.target.style.borderColor = 'var(--accent-teal)')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--border-prominent)')}
               />
             </div>
             <button
@@ -257,12 +280,16 @@ export function RoomAccessForm({ initialRoomId = '' }: RoomAccessFormProps) {
               type="button"
               onClick={() => handleCreateRoom()}
               disabled={isCreating || isJoining}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 active:bg-emerald-500 text-slate-950 font-bold text-xs sm:text-sm shadow-md shadow-emerald-400/20 transition-all shrink-0 active:scale-95 disabled:opacity-50"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all shrink-0 disabled:opacity-50"
+              style={{
+                backgroundColor: '#FF0000',
+                color: '#ffffff',
+              }}
             >
               {isCreating ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Creating...</span>
+                  <span>Creating…</span>
                 </>
               ) : (
                 <>
@@ -276,22 +303,24 @@ export function RoomAccessForm({ initialRoomId = '' }: RoomAccessFormProps) {
       </section>
 
       {/* Divider */}
-      <div className="relative my-6">
+      <div className="relative my-4">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-slate-800" />
+          <div className="w-full border-t" style={{ borderColor: 'var(--border-subtle)' }} />
         </div>
-        <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-wider text-slate-500">
-          <span className="bg-slate-900 px-3">or join existing room</span>
+        <div className="relative flex justify-center text-[10px] uppercase font-mono font-semibold tracking-[0.1em] text-[var(--fg-muted)]">
+          <span className="px-3" style={{ backgroundColor: 'var(--canvas-subtle)' }}>
+            or join existing
+          </span>
         </div>
       </div>
 
-      {/* Join Existing Room Section (CodeX pattern) */}
+      {/* Join Existing Room Section */}
       <section aria-labelledby="join-room-heading" className="space-y-3.5">
         <div className="flex items-center gap-2">
-          <Hash className="w-4 h-4 text-indigo-400" />
+          <Hash className="w-4 h-4 text-[var(--accent-cyan)]" />
           <h2
             id="join-room-heading"
-            className="text-sm font-bold tracking-tight text-white uppercase text-xs tracking-wider"
+            className="text-[11px] font-semibold text-[var(--accent-cyan)] uppercase tracking-[0.1em] font-mono"
           >
             Join with Room ID
           </h2>
@@ -309,11 +338,17 @@ export function RoomAccessForm({ initialRoomId = '' }: RoomAccessFormProps) {
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   setRoomId(formatRoomCode(e.target.value))
                 }
-                placeholder="Room ID (XXXX-XXXX)"
+                placeholder="XXXX-XXXX"
                 maxLength={9}
                 required
                 disabled={isCreating || isJoining}
-                className="w-full font-mono bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 uppercase transition-all"
+                className="w-full font-mono rounded-xl px-3.5 py-2.5 text-xs text-[var(--fg-primary)] placeholder-[var(--fg-muted)] uppercase tracking-widest transition-all focus:outline-none"
+                style={{
+                  backgroundColor: 'var(--canvas-elevated)',
+                  border: '1px solid var(--border-prominent)',
+                }}
+                onFocus={(e) => (e.target.style.borderColor = 'var(--accent-cyan)')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--border-prominent)')}
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -324,13 +359,19 @@ export function RoomAccessForm({ initialRoomId = '' }: RoomAccessFormProps) {
                 placeholder="Your name"
                 maxLength={32}
                 disabled={isCreating || isJoining}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                className="w-full rounded-xl px-3.5 py-2.5 text-xs text-[var(--fg-primary)] placeholder-[var(--fg-muted)] transition-all focus:outline-none"
+                style={{
+                  backgroundColor: 'var(--canvas-elevated)',
+                  border: '1px solid var(--border-prominent)',
+                }}
+                onFocus={(e) => (e.target.style.borderColor = 'var(--accent-cyan)')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--border-prominent)')}
               />
             </div>
           </div>
 
           {error && (
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs">
+            <div className="flex items-center gap-2 p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
@@ -340,16 +381,21 @@ export function RoomAccessForm({ initialRoomId = '' }: RoomAccessFormProps) {
             type="submit"
             data-testid="join-room-btn"
             disabled={isCreating || isJoining || !roomId.trim()}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:bg-slate-800 text-slate-200 font-bold text-xs sm:text-sm border border-slate-700/80 transition-all active:scale-95 disabled:opacity-40"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-xs transition-all disabled:opacity-40"
+            style={{
+              backgroundColor: 'var(--canvas-elevated)',
+              border: '1px solid var(--border-prominent)',
+              color: 'var(--fg-primary)',
+            }}
           >
             {isJoining ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Connecting...</span>
+                <span>Connecting…</span>
               </>
             ) : (
               <>
-                <LogIn className="w-4 h-4 text-indigo-400" />
+                <LogIn className="w-4 h-4 text-[var(--accent-cyan)]" />
                 <span>Join Room</span>
               </>
             )}

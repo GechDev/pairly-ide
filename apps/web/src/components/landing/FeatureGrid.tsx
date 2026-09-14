@@ -1,115 +1,175 @@
-import React from 'react';
-import {
-  Code,
-  Terminal,
-  Sparkles,
-  Users,
-  ShieldCheck,
-  Zap,
-} from 'lucide-react';
+'use client';
+
+import React, { useEffect, useRef } from 'react';
+
+/* ─── Scroll reveal hook ──────────────────────────────────────────── */
+function useScrollReveal(rootMargin = '0px 0px -80px 0px') {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+          }
+        });
+      },
+      { rootMargin }
+    );
+
+    const targets = el.querySelectorAll('.reveal');
+    targets.forEach((t) => observer.observe(t));
+
+    return () => observer.disconnect();
+  }, [rootMargin]);
+
+  return ref;
+}
+
+/* ─── Feature data ────────────────────────────────────────────────── */
+const BRAND_ACCENT = '#FF0000';
 
 const features = [
   {
-    icon: Code,
+    number: '01',
     category: 'CRDT ENGINE',
-    title: 'Multi-File Document Sync',
+    title: 'Conflict-free real-time sync',
     description:
-      'Concurrent document editing powered by Yjs. Typing propagates with sub-60ms latency, remote cursor markers, and automatic conflict-free convergence.',
-    badge: '< 60ms latency',
+      'Built on Yjs — every keystroke propagates as a binary delta vector. Remote cursors, selections, and file state converge deterministically in under 50ms with zero lost characters.',
+    pill: '< 50ms latency',
+    accent: BRAND_ACCENT,
   },
   {
-    icon: Terminal,
+    number: '02',
     category: 'ISOLATED RUNNER',
-    title: 'Sandboxed 20+ Language Execution',
+    title: 'Sandboxed multi-language execution',
     description:
-      'Execute Python, TypeScript, Rust, Go, C++, and Java in isolated environments with strict memory caps, 10s timeouts, and zero local network leakage.',
-    badge: '20+ Languages',
+      'Run Python, TypeScript, Rust, Go, C++, Java, and 14 more inside ephemeral container sandboxes. Every execution is memory-capped, time-bounded, and network-isolated.',
+    pill: '20+ Languages',
+    accent: BRAND_ACCENT,
   },
   {
-    icon: Sparkles,
+    number: '03',
     category: 'AI PAIRING',
-    title: 'Reviewable AI Diff Proposals',
+    title: 'Reviewable AI diff proposals',
     description:
-      'AI assistant proposes code modifications as reviewable diffs before applying changes, complete with stale base-version detection and transparent context.',
-    badge: 'Safe Reviews',
+      'The AI assistant surfaces code suggestions as unified diffs, not direct edits. Review, accept, or reject every change. Stale-base detection prevents silent overwrites.',
+    pill: 'Safe & Reviewable',
+    accent: BRAND_ACCENT,
   },
   {
-    icon: Users,
+    number: '04',
     category: 'COLLABORATION',
-    title: 'Instant Guest Room Lifecycle',
+    title: 'Instant guest room lifecycle',
     description:
-      'Start a collaboration session with one click. Invite peers via unguessable short links with temporary identities with zero registration required.',
-    badge: 'Zero Setup',
+      'Start a session in one click. Generate an unguessable 8-character room code, share the link, and partners join as ephemeral guests — no registration, no friction.',
+    pill: 'Zero Setup',
+    accent: BRAND_ACCENT,
   },
   {
-    icon: ShieldCheck,
+    number: '05',
     category: 'AUTHORIZATION',
-    title: 'Enforced Server-Side RBAC',
+    title: 'Server-enforced RBAC',
     description:
-      'Configure Host, Editor, Commenter, and Viewer permissions on the coordinator. Lock rooms and manage participants dynamically.',
-    badge: 'Server Guarded',
+      'Host, Editor, Commenter, and Viewer roles enforced on the coordinator — not the client. Lock rooms, revoke access, and manage participants without reloading.',
+    pill: 'Server Guarded',
+    accent: BRAND_ACCENT,
   },
   {
-    icon: Zap,
+    number: '06',
     category: 'TERMINAL I/O',
-    title: 'Interactive Real-Time Terminal',
+    title: 'Shared real-time terminal',
     description:
-      'Stream stdout and stderr in real time to all room members via xterm.js with support for interactive standard input during execution.',
-    badge: 'Live Stdin',
+      'stdout and stderr stream live to every participant via xterm.js. Interactive stdin is supported, so all partners watch and participate in execution together.',
+    pill: 'Live Stdin/Stdout',
+    accent: BRAND_ACCENT,
   },
 ];
 
 export function FeatureGrid() {
+  const sectionRef = useScrollReveal();
+
   return (
     <section
       id="features"
-      className="py-24 bg-slate-50/50 dark:bg-slate-900/20 border-y border-slate-200 dark:border-slate-800/80"
+      ref={sectionRef}
+      className="py-[clamp(5rem,10vw,9rem)] bg-[#0a0a0b] relative"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 mb-3">
-            Platform Capabilities
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            Engineered for high-bandwidth pairing
+      {/* Section border top */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-white/[0.06]" />
+
+      <div className="max-w-7xl mx-auto px-5 sm:px-8">
+
+        {/* Section header */}
+        <div className="max-w-3xl mb-20">
+
+          <h2 className="reveal text-[clamp(2rem,4.5vw,3.25rem)] font-extrabold tracking-[-0.03em] leading-[1.05] text-[#f0ede8]">
+            Engineered for high-bandwidth
+            <br />
+            <span className="text-[#a09a92] font-[380]">collaborative development.</span>
           </h2>
-          <p className="mt-4 text-base text-slate-600 dark:text-slate-400 leading-relaxed">
-            Eliminates setup friction while guaranteeing strict sandbox isolation,
-            deterministic CRDT convergence, and server-enforced authorization.
-          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, idx) => {
-            const Icon = feature.icon;
-            return (
-              <div
-                key={idx}
-                className="group relative p-7 rounded-xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 shadow-sm transition-all duration-200 flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 flex items-center justify-center text-slate-700 dark:text-slate-300 group-hover:text-emerald-400 transition-colors">
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-                      {feature.badge}
-                    </span>
-                  </div>
-
-                  <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400 dark:text-slate-500 font-medium">
-                    {feature.category}
-                  </span>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mt-1 mb-2">
-                    {feature.title}
-                  </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                    {feature.description}
-                  </p>
-                </div>
+        {/* Feature list — editorial numbered layout */}
+        <div className="space-y-0">
+          {features.map((feature, idx) => (
+            <div
+              key={feature.number}
+              className="reveal group relative border-t border-white/[0.06] py-10 grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-12 items-start hover:bg-white/[0.015] transition-colors duration-300 -mx-5 sm:-mx-8 px-5 sm:px-8"
+            >
+              {/* Number */}
+              <div className="md:col-span-1 flex items-start">
+                <span
+                  className="font-mono text-[14px] sm:text-[15px] font-bold tracking-wider"
+                  style={{ color: feature.accent }}
+                >
+                  {feature.number}
+                </span>
               </div>
-            );
-          })}
+
+              {/* Category + title */}
+              <div className="md:col-span-4">
+                <span className="label text-[#5c5651] block mb-2">{feature.category}</span>
+                <h3 className="text-[17px] sm:text-[19px] font-bold tracking-[-0.02em] text-[#f0ede8] leading-[1.25]">
+                  {feature.title}
+                </h3>
+              </div>
+
+              {/* Description */}
+              <div className="md:col-span-5">
+                <p className="text-[15px] text-[#a09a92] leading-[1.65] font-[380]">
+                  {feature.description}
+                </p>
+              </div>
+
+              {/* Pill */}
+              <div className="md:col-span-2 flex md:justify-end items-start">
+                <span
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-mono font-semibold border"
+                  style={{
+                    color: feature.accent,
+                    borderColor: feature.accent + '28',
+                    background: feature.accent + '0f',
+                  }}
+                >
+                  {feature.pill}
+                </span>
+              </div>
+
+              {/* Hover accent line */}
+              <div
+                className="absolute left-0 top-0 bottom-0 w-px opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{ background: feature.accent + '50' }}
+              />
+            </div>
+          ))}
+
+          {/* Bottom border */}
+          <div className="border-t border-white/[0.06]" />
         </div>
       </div>
     </section>

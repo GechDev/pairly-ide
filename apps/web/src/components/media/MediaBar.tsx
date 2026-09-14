@@ -53,8 +53,8 @@ export function MediaBar({
       {/* Left: Call Status and Error Indicator */}
       <div className="flex items-center gap-2 text-xs">
         {isConnected ? (
-          <div className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="flex items-center gap-1.5 text-[#FF0000] font-semibold">
+            <span className="h-2 w-2 rounded-full bg-[#FF0000] animate-pulse" />
             <span>WebRTC Connected</span>
           </div>
         ) : isConnecting ? (
@@ -85,7 +85,7 @@ export function MediaBar({
             data-testid="join-call-btn"
             disabled={isConnecting}
             onClick={onConnect}
-            className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-md hover:bg-emerald-500 active:scale-95 transition-all disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-lg bg-[#FF0000] px-3 py-1.5 text-xs font-bold text-white shadow-md hover:bg-[#e60000] active:scale-95 transition-all disabled:opacity-50"
           >
             {isConnecting ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />

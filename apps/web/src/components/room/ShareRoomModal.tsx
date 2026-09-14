@@ -149,8 +149,8 @@ export function ShareRoomModal({
                 >
                   {copiedCode ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span className="text-emerald-400">Copied</span>
+                      <Check className="w-3.5 h-3.5 text-[#FF0000]" />
+                      <span className="text-[#FF0000]">Copied</span>
                     </>
                   ) : (
                     <>

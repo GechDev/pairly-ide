@@ -10,12 +10,10 @@ import {
   Trash2,
   CheckCircle2,
   Loader2,
-  Code2,
   AlertTriangle,
   ArrowLeft,
-  Moon,
-  Sun,
   Sliders,
+  Sparkles,
 } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -113,123 +111,186 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
-      {/* Header */}
-      <header className="h-14 border-b border-slate-800 bg-slate-900/80 px-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Pairly</span>
-          </Link>
-          <span className="text-slate-600">/</span>
-          <h1 className="text-sm font-bold text-slate-200">Account & Privacy Settings</h1>
-        </div>
-
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600/20 text-brand-400 border border-brand-500/30">
-          <Settings className="h-4 w-4" />
-        </div>
-      </header>
+    <div
+      className="min-h-screen text-[var(--fg-primary)] flex flex-col font-sans"
+      style={{ backgroundColor: 'var(--canvas)' }}
+    >
+      {/* Background glow */}
+      <div
+        className="pointer-events-none fixed inset-0 opacity-30"
+        style={{
+          background:
+            'radial-gradient(ellipse 60% 30% at 50% 0%, rgba(255, 0, 0, 0.08), transparent 70%)',
+        }}
+      />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-4xl w-full mx-auto p-6 md:p-8 space-y-8">
+      <main className="relative flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-8">
+        {/* Page Title */}
+        <div className="flex items-start gap-4 pb-6 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+          <div
+            className="p-3 rounded-2xl flex items-center justify-center shrink-0"
+            style={{
+              background: 'rgba(255, 0, 0, 0.08)',
+              border: '1px solid rgba(255, 0, 0, 0.2)',
+              color: 'var(--accent-teal)',
+            }}
+          >
+            <Settings className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--fg-primary)]">
+              Account &amp; Workspace Preferences
+            </h1>
+            <p className="text-xs text-[var(--fg-muted)] mt-1">
+              Personalize your Monaco editor environment, developer identity, and manage GDPR data exports.
+            </p>
+          </div>
+        </div>
+
         {/* Profile Card */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl backdrop-blur-sm">
-          <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-800/80">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-brand-400 font-bold border border-slate-700">
+        <div
+          className="rounded-2xl p-6 sm:p-8 shadow-xl backdrop-blur-sm transition-all"
+          style={{
+            backgroundColor: 'var(--canvas-subtle)',
+            border: '1px solid var(--border-subtle)',
+          }}
+        >
+          <div
+            className="flex items-center justify-between mb-6 pb-5 border-b"
+            style={{ borderColor: 'var(--border-subtle)' }}
+          >
+            <div className="flex items-center gap-3.5">
+              <div
+                className="flex h-10 w-10 items-center justify-center rounded-xl"
+                style={{
+                  background: 'var(--canvas-elevated)',
+                  border: '1px solid var(--border-prominent)',
+                  color: 'var(--accent-teal)',
+                }}
+              >
                 <User className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-slate-100">Profile Information</h2>
-                <p className="text-xs text-slate-400">Update your display name and email address</p>
+                <h2 className="text-base font-bold text-[var(--fg-primary)]">Profile Information</h2>
+                <p className="text-xs text-[var(--fg-muted)]">
+                  Update your global display name and notification email
+                </p>
               </div>
             </div>
             {saveSuccess && (
-              <span className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
+              <span
+                className="flex items-center gap-1.5 text-xs px-3 py-1 rounded-lg"
+                style={{
+                  background: 'rgba(255, 0, 0, 0.1)',
+                  color: 'var(--accent-teal)',
+                  border: '1px solid rgba(255, 0, 0, 0.3)',
+                }}
+              >
                 <CheckCircle2 className="h-3.5 w-3.5" />
-                Settings Saved
+                Preferences Saved
               </span>
             )}
           </div>
 
-          <form onSubmit={handleSaveProfile} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form onSubmit={handleSaveProfile} className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                <label className="block text-xs font-mono uppercase tracking-wider text-[var(--fg-muted)] mb-2">
                   Display Name
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3.5 py-2 text-xs text-slate-200 focus:border-brand-500 focus:outline-none"
+                  className="w-full rounded-xl px-3.5 py-2.5 text-xs text-[var(--fg-primary)] transition-all focus:outline-none"
+                  style={{
+                    backgroundColor: 'var(--canvas-elevated)',
+                    border: '1px solid var(--border-prominent)',
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = 'var(--accent-teal)')}
+                  onBlur={(e) => (e.target.style.borderColor = 'var(--border-prominent)')}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                <label className="block text-xs font-mono uppercase tracking-wider text-[var(--fg-muted)] mb-2">
                   Email Address
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3.5 py-2 text-xs text-slate-200 focus:border-brand-500 focus:outline-none"
+                  className="w-full rounded-xl px-3.5 py-2.5 text-xs text-[var(--fg-primary)] transition-all focus:outline-none"
+                  style={{
+                    backgroundColor: 'var(--canvas-elevated)',
+                    border: '1px solid var(--border-prominent)',
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = 'var(--accent-teal)')}
+                  onBlur={(e) => (e.target.style.borderColor = 'var(--border-prominent)')}
                 />
               </div>
             </div>
 
             {/* Editor Preferences */}
-            <div className="pt-4 border-t border-slate-800/80">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-1.5">
-                <Sliders className="h-3.5 w-3.5 text-brand-400" />
-                Editor Preferences
+            <div className="pt-6 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--fg-secondary)] mb-4 flex items-center gap-2">
+                <Sliders className="h-3.5 w-3.5 text-[var(--accent-teal)]" />
+                Monaco Editor Environment
               </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                    Font Size ({fontSize}px)
-                  </label>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-xs font-mono uppercase tracking-wider text-[var(--fg-muted)]">
+                      Font Size
+                    </label>
+                    <span className="text-xs font-mono text-[var(--accent-teal)]">{fontSize}px</span>
+                  </div>
                   <input
                     type="range"
                     min="12"
                     max="20"
                     value={fontSize}
                     onChange={(e) => setFontSize(parseInt(e.target.value, 10))}
-                    className="w-full accent-brand-500"
+                    className="w-full accent-[var(--accent-teal)]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1.5">Tab Size</label>
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[var(--fg-muted)] mb-2">
+                    Tab Indentation
+                  </label>
                   <select
                     value={tabSize}
                     onChange={(e) => setTabSize(parseInt(e.target.value, 10))}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-xs text-slate-200 focus:border-brand-500 focus:outline-none"
+                    className="w-full rounded-xl px-3 py-2 text-xs text-[var(--fg-primary)] transition-all focus:outline-none"
+                    style={{
+                      backgroundColor: 'var(--canvas-elevated)',
+                      border: '1px solid var(--border-prominent)',
+                    }}
                   >
-                    <option value="2">2 spaces</option>
+                    <option value="2">2 spaces (Recommended)</option>
                     <option value="4">4 spaces</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[var(--fg-muted)] mb-2">
                     AI In-Editor Assistant
                   </label>
                   <button
                     type="button"
                     onClick={() => setAiSuggestions(!aiSuggestions)}
-                    className={`w-full py-2 px-3 rounded-xl border text-xs font-semibold transition-all ${
-                      aiSuggestions
-                        ? 'bg-purple-600/20 text-purple-300 border-purple-500/40'
-                        : 'bg-slate-950/80 text-slate-400 border-slate-700'
-                    }`}
+                    className="w-full py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all"
+                    style={{
+                      backgroundColor: aiSuggestions ? 'rgba(255, 0, 0, 0.1)' : 'var(--canvas-elevated)',
+                      borderColor: aiSuggestions ? 'rgba(255, 0, 0, 0.4)' : 'var(--border-prominent)',
+                      color: aiSuggestions ? 'var(--accent-teal)' : 'var(--fg-muted)',
+                    }}
                   >
-                    {aiSuggestions ? 'Enabled' : 'Disabled'}
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>{aiSuggestions ? 'Active & Suggesting' : 'Muted'}</span>
                   </button>
                 </div>
               </div>
@@ -239,7 +300,11 @@ export default function SettingsPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-500 px-5 py-2 text-xs font-bold text-white shadow-lg transition-all disabled:opacity-50"
+                className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold transition-all disabled:opacity-50"
+                style={{
+                  backgroundColor: 'var(--accent-teal)',
+                  color: '#090A0D',
+                }}
               >
                 {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                 <span>Save Changes</span>
@@ -249,24 +314,46 @@ export default function SettingsPage() {
         </div>
 
         {/* Data Privacy & GDPR Section (FR-ACCT-03..04, AT-11) */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl backdrop-blur-sm space-y-6">
-          <div className="flex items-center gap-3 pb-4 border-b border-slate-800/80">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600/20 text-indigo-400 font-bold border border-indigo-500/30">
+        <div
+          className="rounded-2xl p-6 sm:p-8 shadow-xl backdrop-blur-sm space-y-6"
+          style={{
+            backgroundColor: 'var(--canvas-subtle)',
+            border: '1px solid var(--border-subtle)',
+          }}
+        >
+          <div
+            className="flex items-center gap-3.5 pb-5 border-b"
+            style={{ borderColor: 'var(--border-subtle)' }}
+          >
+            <div
+              className="flex h-10 w-10 items-center justify-center rounded-xl"
+              style={{
+                background: 'rgba(0, 194, 255, 0.08)',
+                border: '1px solid rgba(0, 194, 255, 0.25)',
+                color: 'var(--accent-cyan)',
+              }}
+            >
               <Shield className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-100">Data Privacy & Controls (GDPR)</h2>
-              <p className="text-xs text-slate-400">
+              <h2 className="text-base font-bold text-[var(--fg-primary)]">Data Privacy &amp; Controls (GDPR)</h2>
+              <p className="text-xs text-[var(--fg-muted)]">
                 Manage your personal data exports, room ownership, and privacy compliance
               </p>
             </div>
           </div>
 
           {/* Export Data Card */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+          <div
+            className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl p-5"
+            style={{
+              backgroundColor: 'var(--canvas-elevated)',
+              border: '1px solid var(--border-subtle)',
+            }}
+          >
             <div>
-              <h4 className="text-xs font-bold text-slate-200">Export All Account Data</h4>
-              <p className="text-[11px] text-slate-400 mt-0.5">
+              <h4 className="text-xs font-bold text-[var(--fg-primary)]">Export All Account Data</h4>
+              <p className="text-[11px] text-[var(--fg-muted)] mt-1">
                 Download a JSON archive containing your profile, preferences, hosted rooms, and checkpoints (FR-ACCT-03).
               </p>
             </div>
@@ -275,26 +362,36 @@ export default function SettingsPage() {
               data-testid="export-data-btn"
               disabled={exporting}
               onClick={handleExportData}
-              className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 px-3.5 py-2 text-xs font-semibold text-slate-200 transition-all flex-shrink-0 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold text-[var(--fg-primary)] transition-all flex-shrink-0 disabled:opacity-50"
+              style={{
+                backgroundColor: 'var(--canvas-subtle)',
+                border: '1px solid var(--border-prominent)',
+              }}
             >
               {exporting ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
-                <Download className="h-3.5 w-3.5 text-indigo-400" />
+                <Download className="h-3.5 w-3.5 text-[var(--accent-cyan)]" />
               )}
               <span>Export JSON Archive</span>
             </button>
           </div>
 
           {/* Danger Zone: Account Deletion */}
-          <div className="rounded-xl border border-rose-900/40 bg-rose-950/20 p-4">
+          <div
+            className="rounded-xl p-5"
+            style={{
+              backgroundColor: 'rgba(239, 68, 68, 0.05)',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+            }}
+          >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h4 className="text-xs font-bold text-rose-300 flex items-center gap-1.5">
+                <h4 className="text-xs font-bold text-rose-400 flex items-center gap-1.5">
                   <AlertTriangle className="h-4 w-4" />
                   Danger Zone: Delete Account
                 </h4>
-                <p className="text-[11px] text-rose-300/80 mt-0.5">
+                <p className="text-[11px] text-rose-300/80 mt-1">
                   Permanently delete your profile and cascade delete all hosted rooms and checkpoints (FR-ACCT-04, AT-11).
                 </p>
               </div>
@@ -302,7 +399,7 @@ export default function SettingsPage() {
                 type="button"
                 data-testid="delete-account-btn"
                 onClick={() => setIsDeleteModalOpen(true)}
-                className="flex items-center gap-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-rose-600/20 transition-all flex-shrink-0"
+                className="flex items-center gap-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-rose-600/20 transition-all flex-shrink-0"
               >
                 <Trash2 className="h-3.5 w-3.5" />
                 <span>Delete Account</span>
@@ -314,27 +411,37 @@ export default function SettingsPage() {
 
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-2xl border border-rose-900/50 bg-slate-900 p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-in fade-in duration-200">
+          <div
+            className="w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4"
+            style={{
+              backgroundColor: 'var(--canvas-subtle)',
+              border: '1px solid rgba(239, 68, 68, 0.4)',
+            }}
+          >
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-600/20 text-rose-400 border border-rose-500/30">
                 <AlertTriangle className="h-5 w-5" />
               </div>
               <div>
                 <h3 className="text-base font-bold text-rose-300">Confirm Account Deletion</h3>
-                <p className="text-xs text-slate-400">This action cannot be undone.</p>
+                <p className="text-xs text-[var(--fg-muted)]">This action cannot be undone.</p>
               </div>
             </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed">
+            <p className="text-xs text-[var(--fg-secondary)] leading-relaxed">
               Are you sure you want to delete your account? All hosted rooms, participant records, and workspace snapshots will be permanently deleted per GDPR specifications.
             </p>
 
-            <div className="flex justify-end gap-3 pt-2">
+            <div className="flex justify-end gap-3 pt-3">
               <button
                 type="button"
                 onClick={() => setIsDeleteModalOpen(false)}
-                className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-700 hover:text-white transition-all"
+                className="rounded-xl px-4 py-2 text-xs font-semibold text-[var(--fg-secondary)] hover:text-white transition-all"
+                style={{
+                  backgroundColor: 'var(--canvas-elevated)',
+                  border: '1px solid var(--border-subtle)',
+                }}
               >
                 Cancel
               </button>
