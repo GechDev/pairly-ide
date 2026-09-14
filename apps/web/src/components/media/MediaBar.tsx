@@ -42,6 +42,7 @@ export function MediaBar({
   onToggleScreenShare,
   onConnect,
   onDisconnect,
+  onOpenSettings,
   className = '',
 }: MediaBarProps) {
   return (

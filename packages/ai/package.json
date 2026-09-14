@@ -25,6 +25,11 @@
       "types": "./dist/tokens.d.ts",
       "import": "./dist/tokens.js",
       "default": "./dist/tokens.js"
+    },
+    "./diff": {
+      "types": "./dist/diff.d.ts",
+      "import": "./dist/diff.js",
+      "default": "./dist/diff.js"
     }
   },
   "scripts": {
@@ -37,6 +42,7 @@
   },
   "devDependencies": {
     "@pairly/config": "workspace:*",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
   }
 }
