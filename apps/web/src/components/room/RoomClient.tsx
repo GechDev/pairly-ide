@@ -122,7 +122,14 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const liveKit = useLiveKit({
     roomCode,
+    participantId: participant?.id,
     participantName: participant?.displayName || 'Guest',
+    activeParticipants,
+    onSendWsMessage: (msg) => {
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify(msg));
+      }
+    },
   });
 
   const follow = useFollow({
@@ -205,17 +212,8 @@ export function RoomClient({ roomCode }: RoomClientProps) {
       currentParticipant = generateGuestIdentity('EDITOR', storedUsername);
       sessionStorage.setItem(`pairly_guest_${roomCode}`, JSON.stringify(currentParticipant));
     } else {
-      // Exactly as in CodeX: if no username exists, redirect to /?room=${roomCode} to prompt for name!
-      // In test environments or demo fallback, preserve automatic identity
-      const isTestEnv =
-        typeof window !== 'undefined' &&
-        (Boolean((window as unknown as { __PAIRLY_TEST_ENV?: boolean }).__PAIRLY_TEST_ENV) ||
-          roomCode === 'pair-demo');
-      if (!isTestEnv) {
-        router.replace(`/?room=${roomCode}`);
-        return;
-      }
-      currentParticipant = generateGuestIdentity('EDITOR');
+      // Instant Guest Access: generate identity directly so any browser profile or shared link joins immediately
+      currentParticipant = generateGuestIdentity('EDITOR', storedUsername || undefined);
       sessionStorage.setItem(`pairly_guest_${roomCode}`, JSON.stringify(currentParticipant));
     }
 
@@ -364,6 +362,10 @@ export function RoomClient({ roomCode }: RoomClientProps) {
                 lastUpdate: Date.now(),
               },
             }));
+          } else if (msg.type === 'WEBRTC_SIGNAL') {
+            liveKit.handleWebRtcSignal(msg.fromParticipantId, msg.signal);
+          } else if (msg.type === 'MEDIA_STATE_UPDATE') {
+            liveKit.handleMediaStateUpdate(msg.participantId, msg.mediaState);
           }
         } catch {}
       };

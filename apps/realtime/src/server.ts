@@ -290,6 +290,38 @@ export function buildServer(options: ServerOptions = {}): FastifyInstance {
               return;
             }
 
+            // Relay WebRTC Peer Signaling (FR-COMM-03..06)
+            if (data.type === 'WEBRTC_SIGNAL') {
+              const { targetParticipantId, signal } = data;
+              if (targetParticipantId) {
+                const targetSession = roomManager.getParticipantSession(roomCode, targetParticipantId);
+                if (targetSession && targetSession.socket.readyState === targetSession.socket.OPEN) {
+                  targetSession.socket.send(
+                    JSON.stringify({
+                      type: 'WEBRTC_SIGNAL',
+                      fromParticipantId: participant.id,
+                      signal,
+                    })
+                  );
+                }
+              }
+              return;
+            }
+
+            // Real-Time Media State Updates (Camera, Mic, Screen)
+            if (data.type === 'MEDIA_STATE_UPDATE') {
+              roomManager.broadcast(
+                roomCode,
+                {
+                  type: 'MEDIA_STATE_UPDATE',
+                  participantId: participant.id,
+                  mediaState: data.mediaState,
+                },
+                participant.id
+              );
+              return;
+            }
+
             // Enforce RBAC on Code Execution (FR-EXEC-01)
             if (data.type === 'EXECUTE_CODE') {
               const auth = authorizeAction('EXECUTE_CODE', {

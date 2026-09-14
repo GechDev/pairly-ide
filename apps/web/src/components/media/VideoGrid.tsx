@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Mic, MicOff, Monitor, Volume2 } from 'lucide-react';
+import { Mic, MicOff, Monitor, Volume2, Video } from 'lucide-react';
 import type { ParticipantMediaState } from './useLiveKit';
 import { TrackVideo } from './TrackVideo';
 
@@ -132,6 +132,19 @@ export function VideoGrid({
           >
             {peer.isVideoActive && peer.videoTrack ? (
               <TrackVideo track={peer.videoTrack} mirrored={false} />
+            ) : peer.isVideoActive ? (
+              <div className="flex flex-col items-center justify-center text-slate-400">
+                <div
+                  className="flex h-12 w-12 items-center justify-center rounded-full text-white font-bold text-sm shadow-md animate-pulse"
+                  style={{ backgroundColor: peer.color || '#6366f1' }}
+                >
+                  {peer.name.slice(0, 2).toUpperCase()}
+                </div>
+                <div className="flex items-center gap-1.5 mt-2 text-[11px] text-emerald-400 font-medium">
+                  <Video className="w-3.5 h-3.5" />
+                  <span>Camera Active (Connecting...)</span>
+                </div>
+              </div>
             ) : (
               <div className="flex flex-col items-center justify-center text-slate-400">
                 <div

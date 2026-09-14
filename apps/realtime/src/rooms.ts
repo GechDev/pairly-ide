@@ -109,6 +109,17 @@ export class RoomManager {
   }
 
   /**
+   * Returns a specific participant's socket session.
+   */
+  public getParticipantSession(
+    roomCode: string,
+    participantId: string
+  ): ParticipantSession | undefined {
+    const room = this.rooms.get(roomCode);
+    return room?.participants.get(participantId);
+  }
+
+  /**
    * Dynamically updates a participant's role (FR-ROOM-06).
    */
   public updateParticipantRole(
