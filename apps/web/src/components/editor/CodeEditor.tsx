@@ -12,6 +12,7 @@ import type { EditorSettings } from '../room/EditorSettingsModal';
 export interface CodeEditorProps {
   initialCode?: string;
   initialUpdate?: string;
+  isCollaborative?: boolean;
   language?: string;
   readOnly?: boolean;
   participant: ParticipantIdentity;
@@ -24,6 +25,7 @@ export interface CodeEditorProps {
 export function CodeEditor({
   initialCode = '',
   initialUpdate,
+  isCollaborative = false,
   language = 'typescript',
   readOnly = false,
   participant,
@@ -33,7 +35,7 @@ export function CodeEditor({
   settings,
 }: CodeEditorProps) {
   const [session, setSession] = useState<CollaborativeSession | null>(null);
-  const [code, setCode] = useState(initialCode);
+  const [code, setCode] = useState(isCollaborative && !initialUpdate ? '' : initialCode);
   const [cursors, setCursors] = useState<RemoteCursor[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isLocalUpdateRef = useRef(false);
@@ -41,17 +43,20 @@ export function CodeEditor({
 
   // Initialize collaborative Yjs CRDT session
   useEffect(() => {
-    const colabSession = createCollaborativeSession(
-      initialUpdate ? '' : initialCodeRef.current,
-      participant
-    );
+    // If in a collaborative room, start with empty doc to receive authoritative server root items
+    const seedText = isCollaborative ? '' : initialCodeRef.current;
+    const colabSession = createCollaborativeSession(seedText, participant);
+
     if (initialUpdate) {
       colabSession.applyEncodedUpdate(initialUpdate);
     }
     setSession(colabSession);
 
     // Initial content
-    setCode(colabSession.ytext.toString());
+    const initialDocText = colabSession.ytext.toString();
+    if (initialDocText) {
+      setCode(initialDocText);
+    }
 
     // Listen to Yjs CRDT document updates
     const unbindUpdate = colabSession.onUpdate((_base64, origin) => {
@@ -88,7 +93,32 @@ export function CodeEditor({
       unbindCursors();
       colabSession.destroy();
     };
-  }, [participant.id]);
+  }, [participant.id, isCollaborative]);
+
+  // Synchronize dynamic initialUpdate snapshot when received after mount
+  useEffect(() => {
+    if (initialUpdate && session) {
+      if (session.ytext.length === 0) {
+        session.applyEncodedUpdate(initialUpdate);
+        const text = session.ytext.toString();
+        setCode(text);
+        onCodeChange?.(text);
+      }
+    }
+  }, [initialUpdate, session, onCodeChange]);
+
+  // Offline fallback: if collaborative server does not respond within 1500ms, populate template
+  useEffect(() => {
+    if (!isCollaborative) return;
+    const timer = setTimeout(() => {
+      if (session && session.ytext.length === 0 && initialCodeRef.current) {
+        session.ytext.insert(0, initialCodeRef.current);
+        setCode(initialCodeRef.current);
+        onCodeChange?.(initialCodeRef.current);
+      }
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [isCollaborative, session, onCodeChange]);
 
   // Handle local text edits with differential Yjs CRDT operations
   const handleTextChange = useCallback(

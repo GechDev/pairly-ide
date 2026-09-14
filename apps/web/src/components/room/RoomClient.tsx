@@ -198,39 +198,38 @@ export function RoomClient({ roomCode }: RoomClientProps) {
     }
   }, [workspaceState.activeFileId, participant]);
 
+  const liveKitRef = useRef(liveKit);
+  liveKitRef.current = liveKit;
+
   useEffect(() => {
-    // 1. Retrieve or generate guest identity (CodeX parity)
-    let currentParticipant: ParticipantIdentity;
+    // 1. Retrieve guest identity for this specific room (CodeX parity)
     const storedIdentity = sessionStorage.getItem(`pairly_guest_${roomCode}`);
-    const storedUsername = sessionStorage.getItem('pairly_username');
 
     if (storedIdentity) {
       try {
-        currentParticipant = JSON.parse(storedIdentity);
-      } catch {
-        currentParticipant = generateGuestIdentity('EDITOR', storedUsername || undefined);
-        sessionStorage.setItem(`pairly_guest_${roomCode}`, JSON.stringify(currentParticipant));
-      }
-    } else if (storedUsername) {
-      currentParticipant = generateGuestIdentity('EDITOR', storedUsername);
-      sessionStorage.setItem(`pairly_guest_${roomCode}`, JSON.stringify(currentParticipant));
-    } else {
-      // Prompt user for their display name
-      setIsJoinPromptOpen(true);
-      currentParticipant = generateGuestIdentity('EDITOR');
-      sessionStorage.setItem(`pairly_guest_${roomCode}`, JSON.stringify(currentParticipant));
+        const parsed: ParticipantIdentity = JSON.parse(storedIdentity);
+        setParticipant(parsed);
+        setActiveParticipants([parsed]);
+        setIsJoinPromptOpen(false);
+        return;
+      } catch {}
     }
 
-    setParticipant(currentParticipant);
-    setActiveParticipants([currentParticipant]);
+    // No identity stored for this room => Show JoinRoomPromptModal
+    setIsJoinPromptOpen(true);
+    setParticipant(null);
+  }, [roomCode]);
 
-    // 2. Establish connection to realtime service if available
+  useEffect(() => {
+    if (!participant) return;
+
+    // 2. Establish connection to realtime service once participant identity is established
     const rawPayload = JSON.stringify({
-      participantId: currentParticipant.id,
-      displayName: currentParticipant.displayName,
-      avatar: currentParticipant.avatar,
-      color: currentParticipant.color,
-      role: currentParticipant.role,
+      participantId: participant.id,
+      displayName: participant.displayName,
+      avatar: participant.avatar,
+      color: participant.color,
+      role: participant.role,
       roomCode,
     });
     const encodedPayload =
@@ -282,7 +281,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         try {
           const msg = JSON.parse(event.data);
           if (msg.type === 'ROOM_JOINED') {
-            setActiveParticipants(msg.participants || [currentParticipant]);
+            setActiveParticipants(msg.participants || (participant ? [participant] : []));
             if (msg.docUpdate) {
               setServerDocSnapshot(msg.docUpdate);
               if (activeSessionRef.current) {
@@ -369,9 +368,9 @@ export function RoomClient({ roomCode }: RoomClientProps) {
               },
             }));
           } else if (msg.type === 'WEBRTC_SIGNAL') {
-            liveKit.handleWebRtcSignal(msg.fromParticipantId, msg.signal);
+            liveKitRef.current.handleWebRtcSignal(msg.fromParticipantId, msg.signal);
           } else if (msg.type === 'MEDIA_STATE_UPDATE') {
-            liveKit.handleMediaStateUpdate(msg.participantId, msg.mediaState);
+            liveKitRef.current.handleMediaStateUpdate(msg.participantId, msg.mediaState);
           }
         } catch {}
       };
@@ -396,7 +395,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         ws.close();
       }
     };
-  }, [roomCode]);
+  }, [roomCode, participant?.id]);
 
   const copyRoomLink = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -952,6 +951,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             {participant && (
               <CodeEditor
                 key={workspaceState.activeFileId || 'empty'}
+                isCollaborative={true}
                 language="typescript"
                 participant={participant}
                 settings={editorSettings}
@@ -1270,18 +1270,8 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           const updated = generateGuestIdentity('EDITOR', chosenName);
           sessionStorage.setItem(`pairly_guest_${roomCode}`, JSON.stringify(updated));
           setParticipant(updated);
+          setActiveParticipants([updated]);
           setIsJoinPromptOpen(false);
-
-          if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-            wsRef.current.send(
-              JSON.stringify({
-                type: 'PRESENCE_UPDATE',
-                participantId: updated.id,
-                displayName: updated.displayName,
-                fileId: workspaceState.activeFileId,
-              })
-            );
-          }
         }}
       />
     </div>
