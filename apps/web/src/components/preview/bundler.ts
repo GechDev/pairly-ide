@@ -8,12 +8,19 @@ export interface BundlerResult {
   errors: string[];
 }
 
+export interface BundlerOptions {
+  enableTailwind?: boolean;
+}
+
 /**
  * Sandboxed In-Memory HTML/CSS/JS Bundler.
  * Bundles multi-file workspace items into an isolated HTML document in <300ms per FR-PREV-01..02.
  * Inlines scripts, styles, and assets with CSP meta headers to prevent network/storage exfiltration (FR-PREV-03).
  */
-export function bundleWorkspaceForPreview(items: WorkspaceItem[]): BundlerResult {
+export function bundleWorkspaceForPreview(
+  items: WorkspaceItem[],
+  options?: BundlerOptions
+): BundlerResult {
   const startTime = performance.now();
   const errors: string[] = [];
 
@@ -112,10 +119,17 @@ export function bundleWorkspaceForPreview(items: WorkspaceItem[]): BundlerResult
   );
 
   // 5. Inject Preview Console Interceptor, CSP meta header, and Error Banner Overlay
-  const cspMeta = `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; style-src 'unsafe-inline'; img-src data: https: blob:; font-src data:; connect-src 'none';">`;
+  const tailwindScript = options?.enableTailwind
+    ? `<script src="https://cdn.tailwindcss.com"></script>`
+    : '';
+
+  const cspMeta = options?.enableTailwind
+    ? `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com; style-src 'unsafe-inline'; img-src data: https: blob:; font-src data:; connect-src 'none';">`
+    : `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; style-src 'unsafe-inline'; img-src data: https: blob:; font-src data:; connect-src 'none';">`;
 
   const consoleScript = `
 ${cspMeta}
+${tailwindScript}
 <script>
   (function() {
     function showRuntimeError(msg, line, col) {

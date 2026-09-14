@@ -12,6 +12,8 @@ import {
   Loader2,
   Copy,
   Check,
+  RotateCw,
+  ExternalLink,
 } from 'lucide-react';
 import type { WorkspaceItem } from '../workspace/workspaceState';
 import { bundleWorkspaceForPreview } from './bundler';
@@ -29,6 +31,8 @@ export interface ConsoleLogMessage {
 
 export function WebPreview({ items }: WebPreviewProps) {
   const [viewportMode, setViewportMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [isLandscape, setIsLandscape] = useState(false);
+  const [enableTailwind, setEnableTailwind] = useState(false);
   const [key, setKey] = useState(0);
   const [bundledHtml, setBundledHtml] = useState('');
   const [bundleDuration, setBundleDuration] = useState(0);
@@ -38,12 +42,13 @@ export function WebPreview({ items }: WebPreviewProps) {
   const [logs, setLogs] = useState<ConsoleLogMessage[]>([]);
   const [copied, setCopied] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const popoutWindowRef = useRef<Window | null>(null);
 
-  // Re-bundle when workspace items change (debounced < 300ms per FR-PREV-02)
+  // Re-bundle when workspace items or tailwind option change (debounced < 300ms per FR-PREV-02)
   useEffect(() => {
     setIsCompiling(true);
     const timer = setTimeout(() => {
-      const result = bundleWorkspaceForPreview(items);
+      const result = bundleWorkspaceForPreview(items, { enableTailwind });
       setBundledHtml(result.html);
       setBundleDuration(result.durationMs);
       setEntrypoint(result.entrypoint);
@@ -51,7 +56,18 @@ export function WebPreview({ items }: WebPreviewProps) {
     }, 120);
 
     return () => clearTimeout(timer);
-  }, [items]);
+  }, [items, enableTailwind]);
+
+  // Sync updates to popout detached window if open
+  useEffect(() => {
+    if (popoutWindowRef.current && !popoutWindowRef.current.closed) {
+      try {
+        popoutWindowRef.current.document.open();
+        popoutWindowRef.current.document.write(bundledHtml);
+        popoutWindowRef.current.document.close();
+      } catch {}
+    }
+  }, [bundledHtml]);
 
   // Listen for message events from preview iframe
   useEffect(() => {
@@ -93,7 +109,33 @@ export function WebPreview({ items }: WebPreviewProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handlePopoutPreview = () => {
+    if (typeof window === 'undefined') return;
+    const popout = window.open(
+      '',
+      '_blank',
+      'width=960,height=720,menubar=no,toolbar=no,location=no,status=no'
+    );
+    if (popout) {
+      popout.document.open();
+      popout.document.write(bundledHtml);
+      popout.document.close();
+      popoutWindowRef.current = popout;
+    }
+  };
+
   const errorCount = logs.filter((l) => l.level === 'error').length;
+
+  const viewportContainerClass =
+    viewportMode === 'desktop'
+      ? 'w-full h-full'
+      : viewportMode === 'tablet'
+      ? isLandscape
+        ? 'w-[1024px] max-w-full h-full'
+        : 'w-[768px] max-w-full h-full'
+      : isLandscape
+      ? 'w-[667px] max-w-full h-[375px]'
+      : 'w-[375px] max-w-full h-[667px]';
 
   return (
     <div
@@ -136,45 +178,90 @@ export function WebPreview({ items }: WebPreviewProps) {
           </div>
         </div>
 
-        {/* Center: Responsive Viewport Switchers */}
-        <div className="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800">
+        {/* Center: Responsive Viewport Switchers & Orientation Toggle */}
+        <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800">
+            <button
+              data-testid="viewport-desktop-btn"
+              onClick={() => setViewportMode('desktop')}
+              title="Desktop View (100%)"
+              className={`p-1.5 rounded-md text-xs transition-colors ${
+                viewportMode === 'desktop'
+                  ? 'bg-slate-800 text-brand-400 font-medium'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Monitor className="w-3.5 h-3.5" />
+            </button>
+            <button
+              data-testid="viewport-tablet-btn"
+              onClick={() => setViewportMode('tablet')}
+              title="Tablet View"
+              className={`p-1.5 rounded-md text-xs transition-colors ${
+                viewportMode === 'tablet'
+                  ? 'bg-slate-800 text-brand-400 font-medium'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Tablet className="w-3.5 h-3.5" />
+            </button>
+            <button
+              data-testid="viewport-mobile-btn"
+              onClick={() => setViewportMode('mobile')}
+              title="Mobile View"
+              className={`p-1.5 rounded-md text-xs transition-colors ${
+                viewportMode === 'mobile'
+                  ? 'bg-slate-800 text-brand-400 font-medium'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Orientation Toggle for mobile & tablet */}
+          {(viewportMode === 'tablet' || viewportMode === 'mobile') && (
+            <button
+              data-testid="preview-orientation-toggle"
+              onClick={() => setIsLandscape((prev) => !prev)}
+              title={isLandscape ? 'Switch to Portrait' : 'Switch to Landscape'}
+              className={`p-1.5 rounded-lg border text-xs transition-colors ${
+                isLandscape
+                  ? 'bg-brand-500/20 text-brand-300 border-brand-500/40'
+                  : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
+              }`}
+            >
+              <RotateCw className="w-3.5 h-3.5" />
+            </button>
+          )}
+
+          {/* Tailwind CSS CDN Preset Toggle */}
           <button
-            onClick={() => setViewportMode('desktop')}
-            title="Desktop View (100%)"
-            className={`p-1.5 rounded-md text-xs transition-colors ${
-              viewportMode === 'desktop'
-                ? 'bg-slate-800 text-brand-400 font-medium'
-                : 'text-slate-400 hover:text-slate-200'
+            type="button"
+            data-testid="toggle-tailwind-cdn-btn"
+            onClick={() => setEnableTailwind((prev) => !prev)}
+            title={enableTailwind ? 'Tailwind CDN Enabled' : 'Enable Tailwind CSS via CDN'}
+            className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium border transition-colors ${
+              enableTailwind
+                ? 'bg-teal-500/20 text-teal-300 border-teal-500/40'
+                : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-300'
             }`}
           >
-            <Monitor className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={() => setViewportMode('tablet')}
-            title="Tablet View (768px)"
-            className={`p-1.5 rounded-md text-xs transition-colors ${
-              viewportMode === 'tablet'
-                ? 'bg-slate-800 text-brand-400 font-medium'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Tablet className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={() => setViewportMode('mobile')}
-            title="Mobile View (375px)"
-            className={`p-1.5 rounded-md text-xs transition-colors ${
-              viewportMode === 'mobile'
-                ? 'bg-slate-800 text-brand-400 font-medium'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Smartphone className="w-3.5 h-3.5" />
+            <span>Tailwind</span>
           </button>
         </div>
 
-        {/* Right: Console Drawer Toggle */}
-        <div className="flex items-center gap-1">
+        {/* Right: Popout & Console Drawer Toggle */}
+        <div className="flex items-center gap-1.5">
+          <button
+            data-testid="detach-preview-btn"
+            onClick={handlePopoutPreview}
+            title="Pop out preview into detached window"
+            className="p-1.5 rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+          </button>
+
           <button
             onClick={() => setShowConsole((prev) => !prev)}
             title="Toggle Preview Console"
@@ -198,13 +285,7 @@ export function WebPreview({ items }: WebPreviewProps) {
       {/* Preview Viewport Canvas */}
       <div className="flex-1 bg-slate-950 flex items-center justify-center p-2 overflow-auto">
         <div
-          className={`h-full transition-all duration-300 bg-white rounded-md shadow-2xl overflow-hidden border border-slate-800 ${
-            viewportMode === 'desktop'
-              ? 'w-full'
-              : viewportMode === 'tablet'
-              ? 'w-[768px]'
-              : 'w-[375px]'
-          }`}
+          className={`transition-all duration-300 bg-white rounded-md shadow-2xl overflow-hidden border border-slate-800 ${viewportContainerClass}`}
         >
           {/* Strictly Sandboxed iframe per SEC-02, FR-PREV-03, and AT-06 */}
           <iframe
