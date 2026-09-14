@@ -21,6 +21,7 @@ import {
   Settings,
   LogOut,
   Info,
+  Search,
 } from 'lucide-react';
 import type {
   ParticipantIdentity,
@@ -64,6 +65,7 @@ import {
 import { AboutModal } from './AboutModal';
 import { FilePreviewModal } from '../workspace/FilePreviewModal';
 import { JoinRoomPromptModal } from './JoinRoomPromptModal';
+import { CommandPaletteModal } from './CommandPaletteModal';
 
 interface RoomClientProps {
   roomCode: string;
@@ -111,6 +113,8 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
   const [filePreviewData, setFilePreviewData] = useState<{
     fileName: string;
     content: string;
@@ -166,7 +170,10 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const isModifier = e.ctrlKey || e.metaKey;
-      if (isModifier && e.key === 'Enter') {
+      if (isModifier && (e.key === 'k' || (e.shiftKey && e.key.toLowerCase() === 'p'))) {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      } else if (isModifier && e.key === 'Enter') {
         e.preventDefault();
         handleRunCode();
       } else if (isModifier && e.key === 's') {
@@ -844,6 +851,20 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           </button>
 
           <button
+            id="command-palette-btn"
+            data-testid="command-palette-btn"
+            onClick={() => setIsCommandPaletteOpen(true)}
+            title="Command Palette (Ctrl+K / Cmd+K)"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700/60 transition-colors"
+          >
+            <Search className="w-3.5 h-3.5 text-slate-400" />
+            <span className="hidden lg:inline text-slate-400">Commands</span>
+            <kbd className="hidden lg:inline-flex px-1 py-0.2 rounded text-[9px] font-mono bg-slate-900 border border-slate-700 text-slate-400">
+              ⌘K
+            </kbd>
+          </button>
+
+          <button
             id="about-btn"
             data-testid="about-btn"
             onClick={() => setIsAboutModalOpen(true)}
@@ -1126,6 +1147,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         isTerminalOpen={isTerminalExpanded}
         onTogglePreview={() => setIsPreviewOpen((prev) => !prev)}
         onToggleTerminal={() => setIsTerminalExpanded((prev) => !prev)}
+        onOpenDiagnostics={() => setIsDiagnosticsOpen(true)}
         onSelectLanguage={(newLang) => {
           const activeFile = workspaceState.items.find(
             (i) => i.id === workspaceState.activeFileId
@@ -1317,6 +1339,35 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           setActiveParticipants([updated]);
           setIsJoinPromptOpen(false);
         }}
+      />
+
+      {/* Quick Command Palette Modal (Ctrl+K / Cmd+K / Ctrl+Shift+P) */}
+      <CommandPaletteModal
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        workspaceFiles={workspaceState.items}
+        onSelectFile={(id) => {
+          follow.breakFollowOnInteraction();
+          workspaceManagerRef.current.openTab(id);
+        }}
+        onRunCode={handleRunCode}
+        onTogglePreview={() => setIsPreviewOpen((prev) => !prev)}
+        onToggleTerminal={() => setIsTerminalExpanded((prev) => !prev)}
+        onOpenCheckpoints={() => setIsCheckpointModalOpen(true)}
+        onOpenSettings={() => setIsSettingsModalOpen(true)}
+        onToggleChat={() => {
+          setIsChatOpen((prev) => !prev);
+          setUnreadCount(0);
+        }}
+        onToggleNotepad={() => setIsNotepadOpen((prev) => !prev)}
+        onToggleAi={() => setIsAiPanelOpen((prev) => !prev)}
+        onToggleMedia={() => setIsMediaPanelOpen((prev) => !prev)}
+        onOpenShare={() => setIsShareModalOpen(true)}
+        onOpenGitHubImport={() => setIsGitHubModalOpen(true)}
+        onOpenDiagnostics={() => setIsDiagnosticsOpen(true)}
+        onOpenAbout={() => setIsAboutModalOpen(true)}
+        onOpenReport={() => setIsReportModalOpen(true)}
+        onOpenLeave={() => setIsLeaveModalOpen(true)}
       />
     </div>
   );
