@@ -81,3 +81,27 @@ test('GitHub Actions CI pipeline is configured with quality and docker validatio
   assert.match(ciContent, /pnpm run build/, 'CI must test production building');
   assert.match(ciContent, /apps\/realtime\/Dockerfile/, 'CI must validate realtime Dockerfile');
 });
+
+test('Production environment template and deployment documentation exist (T-27)', () => {
+  const envProdPath = path.join(rootDir, '.env.production.example');
+  assert.ok(fs.existsSync(envProdPath), '.env.production.example must exist');
+  const envContent = fs.readFileSync(envProdPath, 'utf8');
+
+  assert.match(envContent, /NEXT_PUBLIC_REALTIME_URL/, 'must specify NEXT_PUBLIC_REALTIME_URL');
+  assert.match(envContent, /DATABASE_URL/, 'must specify DATABASE_URL');
+  assert.match(envContent, /REDIS_URL/, 'must specify REDIS_URL');
+  assert.match(envContent, /LIVEKIT_URL/, 'must specify LIVEKIT_URL');
+  assert.match(envContent, /PISTON_URL/, 'must specify PISTON_URL');
+
+  const deployDocPath = path.join(rootDir, 'docs', 'DEPLOYMENT.md');
+  assert.ok(fs.existsSync(deployDocPath), 'docs/DEPLOYMENT.md must exist');
+  const deployDocContent = fs.readFileSync(deployDocPath, 'utf8');
+
+  assert.match(deployDocContent, /Vercel/, 'deployment guide must document Vercel');
+  assert.match(deployDocContent, /Railway/, 'deployment guide must document Railway');
+  assert.match(
+    deployDocContent,
+    /\/health/,
+    'deployment guide must mention health check verification',
+  );
+});
