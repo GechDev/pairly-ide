@@ -28,7 +28,7 @@ describe('ThemeProvider and ThemeToggle', () => {
     render(
       <ThemeProvider>
         <ThemeToggle />
-      </ThemeProvider>
+      </ThemeProvider>,
     );
 
     const button = screen.getByTestId('theme-toggle');
@@ -40,11 +40,11 @@ describe('ThemeProvider and ThemeToggle', () => {
     render(
       <ThemeProvider>
         <ThemeToggle />
-      </ThemeProvider>
+      </ThemeProvider>,
     );
 
     const button = screen.getByTestId('theme-toggle');
-    
+
     // Initial click should toggle theme
     await act(async () => {
       fireEvent.click(button);
@@ -70,7 +70,7 @@ describe('ThemeProvider and ThemeToggle', () => {
     // Suppress console error during expected exception
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     expect(() => render(<InvalidConsumer />)).toThrow(
-      'useTheme must be used within a ThemeProvider'
+      'useTheme must be used within a ThemeProvider',
     );
     spy.mockRestore();
   });

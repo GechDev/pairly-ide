@@ -85,7 +85,9 @@ export function DeviceSettingsModal({
             </div>
             <div>
               <h2 className="text-base font-semibold">Audio & Video Settings</h2>
-              <p className="text-xs text-slate-400">Configure your camera, microphone, and speakers</p>
+              <p className="text-xs text-slate-400">
+                Configure your camera, microphone, and speakers
+              </p>
             </div>
           </div>
           <button
@@ -173,7 +175,9 @@ export function DeviceSettingsModal({
                   style={{ width: `${Math.min(100, micLevel)}%` }}
                 />
               </div>
-              <span className="text-[10px] font-mono text-slate-400 w-7 text-right">{micLevel}%</span>
+              <span className="text-[10px] font-mono text-slate-400 w-7 text-right">
+                {micLevel}%
+              </span>
             </div>
           </div>
         </div>

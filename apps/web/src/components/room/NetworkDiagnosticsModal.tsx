@@ -69,10 +69,14 @@ export function NetworkDiagnosticsModal({
 
   // Quality assessment based on combined stats
   const getQuality = (avgMs: number) => {
-    if (avgMs === 0) return { label: 'Pending', color: 'text-slate-400 bg-slate-800 border-slate-700' };
-    if (avgMs < 45) return { label: 'Optimal', color: 'text-[#FF0000] bg-[#FF0000]/10 border-[#FF0000]/30' };
-    if (avgMs < 100) return { label: 'Good', color: 'text-brand-400 bg-brand-500/10 border-brand-500/30' };
-    if (avgMs < 200) return { label: 'Fair', color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' };
+    if (avgMs === 0)
+      return { label: 'Pending', color: 'text-slate-400 bg-slate-800 border-slate-700' };
+    if (avgMs < 45)
+      return { label: 'Optimal', color: 'text-[#FF0000] bg-[#FF0000]/10 border-[#FF0000]/30' };
+    if (avgMs < 100)
+      return { label: 'Good', color: 'text-brand-400 bg-brand-500/10 border-brand-500/30' };
+    if (avgMs < 200)
+      return { label: 'Fair', color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' };
     return { label: 'Degraded', color: 'text-rose-400 bg-rose-500/10 border-rose-500/30' };
   };
 
@@ -230,7 +234,11 @@ ${results.map((r) => `#${r.id} [${r.timestamp}] WS: ${r.socketMs}ms | HTTP: ${r.
                 <Radio className="w-3.5 h-3.5 text-indigo-400" />
               </div>
               <div className="text-xl font-bold font-mono text-slate-100 mt-1">
-                {socketStats.avg > 0 ? `${socketStats.avg}ms` : currentPingLatency ? `${currentPingLatency}ms` : '--'}
+                {socketStats.avg > 0
+                  ? `${socketStats.avg}ms`
+                  : currentPingLatency
+                    ? `${currentPingLatency}ms`
+                    : '--'}
               </div>
               <div className="text-[11px] text-slate-400 mt-1">
                 Min: {socketStats.min}ms · Max: {socketStats.max}ms
@@ -260,9 +268,7 @@ ${results.map((r) => `#${r.id} [${r.timestamp}] WS: ${r.socketMs}ms | HTTP: ${r.
               <div className="text-xl font-bold font-mono text-slate-100 mt-1">
                 {socketStats.jitter > 0 ? `±${socketStats.jitter}ms` : '0ms'}
               </div>
-              <div className="text-[11px] text-slate-400 mt-1">
-                Packet variance
-              </div>
+              <div className="text-[11px] text-slate-400 mt-1">Packet variance</div>
             </div>
 
             {/* Overall Rating */}
@@ -325,7 +331,11 @@ ${results.map((r) => `#${r.id} [${r.timestamp}] WS: ${r.socketMs}ms | HTTP: ${r.
                   onClick={handleCopyReport}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition-colors"
                 >
-                  {copied ? <Check className="w-3.5 h-3.5 text-[#FF0000]" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copied ? (
+                    <Check className="w-3.5 h-3.5 text-[#FF0000]" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" />
+                  )}
                   <span>{copied ? 'Copied!' : 'Copy Report'}</span>
                 </button>
               )}
@@ -398,7 +408,9 @@ ${results.map((r) => `#${r.id} [${r.timestamp}] WS: ${r.socketMs}ms | HTTP: ${r.
                           <td className="px-3 py-1.5 text-indigo-300 font-bold">{r.socketMs}ms</td>
                           <td className="px-3 py-1.5 text-amber-300 font-bold">{r.httpMs}ms</td>
                           <td className="px-3 py-1.5">
-                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full border ${sampleQuality.color}`}>
+                            <span
+                              className={`text-[10px] px-1.5 py-0.2 rounded-full border ${sampleQuality.color}`}
+                            >
                               {sampleQuality.label}
                             </span>
                           </td>

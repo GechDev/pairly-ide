@@ -36,8 +36,14 @@ export function TechTicker() {
   return (
     <div className="py-8 border-y border-white/[0.06] bg-[#111114] overflow-hidden relative">
       {/* Fade edges */}
-      <div className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none" style={{ background: 'linear-gradient(to right, #111114, transparent)' }} />
-      <div className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none" style={{ background: 'linear-gradient(to left, #111114, transparent)' }} />
+      <div
+        className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none"
+        style={{ background: 'linear-gradient(to right, #111114, transparent)' }}
+      />
+      <div
+        className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none"
+        style={{ background: 'linear-gradient(to left, #111114, transparent)' }}
+      />
 
       <div className="flex items-center gap-0">
         <div className="ticker-track flex items-center gap-0">

@@ -40,7 +40,7 @@ export async function POST(_request: NextRequest, { params }: RouteContext) {
         success: false,
         error: `Snapshot ${snapshotId} not found or could not be loaded`,
       },
-      { status: 404 }
+      { status: 404 },
     );
   } catch (err: any) {
     return NextResponse.json(
@@ -48,7 +48,7 @@ export async function POST(_request: NextRequest, { params }: RouteContext) {
         success: false,
         error: err.message || 'Failed to restore snapshot',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

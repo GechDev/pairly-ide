@@ -76,7 +76,7 @@ describe('Shared Collaborative Notepad (FR-BOARD-02, FR-BOARD-04)', () => {
     const currentFiles = workspace.getState().items;
     expect(currentFiles.length).toBe(initialFiles.length);
     expect(currentFiles.find((f) => f.name === 'main.ts')?.content).toBe(
-      initialFiles.find((f) => f.name === 'main.ts')?.content
+      initialFiles.find((f) => f.name === 'main.ts')?.content,
     );
 
     notepadSession.destroy();

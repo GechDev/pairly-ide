@@ -54,6 +54,7 @@ Whenever building, redesigning, or modifying any frontend interface:
 Never settle for generic, repetitive, template-like AI interfaces.
 
 ### Avoid:
+
 - Unnecessary purple-blue gradients and glowing backgrounds.
 - Excessive glassmorphism, blur, decorative floating blobs, and neon effects.
 - Turning every content section into an identical rounded card.

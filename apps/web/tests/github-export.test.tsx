@@ -14,7 +14,7 @@ describe('GitHub Commit & Export Integration', () => {
       'src/main.ts',
       'console.log("hello world");',
       'feat: add main script',
-      'mock-token'
+      'mock-token',
     );
 
     expect(res.success).toBe(true);
@@ -62,27 +62,35 @@ describe('GitHub Commit & Export Integration', () => {
 
 describe('GitHubExportModal Component', () => {
   beforeEach(() => {
-    vi.stubGlobal('fetch', vi.fn().mockImplementation((url) => {
-      if (url.includes('/api/v1/integrations/github/repos')) {
-        return Promise.resolve({
-          ok: true,
-          json: async () => [
-            { id: 101, name: 'pairly-sample-app', fullName: 'pairly-team/pairly-sample-app', defaultBranch: 'main' },
-          ],
-        });
-      }
-      if (url.includes('/api/v1/integrations/github/commit')) {
-        return Promise.resolve({
-          ok: true,
-          json: async () => ({
-            success: true,
-            commitUrl: 'https://github.com/pairly-team/pairly-sample-app/commit/abc1234',
-            sha: 'abc1234',
-          }),
-        });
-      }
-      return Promise.resolve({ ok: true, json: async () => ({}) });
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation((url) => {
+        if (url.includes('/api/v1/integrations/github/repos')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => [
+              {
+                id: 101,
+                name: 'pairly-sample-app',
+                fullName: 'pairly-team/pairly-sample-app',
+                defaultBranch: 'main',
+              },
+            ],
+          });
+        }
+        if (url.includes('/api/v1/integrations/github/commit')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              success: true,
+              commitUrl: 'https://github.com/pairly-team/pairly-sample-app/commit/abc1234',
+              sha: 'abc1234',
+            }),
+          });
+        }
+        return Promise.resolve({ ok: true, json: async () => ({}) });
+      }),
+    );
   });
 
   it('renders modal with repository dropdown and commit fields', async () => {
@@ -92,7 +100,7 @@ describe('GitHubExportModal Component', () => {
         onClose={vi.fn()}
         activeFileName="App.tsx"
         activeFileContent="export default function App() { return <div>Pairly</div>; }"
-      />
+      />,
     );
 
     expect(screen.getByTestId('github-export-modal')).toBeDefined();
@@ -117,7 +125,7 @@ describe('GitHubExportModal Component', () => {
         onClose={vi.fn()}
         activeFileName="App.tsx"
         activeFileContent="console.log('test');"
-      />
+      />,
     );
 
     // Wait for repos to load

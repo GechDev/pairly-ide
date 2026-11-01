@@ -59,11 +59,15 @@ export function useFollow(options: UseFollowOptions = {}): UseFollowReturn {
       if (fileId && optionsRef.current.onFollowFileChange) {
         optionsRef.current.onFollowFileChange(fileId);
       }
-      if (typeof line === 'number' && typeof column === 'number' && optionsRef.current.onFollowCursorChange) {
+      if (
+        typeof line === 'number' &&
+        typeof column === 'number' &&
+        optionsRef.current.onFollowCursorChange
+      ) {
         optionsRef.current.onFollowCursorChange(line, column);
       }
     },
-    []
+    [],
   );
 
   return {

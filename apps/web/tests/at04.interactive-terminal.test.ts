@@ -73,15 +73,11 @@ describe('T-13: Shared Real-Time Terminal & Interactive Stdin (AT-04)', () => {
       {
         onChunk: vi.fn(),
         onStatusChange: vi.fn(),
-      }
+      },
     );
 
     for (let i = 0; i < 30; i++) {
-      if (
-        manager
-          .getRoomHistory(roomId)
-          .some((c) => c.data.includes('Logged before Bob joined'))
-      ) {
+      if (manager.getRoomHistory(roomId).some((c) => c.data.includes('Logged before Bob joined'))) {
         break;
       }
       await new Promise((resolve) => setTimeout(resolve, 25));

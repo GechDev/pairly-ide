@@ -33,7 +33,10 @@ export function CheckpointModal({
   const [isCreating, setIsCreating] = useState(false);
   const [restoringId, setRestoringId] = useState<string | null>(null);
   const [checkpointName, setCheckpointName] = useState('');
-  const [statusMessage, setStatusMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [statusMessage, setStatusMessage] = useState<{
+    text: string;
+    type: 'success' | 'error';
+  } | null>(null);
 
   const fetchSnapshots = useCallback(async () => {
     setIsLoading(true);
@@ -88,7 +91,11 @@ export function CheckpointModal({
   };
 
   const handleRestoreCheckpoint = async (snapshot: SnapshotItem) => {
-    if (!confirm(`Are you sure you want to restore "${snapshot.name}" (v${snapshot.version})? This will overwrite active room state.`)) {
+    if (
+      !confirm(
+        `Are you sure you want to restore "${snapshot.name}" (v${snapshot.version})? This will overwrite active room state.`,
+      )
+    ) {
       return;
     }
 
@@ -102,7 +109,10 @@ export function CheckpointModal({
 
       if (res.ok) {
         const data = await res.json();
-        setStatusMessage({ text: `Successfully restored version ${data.version}`, type: 'success' });
+        setStatusMessage({
+          text: `Successfully restored version ${data.version}`,
+          type: 'success',
+        });
         if (onSnapshotRestored) {
           onSnapshotRestored(snapshot.id, data.version);
         }
@@ -221,7 +231,12 @@ export function CheckpointModal({
                   <div>
                     <div className="text-xs font-medium text-slate-200">{snap.name}</div>
                     <div className="text-[10px] text-slate-400 mt-0.5">
-                      {new Date(snap.createdAt).toLocaleDateString()} {new Date(snap.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {(snap.sizeBytes / 1024).toFixed(1)} KB
+                      {new Date(snap.createdAt).toLocaleDateString()}{' '}
+                      {new Date(snap.createdAt).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}{' '}
+                      • {(snap.sizeBytes / 1024).toFixed(1)} KB
                     </div>
                   </div>
                 </div>
@@ -247,7 +262,9 @@ export function CheckpointModal({
 
         {/* Footer */}
         <div className="px-5 py-3 border-t border-slate-800 bg-slate-950/40 flex justify-between items-center text-xs text-slate-400">
-          <span>{snapshots.length} checkpoint{snapshots.length === 1 ? '' : 's'} recorded</span>
+          <span>
+            {snapshots.length} checkpoint{snapshots.length === 1 ? '' : 's'} recorded
+          </span>
           <button
             onClick={onClose}
             className="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors"

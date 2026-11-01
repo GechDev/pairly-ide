@@ -85,7 +85,7 @@ describe('AT-03: Realtime RBAC Enforcement Integration Test', () => {
     });
 
     const hostWs = new WebSocket(
-      `ws://127.0.0.1:${port}/ws/rooms/${roomCode}?token=${encodeURIComponent(hostToken)}`
+      `ws://127.0.0.1:${port}/ws/rooms/${roomCode}?token=${encodeURIComponent(hostToken)}`,
     );
 
     await new Promise((resolve) => {
@@ -106,7 +106,7 @@ describe('AT-03: Realtime RBAC Enforcement Integration Test', () => {
     });
 
     const viewerWs = new WebSocket(
-      `ws://127.0.0.1:${port}/ws/rooms/${roomCode}?token=${encodeURIComponent(viewerToken)}`
+      `ws://127.0.0.1:${port}/ws/rooms/${roomCode}?token=${encodeURIComponent(viewerToken)}`,
     );
 
     await new Promise((resolve) => {
@@ -136,7 +136,7 @@ describe('AT-03: Realtime RBAC Enforcement Integration Test', () => {
       JSON.stringify({
         type: 'DOCUMENT_UPDATE',
         payload: { file: 'main.ts', change: 'malicious overwrite' },
-      })
+      }),
     );
 
     const errorEvent = await viewerErrorPromise;
@@ -160,7 +160,7 @@ describe('AT-03: Realtime RBAC Enforcement Integration Test', () => {
         type: 'CHANGE_ROLE',
         targetParticipantId: 'viewer-user',
         newRole: 'EDITOR',
-      })
+      }),
     );
 
     const roleEvent = await rolePromotionPromise;
@@ -180,7 +180,7 @@ describe('AT-03: Realtime RBAC Enforcement Integration Test', () => {
       JSON.stringify({
         type: 'DOCUMENT_UPDATE',
         payload: { file: 'main.ts', change: 'valid collaborative edit' },
-      })
+      }),
     );
 
     const receivedUpdate = await hostReceivedValidUpdatePromise;
@@ -191,7 +191,7 @@ describe('AT-03: Realtime RBAC Enforcement Integration Test', () => {
       JSON.stringify({
         type: 'TOGGLE_ROOM_LOCK',
         isLocked: true,
-      })
+      }),
     );
 
     // Wait for lock confirmation
@@ -209,7 +209,7 @@ describe('AT-03: Realtime RBAC Enforcement Integration Test', () => {
       JSON.stringify({
         type: 'DOCUMENT_UPDATE',
         payload: { file: 'main.ts', change: 'edit while locked' },
-      })
+      }),
     );
 
     const lockedEvent = await lockedErrorPromise;

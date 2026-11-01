@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  computeUnifiedDiff,
-  isProposalStale,
-  rebaseProposal,
-} from '@pairly/ai';
+import { computeUnifiedDiff, isProposalStale, rebaseProposal } from '@pairly/ai';
 import {
   AiProposalSchema,
   canWrite,

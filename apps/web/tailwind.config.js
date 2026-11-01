@@ -50,49 +50,58 @@ export default {
       },
       fontSize: {
         // Display scale inspired by Capsule's kinetic large type
-        'display-2xl': ['clamp(4rem, 10vw, 9rem)', { lineHeight: '0.95', letterSpacing: '-0.04em' }],
-        'display-xl':  ['clamp(3rem, 7vw, 6rem)', { lineHeight: '0.97', letterSpacing: '-0.035em' }],
-        'display-lg':  ['clamp(2.25rem, 5vw, 4rem)', { lineHeight: '1.0', letterSpacing: '-0.03em' }],
-        'display-md':  ['clamp(1.75rem, 3.5vw, 2.75rem)', { lineHeight: '1.1', letterSpacing: '-0.025em' }],
+        'display-2xl': [
+          'clamp(4rem, 10vw, 9rem)',
+          { lineHeight: '0.95', letterSpacing: '-0.04em' },
+        ],
+        'display-xl': ['clamp(3rem, 7vw, 6rem)', { lineHeight: '0.97', letterSpacing: '-0.035em' }],
+        'display-lg': [
+          'clamp(2.25rem, 5vw, 4rem)',
+          { lineHeight: '1.0', letterSpacing: '-0.03em' },
+        ],
+        'display-md': [
+          'clamp(1.75rem, 3.5vw, 2.75rem)',
+          { lineHeight: '1.1', letterSpacing: '-0.025em' },
+        ],
       },
       animation: {
-        'fade-up':      'fade-up 0.7s cubic-bezier(0.16,1,0.3,1) both',
-        'fade-in':      'fade-in 0.5s ease both',
-        'ticker':       'ticker-scroll 36s linear infinite',
-        'pulse-dot':    'pulse-dot 2s ease-in-out infinite',
+        'fade-up': 'fade-up 0.7s cubic-bezier(0.16,1,0.3,1) both',
+        'fade-in': 'fade-in 0.5s ease both',
+        ticker: 'ticker-scroll 36s linear infinite',
+        'pulse-dot': 'pulse-dot 2s ease-in-out infinite',
         'cursor-blink': 'cursor-blink 1s step-end infinite',
-        'glow':         'glow-pulse 2.5s ease-in-out infinite',
-        'float':        'float-slow 4s ease-in-out infinite',
-        'spin-slow':    'spin 8s linear infinite',
+        glow: 'glow-pulse 2.5s ease-in-out infinite',
+        float: 'float-slow 4s ease-in-out infinite',
+        'spin-slow': 'spin 8s linear infinite',
       },
       keyframes: {
         'fade-up': {
           from: { opacity: '0', transform: 'translateY(24px)' },
-          to:   { opacity: '1', transform: 'translateY(0)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
         },
         'fade-in': {
           from: { opacity: '0' },
-          to:   { opacity: '1' },
+          to: { opacity: '1' },
         },
         'ticker-scroll': {
           from: { transform: 'translateX(0)' },
-          to:   { transform: 'translateX(-50%)' },
+          to: { transform: 'translateX(-50%)' },
         },
         'pulse-dot': {
           '0%, 100%': { opacity: '1', transform: 'scale(1)' },
-          '50%':       { opacity: '0.5', transform: 'scale(0.75)' },
+          '50%': { opacity: '0.5', transform: 'scale(0.75)' },
         },
         'cursor-blink': {
           '0%, 100%': { opacity: '1' },
-          '50%':       { opacity: '0' },
+          '50%': { opacity: '0' },
         },
         'glow-pulse': {
           '0%, 100%': { boxShadow: '0 0 0 0 rgba(255,0,0,0.35)' },
-          '50%':       { boxShadow: '0 0 0 8px rgba(255,0,0,0)' },
+          '50%': { boxShadow: '0 0 0 8px rgba(255,0,0,0)' },
         },
         'float-slow': {
           '0%, 100%': { transform: 'translateY(0)' },
-          '50%':       { transform: 'translateY(-8px)' },
+          '50%': { transform: 'translateY(-8px)' },
         },
       },
       backgroundImage: {
@@ -105,14 +114,14 @@ export default {
         `,
       },
       backgroundSize: {
-        'dot-grid':  '28px 28px',
+        'dot-grid': '28px 28px',
         'line-grid': '40px 40px',
       },
       boxShadow: {
         'accent-glow': '0 0 40px rgba(255, 0, 0, 0.18)',
-        'card':        '0 1px 3px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3)',
-        'card-hover':  '0 4px 24px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.4)',
-        'inset-top':   'inset 0 1px 0 rgba(255,255,255,0.06)',
+        card: '0 1px 3px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3)',
+        'card-hover': '0 4px 24px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.4)',
+        'inset-top': 'inset 0 1px 0 rgba(255,255,255,0.06)',
       },
       transitionTimingFunction: {
         spring: 'cubic-bezier(0.16, 1, 0.3, 1)',

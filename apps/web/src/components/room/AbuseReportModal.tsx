@@ -1,14 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import {
-  ShieldAlert,
-  AlertTriangle,
-  CheckCircle2,
-  Loader2,
-  X,
-  UserX,
-} from 'lucide-react';
+import { ShieldAlert, AlertTriangle, CheckCircle2, Loader2, X, UserX } from 'lucide-react';
 import type { ParticipantIdentity } from '@pairly/contracts';
 
 export interface AbuseReportModalProps {

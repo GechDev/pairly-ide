@@ -41,7 +41,7 @@ export class TerminalSessionManager {
     callbacks: {
       onChunk: (chunk: ExecutionOutputChunk) => void;
       onStatusChange: (status: ExecutionStatus, result?: ExecutionResult) => void;
-    }
+    },
   ): Promise<string> {
     const runId = `run_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
 
@@ -164,11 +164,7 @@ export class TerminalSessionManager {
     this.roomHistoryBuffer.delete(roomId);
   }
 
-  private recordChunk(
-    roomId: string,
-    session: TerminalSession,
-    chunk: ExecutionOutputChunk
-  ): void {
+  private recordChunk(roomId: string, session: TerminalSession, chunk: ExecutionOutputChunk): void {
     session.history.push(chunk);
     session.onChunk(chunk);
 

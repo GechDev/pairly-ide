@@ -63,7 +63,7 @@ export function base64ToUint8Array(base64: string): Uint8Array {
  */
 export function createCollaborativeSession(
   initialText = '',
-  participant: ParticipantIdentity
+  participant: ParticipantIdentity,
 ): CollaborativeSession {
   const doc = new Y.Doc();
   const ytext = doc.getText('contents');
@@ -75,9 +75,7 @@ export function createCollaborativeSession(
   const remoteCursors = new Map<string, RemoteCursor>();
   const cursorListeners = new Set<(cursors: RemoteCursor[]) => void>();
 
-  const onUpdateListeners = new Set<
-    (updateBase64: string, origin: any) => void
-  >();
+  const onUpdateListeners = new Set<(updateBase64: string, origin: any) => void>();
 
   const updateHandler = (update: Uint8Array, origin: any) => {
     const base64 = uint8ArrayToBase64(update);
@@ -130,16 +128,12 @@ export function createCollaborativeSession(
     }
   };
 
-  const onUpdate = (
-    callback: (updateBase64: string, origin: any) => void
-  ): (() => void) => {
+  const onUpdate = (callback: (updateBase64: string, origin: any) => void): (() => void) => {
     onUpdateListeners.add(callback);
     return () => onUpdateListeners.delete(callback);
   };
 
-  const onCursorChange = (
-    callback: (cursors: RemoteCursor[]) => void
-  ): (() => void) => {
+  const onCursorChange = (callback: (cursors: RemoteCursor[]) => void): (() => void) => {
     cursorListeners.add(callback);
     return () => cursorListeners.delete(callback);
   };

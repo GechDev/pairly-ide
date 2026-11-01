@@ -1,13 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import {
-  ChatManager,
-  extractMentions,
-} from '../../realtime/src/chat';
+import { ChatManager, extractMentions } from '../../realtime/src/chat';
 import { formatChatMarkdown } from '../src/components/chat/ChatPanel';
 
 describe('T-15: In-Room Chat with Markdown, Mentions, and History (FR-COMM-01..02)', () => {
   it('extracts unique @mentions from message content', () => {
-    const text = 'Hey @Alice and @bob, can you check @alice code review? Also email user@domain.com.';
+    const text =
+      'Hey @Alice and @bob, can you check @alice code review? Also email user@domain.com.';
     const mentions = extractMentions(text);
 
     expect(mentions).toEqual(['alice', 'bob']);

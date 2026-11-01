@@ -12,13 +12,7 @@ export interface TabsProps {
   onCloseTab: (fileId: string) => void;
 }
 
-export function Tabs({
-  items,
-  openTabIds,
-  activeFileId,
-  onSelectTab,
-  onCloseTab,
-}: TabsProps) {
+export function Tabs({ items, openTabIds, activeFileId, onSelectTab, onCloseTab }: TabsProps) {
   const openItems = openTabIds
     .map((id) => items.find((i) => i.id === id))
     .filter((item): item is WorkspaceItem => Boolean(item && !item.isFolder));
@@ -41,9 +35,7 @@ export function Tabs({
                 : 'bg-transparent border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
             }`}
           >
-            <FileCode
-              className={`w-3.5 h-3.5 ${isActive ? 'text-brand-400' : 'text-slate-500'}`}
-            />
+            <FileCode className={`w-3.5 h-3.5 ${isActive ? 'text-brand-400' : 'text-slate-500'}`} />
             <span>{item.name}</span>
             <button
               onClick={(e) => {

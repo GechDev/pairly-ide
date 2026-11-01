@@ -45,8 +45,11 @@ function useScrollReveal() {
   const ref = useRef<HTMLElement>(null);
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('is-visible'); }),
-      { rootMargin: '0px 0px -80px 0px' }
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) e.target.classList.add('is-visible');
+        }),
+      { rootMargin: '0px 0px -80px 0px' },
     );
     const el = ref.current;
     if (el) el.querySelectorAll('.reveal').forEach((r) => observer.observe(r));
@@ -65,15 +68,14 @@ export function FAQSection() {
 
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-
           {/* Left column – sticky header */}
           <div className="lg:col-span-4 lg:sticky lg:top-24 self-start">
-
             <h2 className="reveal text-[clamp(2rem,4vw,2.75rem)] font-extrabold tracking-[-0.03em] leading-[1.05] text-[#f0ede8]">
               Questions, answered.
             </h2>
             <p className="reveal mt-5 text-[15px] text-[#a09a92] leading-[1.65] font-[380]">
-              Everything developers commonly ask about pairing, security, sandbox isolation, and session persistence.
+              Everything developers commonly ask about pairing, security, sandbox isolation, and
+              session persistence.
             </p>
           </div>
 

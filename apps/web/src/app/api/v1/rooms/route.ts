@@ -26,7 +26,7 @@ export async function POST(req: Request) {
             message: e.message,
           })),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -115,7 +115,7 @@ export async function POST(req: Request) {
         token,
         joinUrl: `/room/${createdRoom.code}`,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error: any) {
     return NextResponse.json(
@@ -123,7 +123,7 @@ export async function POST(req: Request) {
         success: false,
         error: error.message || 'Failed to create room',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

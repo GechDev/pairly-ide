@@ -71,7 +71,7 @@ export function RemotePointers({
 
       onBroadcastPointer(Math.round(x * 10) / 10, Math.round(y * 10) / 10);
     },
-    [containerRef, onBroadcastPointer]
+    [containerRef, onBroadcastPointer],
   );
 
   useEffect(() => {
@@ -101,10 +101,7 @@ export function RemotePointers({
             }}
           >
             {/* Colored SVG Pointer */}
-            <MousePointer2
-              className="w-4 h-4 drop-shadow-md"
-              style={{ color: bg, fill: bg }}
-            />
+            <MousePointer2 className="w-4 h-4 drop-shadow-md" style={{ color: bg, fill: bg }} />
             {/* User Name Badge */}
             <span
               className="px-1.5 py-0.5 rounded text-[10px] font-semibold text-white whitespace-nowrap shadow-md"

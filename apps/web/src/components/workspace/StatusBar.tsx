@@ -82,10 +82,10 @@ export function StatusBar({
   const latencyColor = !isConnected
     ? 'text-rose-400'
     : currentLatency < 80
-    ? 'text-[#FF0000]'
-    : currentLatency < 200
-    ? 'text-amber-400'
-    : 'text-rose-400';
+      ? 'text-[#FF0000]'
+      : currentLatency < 200
+        ? 'text-amber-400'
+        : 'text-rose-400';
 
   return (
     <footer
@@ -131,7 +131,9 @@ export function StatusBar({
       {/* Right: Line/Col, Encoding, Language, Latency */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1 font-mono text-slate-300">
-          <span>Ln {cursorLine}, Col {cursorColumn}</span>
+          <span>
+            Ln {cursorLine}, Col {cursorColumn}
+          </span>
         </div>
 
         <div className="h-3 w-[1px] bg-slate-800" />
@@ -158,10 +160,7 @@ export function StatusBar({
 
           {isLangMenuOpen && (
             <>
-              <div
-                className="fixed inset-0 z-30"
-                onClick={() => setIsLangMenuOpen(false)}
-              />
+              <div className="fixed inset-0 z-30" onClick={() => setIsLangMenuOpen(false)} />
               <div
                 data-testid="language-select-dropdown"
                 className="absolute right-0 bottom-7 z-40 w-44 max-h-60 overflow-y-auto bg-slate-900 border border-slate-700/80 rounded-lg shadow-2xl py-1 text-slate-200"

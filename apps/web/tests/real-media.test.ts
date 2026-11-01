@@ -10,9 +10,27 @@ describe('Real WebRTC Media System (CodeX Inspired)', () => {
 
   it('enumerates audio inputs, video inputs, and audio outputs', async () => {
     const mockDevices: MediaDeviceInfo[] = [
-      { deviceId: 'mic-1', kind: 'audioinput', label: 'Internal Mic', groupId: 'g1', toJSON: () => ({}) },
-      { deviceId: 'cam-1', kind: 'videoinput', label: 'FaceTime HD Camera', groupId: 'g2', toJSON: () => ({}) },
-      { deviceId: 'speaker-1', kind: 'audiooutput', label: 'Headphones', groupId: 'g3', toJSON: () => ({}) },
+      {
+        deviceId: 'mic-1',
+        kind: 'audioinput',
+        label: 'Internal Mic',
+        groupId: 'g1',
+        toJSON: () => ({}),
+      },
+      {
+        deviceId: 'cam-1',
+        kind: 'videoinput',
+        label: 'FaceTime HD Camera',
+        groupId: 'g2',
+        toJSON: () => ({}),
+      },
+      {
+        deviceId: 'speaker-1',
+        kind: 'audiooutput',
+        label: 'Headphones',
+        groupId: 'g3',
+        toJSON: () => ({}),
+      },
     ];
 
     // Mock navigator.mediaDevices

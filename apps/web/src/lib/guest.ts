@@ -64,7 +64,7 @@ const CURATED_COLORS = [
  */
 export function generateGuestIdentity(
   role: RoomRole = 'HOST',
-  customName?: string
+  customName?: string,
 ): ParticipantIdentity {
   const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
   const animal = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];

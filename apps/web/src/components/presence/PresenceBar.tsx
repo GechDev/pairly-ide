@@ -1,13 +1,7 @@
 'use client';
 
 import React from 'react';
-import {
-  Eye,
-  EyeOff,
-  Radio,
-  FileCode,
-  Crown,
-} from 'lucide-react';
+import { Eye, EyeOff, Radio, FileCode, Crown } from 'lucide-react';
 import type { ParticipantIdentity } from '@pairly/contracts';
 
 export interface ParticipantPresenceInfo {
@@ -38,19 +32,13 @@ export function PresenceBar({
 }: PresenceBarProps) {
   const isHost = currentParticipant?.role === 'HOST';
 
-  const followedParticipant = participants.find(
-    (p) => p.participant.id === followedParticipantId
-  );
+  const followedParticipant = participants.find((p) => p.participant.id === followedParticipantId);
   const spotlightedParticipant = participants.find(
-    (p) => p.participant.id === spotlightedParticipantId
+    (p) => p.participant.id === spotlightedParticipantId,
   );
 
   return (
-    <div
-      id="presence-awareness-bar"
-      data-testid="presence-bar"
-      className="flex items-center gap-3"
-    >
+    <div id="presence-awareness-bar" data-testid="presence-bar" className="flex items-center gap-3">
       {/* Active Spotlight Global Banner */}
       {spotlightedParticipant && (
         <div
@@ -98,18 +86,15 @@ export function PresenceBar({
           const isSpotlighted = spotlightedParticipantId === participant.id;
 
           return (
-            <div
-              key={participant.id}
-              className="relative group select-none"
-            >
+            <div key={participant.id} className="relative group select-none">
               {/* Avatar Bubble */}
               <div
                 className={`w-7 h-7 rounded-full border-2 flex items-center justify-center text-[10px] font-bold text-white shadow transition-transform group-hover:scale-110 cursor-pointer ${
                   isSpotlighted
                     ? 'border-amber-400 ring-2 ring-amber-400/50'
                     : isFollowed
-                    ? 'border-[#FF0000] ring-2 ring-[#FF0000]/50'
-                    : 'border-slate-900'
+                      ? 'border-[#FF0000] ring-2 ring-[#FF0000]/50'
+                      : 'border-slate-900'
                 }`}
                 style={{ backgroundColor: participant.color }}
                 onClick={() => {
@@ -164,9 +149,7 @@ export function PresenceBar({
 
                     {isHost && onToggleSpotlight && (
                       <button
-                        onClick={() =>
-                          onToggleSpotlight(isSpotlighted ? null : participant.id)
-                        }
+                        onClick={() => onToggleSpotlight(isSpotlighted ? null : participant.id)}
                         title="Broadcast spotlight to all room members"
                         className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${
                           isSpotlighted

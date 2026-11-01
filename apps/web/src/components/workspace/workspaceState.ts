@@ -77,7 +77,12 @@ export function createWorkspaceManager(initialItems: WorkspaceItem[] = DEFAULT_W
     }
   };
 
-  const createFile = (name: string, isFolder = false, parentId: string | null = null, content = '') => {
+  const createFile = (
+    name: string,
+    isFolder = false,
+    parentId: string | null = null,
+    content = '',
+  ) => {
     const parent = parentId ? items.find((i) => i.id === parentId) : null;
     const path = parent ? `${parent.path}/${name}` : `/${name}`;
 

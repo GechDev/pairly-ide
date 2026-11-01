@@ -43,11 +43,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
@@ -58,7 +54,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen font-sans antialiased flex flex-col selection:bg-[#FF0000]/25 selection:text-[#FF0000]" style={{ backgroundColor: 'var(--canvas)', color: 'var(--fg-primary)' }}>
+      <body
+        className="min-h-screen font-sans antialiased flex flex-col selection:bg-[#FF0000]/25 selection:text-[#FF0000]"
+        style={{ backgroundColor: 'var(--canvas)', color: 'var(--fg-primary)' }}
+      >
         <ThemeProvider defaultTheme="dark" storageKey="pairly-theme">
           <AppShell>{children}</AppShell>
         </ThemeProvider>

@@ -12,7 +12,7 @@ describe('T-10: Presence Awareness, Follow Mode, and Host Spotlight', () => {
       useFollow({
         onFollowFileChange,
         onFollowCursorChange,
-      })
+      }),
     );
 
     expect(result.current.isFollowing).toBe(false);

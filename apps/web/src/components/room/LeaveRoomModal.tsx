@@ -65,9 +65,7 @@ export function LeaveRoomModal({
               <h2 className="text-base sm:text-lg font-bold tracking-tight text-white">
                 {DEFAULT_TITLE}
               </h2>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                {DEFAULT_DESCRIPTION}
-              </p>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">{DEFAULT_DESCRIPTION}</p>
             </div>
           </div>
           <button

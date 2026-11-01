@@ -2,11 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as Y from 'yjs';
 import type { PrismaClient } from '@prisma/client';
 import { createPersistenceManager } from '../../realtime/src/persistence';
-import {
-  createWorkspaceSnapshot,
-  getRoomSnapshots,
-  getSnapshotById,
-} from '@pairly/database';
+import { createWorkspaceSnapshot, getRoomSnapshots, getSnapshotById } from '@pairly/database';
 
 describe('T-11: Workspace Snapshot Persistence & Checkpoint Recovery (AT-10)', () => {
   beforeEach(() => {

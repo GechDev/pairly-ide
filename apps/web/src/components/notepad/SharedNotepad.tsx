@@ -1,17 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  BookOpen,
-  Download,
-  Upload,
-  Copy,
-  Check,
-  RotateCcw,
-  X,
-  Eye,
-  Edit3,
-} from 'lucide-react';
+import { BookOpen, Download, Upload, Copy, Check, RotateCcw, X, Eye, Edit3 } from 'lucide-react';
 import { createNotepadSession, type NotepadSession } from './notepadSession';
 
 export interface SharedNotepadProps {
@@ -33,7 +23,10 @@ function renderMarkdownPreview(markdown: string): React.ReactNode[] {
     // Heading 1
     if (line.startsWith('# ')) {
       return (
-        <h1 key={idx} className="text-xl font-bold text-slate-100 mt-4 mb-2 border-b border-slate-800 pb-1">
+        <h1
+          key={idx}
+          className="text-xl font-bold text-slate-100 mt-4 mb-2 border-b border-slate-800 pb-1"
+        >
           {line.slice(2)}
         </h1>
       );
@@ -65,8 +58,16 @@ function renderMarkdownPreview(markdown: string): React.ReactNode[] {
     }
     if (line.startsWith('- [x] ') || line.startsWith('- [X] ')) {
       return (
-        <div key={idx} className="flex items-center gap-2 py-0.5 text-slate-500 line-through text-xs">
-          <input type="checkbox" checked disabled className="rounded border-slate-700 bg-slate-900" />
+        <div
+          key={idx}
+          className="flex items-center gap-2 py-0.5 text-slate-500 line-through text-xs"
+        >
+          <input
+            type="checkbox"
+            checked
+            disabled
+            className="rounded border-slate-700 bg-slate-900"
+          />
           <span>{line.slice(6)}</span>
         </div>
       );
@@ -319,7 +320,8 @@ export function SharedNotepad({
         <div className="h-8 px-4 border-t border-slate-800 bg-slate-900/60 flex items-center justify-between text-[11px] text-slate-500">
           <span>Synced via isolated Yjs CRDT</span>
           <span>
-            {content.length} characters · {content.trim() ? content.trim().split(/\s+/).length : 0} words
+            {content.length} characters · {content.trim() ? content.trim().split(/\s+/).length : 0}{' '}
+            words
           </span>
         </div>
       </div>

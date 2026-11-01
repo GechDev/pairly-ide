@@ -110,7 +110,12 @@ function colourLine(line: string): React.ReactNode {
   if (/^(import|export|const|let|from|use|fn|pub|static|async|await|def|return)/.test(line.trim()))
     return <span className="text-[#c084fc]">{line}</span>;
   // String assignment or structural
-  if (line.trim().startsWith('room.') || line.trim().startsWith('samples') || line.trim().startsWith('distances') || line.trim().startsWith('println'))
+  if (
+    line.trim().startsWith('room.') ||
+    line.trim().startsWith('samples') ||
+    line.trim().startsWith('distances') ||
+    line.trim().startsWith('println')
+  )
     return <span className="text-[#5b9cf6]">{line}</span>;
 
   return <span>{line}</span>;
@@ -144,7 +149,7 @@ export function InteractiveProductDemo() {
           if (e.isIntersecting) e.target.classList.add('is-visible');
         });
       },
-      { rootMargin: '0px 0px -100px 0px' }
+      { rootMargin: '0px 0px -100px 0px' },
     );
     const el = sectionRef.current;
     if (el) {
@@ -162,22 +167,19 @@ export function InteractiveProductDemo() {
       <div className="absolute top-0 left-0 right-0 h-px bg-white/[0.06]" />
 
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
-
         {/* Header */}
         <div className="max-w-3xl mb-14">
-
           <h2 className="reveal text-[clamp(2rem,4.5vw,3.25rem)] font-extrabold tracking-[-0.03em] leading-[1.05] text-[#f0ede8]">
             See Pairly in action.
           </h2>
           <p className="reveal mt-4 text-[15px] text-[#a09a92] leading-[1.65] max-w-[52ch] font-[380]">
-            Switch files, trigger sandbox execution, and watch remote cursor
-            tracking — all inside the actual interface.
+            Switch files, trigger sandbox execution, and watch remote cursor tracking — all inside
+            the actual interface.
           </p>
         </div>
 
         {/* IDE Window */}
         <div className="reveal rounded-2xl border border-white/[0.08] bg-[#0a0a0b] overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.7)] max-w-5xl">
-
           {/* Title bar */}
           <div className="flex items-center justify-between px-4 py-3 bg-[#111114] border-b border-white/[0.06]">
             <div className="flex items-center gap-2">
@@ -195,12 +197,15 @@ export function InteractiveProductDemo() {
             {/* Peer indicator */}
             <div className="flex items-center gap-2">
               <div className="flex -space-x-1.5">
-                <div className="w-[22px] h-[22px] rounded-full bg-[#FF0000] text-white flex items-center justify-center text-[9px] font-bold ring-2 ring-[#0a0a0b]">S</div>
-                <div className="w-[22px] h-[22px] rounded-full bg-[#5b9cf6] text-white flex items-center justify-center text-[9px] font-bold ring-2 ring-[#0a0a0b]">D</div>
+                <div className="w-[22px] h-[22px] rounded-full bg-[#FF0000] text-white flex items-center justify-center text-[9px] font-bold ring-2 ring-[#0a0a0b]">
+                  S
+                </div>
+                <div className="w-[22px] h-[22px] rounded-full bg-[#5b9cf6] text-white flex items-center justify-center text-[9px] font-bold ring-2 ring-[#0a0a0b]">
+                  D
+                </div>
               </div>
               <span className="font-mono text-[11px] text-[#FF0000] flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#FF0000] animate-pulse-dot" />
-                2 peers
+                <span className="w-1.5 h-1.5 rounded-full bg-[#FF0000] animate-pulse-dot" />2 peers
               </span>
             </div>
           </div>
@@ -215,16 +220,22 @@ export function InteractiveProductDemo() {
                   <button
                     key={key}
                     type="button"
-                    onClick={() => { setActiveTab(key); setHasExecuted(true); }}
+                    onClick={() => {
+                      setActiveTab(key);
+                      setHasExecuted(true);
+                    }}
                     className={`
                       flex items-center gap-2 px-3 py-1.5 rounded-md text-[12px] font-mono transition-all duration-150
-                      ${isActive
-                        ? 'bg-[#18181c] text-[#f0ede8] border border-white/[0.1]'
-                        : 'text-[#5c5651] hover:text-[#a09a92] hover:bg-white/[0.04]'
+                      ${
+                        isActive
+                          ? 'bg-[#18181c] text-[#f0ede8] border border-white/[0.1]'
+                          : 'text-[#5c5651] hover:text-[#a09a92] hover:bg-white/[0.04]'
                       }
                     `}
                   >
-                    <Code2 className={`w-3 h-3 ${isActive ? 'text-[#FF0000]' : 'text-[#5c5651]'}`} />
+                    <Code2
+                      className={`w-3 h-3 ${isActive ? 'text-[#FF0000]' : 'text-[#5c5651]'}`}
+                    />
                     {key}
                   </button>
                 );
@@ -255,7 +266,6 @@ export function InteractiveProductDemo() {
 
           {/* Editor body */}
           <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-white/[0.06]">
-
             {/* Code pane */}
             <div className="lg:col-span-7 bg-[#0a0a0b] overflow-x-auto">
               <div className="p-5 font-mono text-[13px] leading-[1.7] text-[#a09a92] min-h-[280px]">
@@ -281,7 +291,9 @@ export function InteractiveProductDemo() {
                               </span>
                             </span>
                           </span>
-                        ) : colourLine(line)}
+                        ) : (
+                          colourLine(line)
+                        )}
                       </span>
                     </div>
                   );
@@ -291,7 +303,6 @@ export function InteractiveProductDemo() {
 
             {/* Output pane */}
             <div className="lg:col-span-5 flex flex-col bg-[#0c0c0e]">
-
               {/* Pane switcher */}
               <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.06] bg-[#111114]/50">
                 <div className="flex items-center gap-1">
@@ -338,16 +349,20 @@ export function InteractiveProductDemo() {
                       <div
                         key={i}
                         className={
-                          line.startsWith('$') ? 'text-[#5b9cf6]' :
-                          line.startsWith('✓') ? 'text-[#FF0000] border-t border-white/[0.05] mt-2 pt-2' :
-                          'text-[#a09a92]'
+                          line.startsWith('$')
+                            ? 'text-[#5b9cf6]'
+                            : line.startsWith('✓')
+                              ? 'text-[#FF0000] border-t border-white/[0.05] mt-2 pt-2'
+                              : 'text-[#a09a92]'
                         }
                       >
                         {line}
                       </div>
                     ))
                   ) : (
-                    <div className="text-[#5c5651]">Press &quot;Run&quot; to execute in isolated sandbox.</div>
+                    <div className="text-[#5c5651]">
+                      Press &quot;Run&quot; to execute in isolated sandbox.
+                    </div>
                   )}
                 </div>
               ) : (

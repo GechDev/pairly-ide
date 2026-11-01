@@ -5,10 +5,13 @@ import { NetworkDiagnosticsModal } from '../src/components/room/NetworkDiagnosti
 
 describe('NetworkDiagnosticsModal Component', () => {
   beforeEach(() => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ status: 'ok', timestamp: Date.now() }),
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ status: 'ok', timestamp: Date.now() }),
+      }),
+    );
   });
 
   it('renders modal with connection status and metrics', () => {
@@ -20,7 +23,7 @@ describe('NetworkDiagnosticsModal Component', () => {
         roomCode="TEST-DIAG"
         currentPingLatency={24}
         connectionStatus="connected"
-      />
+      />,
     );
 
     expect(screen.getByTestId('network-diagnostics-modal')).toBeDefined();
@@ -38,7 +41,7 @@ describe('NetworkDiagnosticsModal Component', () => {
         roomCode="TEST-DIAG"
         currentPingLatency={18}
         connectionStatus="connected"
-      />
+      />,
     );
 
     // Change iterations to 3
@@ -50,9 +53,12 @@ describe('NetworkDiagnosticsModal Component', () => {
     fireEvent.click(runBtn);
 
     // Wait for the 3 samples to finish
-    await waitFor(() => {
-      expect(screen.getByText('Probe Samples (3)')).toBeDefined();
-    }, { timeout: 4000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('Probe Samples (3)')).toBeDefined();
+      },
+      { timeout: 4000 },
+    );
 
     expect(screen.getByText('#1')).toBeDefined();
     expect(screen.getByText('#2')).toBeDefined();
@@ -71,13 +77,7 @@ describe('NetworkDiagnosticsModal Component', () => {
 
   it('calls onClose when close button is clicked', () => {
     const onClose = vi.fn();
-    render(
-      <NetworkDiagnosticsModal
-        isOpen={true}
-        onClose={onClose}
-        roomCode="TEST-DIAG"
-      />
-    );
+    render(<NetworkDiagnosticsModal isOpen={true} onClose={onClose} roomCode="TEST-DIAG" />);
 
     const closeBtn = screen.getByTestId('close-diagnostics-btn');
     fireEvent.click(closeBtn);

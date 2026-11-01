@@ -275,9 +275,7 @@ export function detectLanguageFromFilename(filename: string): SupportedLanguage 
 /**
  * Retrieves the full language definition by ID or alias.
  */
-export function getLanguageDefinition(
-  identifier: string
-): LanguageDefinition | undefined {
+export function getLanguageDefinition(identifier: string): LanguageDefinition | undefined {
   const normalized = identifier.toLowerCase().trim();
 
   // Direct match
@@ -286,7 +284,5 @@ export function getLanguageDefinition(
   }
 
   // Alias match
-  return Object.values(LANGUAGE_REGISTRY).find((def) =>
-    def.aliases.includes(normalized)
-  );
+  return Object.values(LANGUAGE_REGISTRY).find((def) => def.aliases.includes(normalized));
 }

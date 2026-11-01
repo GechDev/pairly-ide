@@ -59,7 +59,7 @@ export class RoomManager {
   public joinRoom(
     roomCode: string,
     participant: ParticipantIdentity,
-    socket: WebSocket
+    socket: WebSocket,
   ): RoomParticipantSession {
     const room = this.getOrCreateRoom(roomCode);
     const session: RoomParticipantSession = {
@@ -117,10 +117,7 @@ export class RoomManager {
   /**
    * Returns a specific participant identity if present.
    */
-  public getParticipant(
-    roomCode: string,
-    participantId: string
-  ): ParticipantIdentity | undefined {
+  public getParticipant(roomCode: string, participantId: string): ParticipantIdentity | undefined {
     const room = this.rooms.get(roomCode);
     return room?.participants.get(participantId)?.participant;
   }
@@ -130,7 +127,7 @@ export class RoomManager {
    */
   public getParticipantSession(
     roomCode: string,
-    participantId: string
+    participantId: string,
   ): RoomParticipantSession | undefined {
     const room = this.rooms.get(roomCode);
     return room?.participants.get(participantId);
@@ -142,7 +139,7 @@ export class RoomManager {
   public updateParticipantRole(
     roomCode: string,
     participantId: string,
-    newRole: RoomRole
+    newRole: RoomRole,
   ): boolean {
     const room = this.rooms.get(roomCode);
     if (!room) return false;
@@ -185,11 +182,7 @@ export class RoomManager {
   /**
    * Broadcasts a JSON message to all participants in a room (optionally excluding one).
    */
-  public broadcast(
-    roomCode: string,
-    data: any,
-    excludeParticipantId?: string
-  ): number {
+  public broadcast(roomCode: string, data: any, excludeParticipantId?: string): number {
     const room = this.rooms.get(roomCode);
     if (!room) return 0;
 

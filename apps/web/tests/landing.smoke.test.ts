@@ -19,17 +19,13 @@ test.describe('Landing Page Smoke Tests', () => {
     await expect(themeToggle).toBeVisible();
 
     const html = page.locator('html');
-    const initialHasDark = await html.evaluate((el) =>
-      el.classList.contains('dark')
-    );
+    const initialHasDark = await html.evaluate((el) => el.classList.contains('dark'));
 
     // Click theme toggle
     await themeToggle.click();
 
     // Verify dark class toggled
-    const toggledHasDark = await html.evaluate((el) =>
-      el.classList.contains('dark')
-    );
+    const toggledHasDark = await html.evaluate((el) => el.classList.contains('dark'));
     expect(toggledHasDark).not.toBe(initialHasDark);
   });
 });

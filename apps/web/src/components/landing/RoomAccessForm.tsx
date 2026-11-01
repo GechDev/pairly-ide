@@ -83,10 +83,7 @@ export function RoomAccessForm({
             ...data.guest,
             displayName: chosenName || data.guest.displayName,
           };
-          sessionStorage.setItem(
-            `pairly_guest_${data.room.code}`,
-            JSON.stringify(guestIdentity)
-          );
+          sessionStorage.setItem(`pairly_guest_${data.room.code}`, JSON.stringify(guestIdentity));
         }
         if (data.token) {
           sessionStorage.setItem(`pairly_token_${data.room.code}`, data.token);
@@ -107,7 +104,7 @@ export function RoomAccessForm({
   const handleJoinRoom = async (
     targetRoomCode: string,
     targetName: string,
-    e?: React.FormEvent
+    e?: React.FormEvent,
   ) => {
     if (e) e.preventDefault();
     const cleanCode = targetRoomCode.replace(DASH_PATTERN, '').trim();
@@ -131,10 +128,7 @@ export function RoomAccessForm({
         color: '#6366f1',
         role: 'EDITOR' as const,
       };
-      sessionStorage.setItem(
-        `pairly_guest_${formattedCode}`,
-        JSON.stringify(guestObj)
-      );
+      sessionStorage.setItem(`pairly_guest_${formattedCode}`, JSON.stringify(guestObj));
     }
 
     const formattedCode = formatRoomCode(cleanCode);
@@ -152,18 +146,12 @@ export function RoomAccessForm({
           <div>
             <h2 className="text-[15px] font-bold text-[#f0ede8]">Join Collaboration Room</h2>
             <p className="text-[12px] text-[#5c5651]">
-              Room ID:{' '}
-              <span className="font-mono font-bold text-[#FF0000]">
-                {roomId}
-              </span>
+              Room ID: <span className="font-mono font-bold text-[#FF0000]">{roomId}</span>
             </p>
           </div>
         </div>
 
-        <form
-          onSubmit={(e) => handleJoinRoom(roomId, invitedName, e)}
-          className="space-y-4"
-        >
+        <form onSubmit={(e) => handleJoinRoom(roomId, invitedName, e)} className="space-y-4">
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="invited-name"
@@ -326,10 +314,7 @@ export function RoomAccessForm({
           </h2>
         </div>
 
-        <form
-          onSubmit={(e) => handleJoinRoom(roomId, joinName, e)}
-          className="space-y-3"
-        >
+        <form onSubmit={(e) => handleJoinRoom(roomId, joinName, e)} className="space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div className="flex flex-col gap-1">
               <input

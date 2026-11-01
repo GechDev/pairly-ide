@@ -55,8 +55,11 @@ function useScrollReveal() {
   const ref = useRef<HTMLElement>(null);
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('is-visible'); }),
-      { rootMargin: '0px 0px -80px 0px' }
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) e.target.classList.add('is-visible');
+        }),
+      { rootMargin: '0px 0px -80px 0px' },
     );
     const el = ref.current;
     if (el) el.querySelectorAll('.reveal').forEach((r) => observer.observe(r));
@@ -69,22 +72,24 @@ export function ArchitectureSection() {
   const ref = useScrollReveal();
 
   return (
-    <section id="architecture" ref={ref} className="py-[clamp(5rem,10vw,9rem)] bg-[#0a0a0b] relative">
+    <section
+      id="architecture"
+      ref={ref}
+      className="py-[clamp(5rem,10vw,9rem)] bg-[#0a0a0b] relative"
+    >
       <div className="absolute top-0 left-0 right-0 h-px bg-white/[0.06]" />
 
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
-
         {/* Header */}
         <div className="max-w-3xl mb-20">
-
           <h2 className="reveal text-[clamp(2rem,4.5vw,3.25rem)] font-extrabold tracking-[-0.03em] leading-[1.05] text-[#f0ede8]">
             Deterministic collaboration,
             <br />
             <span className="text-[#a09a92] font-[380]">from client to container.</span>
           </h2>
           <p className="reveal mt-6 text-[15px] text-[#a09a92] leading-[1.65] max-w-[50ch] font-[380]">
-            Pairly combines state-vector CRDT mathematics with isolated backend
-            runtimes — instant typing feedback alongside safe code execution.
+            Pairly combines state-vector CRDT mathematics with isolated backend runtimes — instant
+            typing feedback alongside safe code execution.
           </p>
         </div>
 
@@ -121,14 +126,15 @@ export function ArchitectureSection() {
               <h3 className="text-[17px] font-bold tracking-[-0.02em] text-[#f0ede8] mb-3">
                 {tier.title}
               </h3>
-              <p className="text-[13px] text-[#5c5651] leading-[1.6] mb-5">
-                {tier.description}
-              </p>
+              <p className="text-[13px] text-[#5c5651] leading-[1.6] mb-5">{tier.description}</p>
 
               {/* Detail list */}
               <ul className="space-y-2">
                 {tier.details.map((d) => (
-                  <li key={d} className="flex items-center gap-2 text-[12px] font-mono text-[#a09a92]">
+                  <li
+                    key={d}
+                    className="flex items-center gap-2 text-[12px] font-mono text-[#a09a92]"
+                  >
                     <span
                       className="w-1 h-1 rounded-full shrink-0"
                       style={{ background: tier.color }}
@@ -146,10 +152,20 @@ export function ArchitectureSection() {
           <div className="flex items-start gap-4">
             <div
               className="p-2.5 rounded-lg border shrink-0"
-              style={{ borderColor: 'rgba(255,0,0,0.2)', background: 'rgba(255,0,0,0.08)', color: '#FF0000' }}
+              style={{
+                borderColor: 'rgba(255,0,0,0.2)',
+                background: 'rgba(255,0,0,0.08)',
+                color: '#FF0000',
+              }}
             >
-              <svg viewBox="0 0 20 20" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M4 6h12M4 10h12M4 14h7" strokeLinecap="round"/>
+              <svg
+                viewBox="0 0 20 20"
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
+                <path d="M4 6h12M4 10h12M4 14h7" strokeLinecap="round" />
               </svg>
             </div>
             <div>

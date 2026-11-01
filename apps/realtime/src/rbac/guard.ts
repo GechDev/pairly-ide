@@ -1,10 +1,4 @@
-import {
-  canWrite,
-  canExecute,
-  canComment,
-  canManageRoom,
-  type RoomRole,
-} from '@pairly/contracts';
+import { canWrite, canExecute, canComment, canManageRoom, type RoomRole } from '@pairly/contracts';
 
 export type RealtimeAction =
   | 'DOCUMENT_UPDATE'
@@ -31,10 +25,7 @@ export interface RBACContext {
  * Server-side authorization guard enforcing RBAC per SRS SEC-01, SEC-03, and FR-ROOM-05..07.
  * Prevents unauthorized document updates, executions, and administrative mutations.
  */
-export function authorizeAction(
-  action: RealtimeAction,
-  context: RBACContext
-): RBACCheckResult {
+export function authorizeAction(action: RealtimeAction, context: RBACContext): RBACCheckResult {
   const { role, isRoomLocked = false } = context;
 
   // 1. If room is locked, only HOST can perform write/execute mutations

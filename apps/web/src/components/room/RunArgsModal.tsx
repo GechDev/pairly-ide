@@ -95,7 +95,10 @@ export function RunArgsModal({
           {/* Program CLI Arguments */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label htmlFor="cli-args-input" className="font-semibold text-slate-200 flex items-center gap-1.5">
+              <label
+                htmlFor="cli-args-input"
+                className="font-semibold text-slate-200 flex items-center gap-1.5"
+              >
                 <Terminal className="w-3.5 h-3.5 text-indigo-400" />
                 <span>Program Arguments (CLI args)</span>
               </label>
@@ -127,7 +130,10 @@ export function RunArgsModal({
           {/* Standard Input (stdin) */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label htmlFor="stdin-input" className="font-semibold text-slate-200 flex items-center gap-1.5">
+              <label
+                htmlFor="stdin-input"
+                className="font-semibold text-slate-200 flex items-center gap-1.5"
+              >
                 <span>Standard Input (stdin)</span>
               </label>
               {stdinInput && (

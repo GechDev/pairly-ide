@@ -125,10 +125,7 @@ export function RecordingsModal({
 
   const handleRestoreToEditor = () => {
     if (onRestoreCodeToWorkspace && selectedRecording) {
-      onRestoreCodeToWorkspace(
-        currentReplayCode,
-        selectedRecording.initialFileName || 'main.ts'
-      );
+      onRestoreCodeToWorkspace(currentReplayCode, selectedRecording.initialFileName || 'main.ts');
       setRestoredCodeSuccess(true);
       setTimeout(() => setRestoredCodeSuccess(false), 2000);
     }
@@ -158,7 +155,8 @@ export function RecordingsModal({
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Capture live workspace sessions, scrub through past event timelines, and export WebM video recordings.
+                Capture live workspace sessions, scrub through past event timelines, and export WebM
+                video recordings.
               </p>
             </div>
           </div>
@@ -251,9 +249,7 @@ export function RecordingsModal({
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-xs font-bold text-slate-100 truncate">
-                            {rec.title}
-                          </h4>
+                          <h4 className="text-xs font-bold text-slate-100 truncate">{rec.title}</h4>
                           <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-400">
                             <span className="inline-flex items-center gap-1 font-mono">
                               <Clock className="w-3 h-3 text-slate-500" />
@@ -306,7 +302,9 @@ export function RecordingsModal({
                     </h3>
                     <p className="text-[11px] text-slate-400 mt-0.5">
                       Recorded on {new Date(selectedRecording.createdAt).toLocaleString()} by{' '}
-                      <span className="text-slate-300 font-medium">{selectedRecording.createdBy}</span>
+                      <span className="text-slate-300 font-medium">
+                        {selectedRecording.createdBy}
+                      </span>
                     </p>
                   </div>
 
@@ -351,7 +349,11 @@ export function RecordingsModal({
                       title="Generate and download .webm video recording"
                     >
                       <Download className="w-3.5 h-3.5" />
-                      <span>{isExportingVideo ? `Rendering (${exportProgress.toFixed(0)}%)...` : 'Export WebM'}</span>
+                      <span>
+                        {isExportingVideo
+                          ? `Rendering (${exportProgress.toFixed(0)}%)...`
+                          : 'Export WebM'}
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -366,11 +368,17 @@ export function RecordingsModal({
                         className="p-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
                         aria-label={isPlaying ? 'Pause' : 'Play'}
                       >
-                        {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
+                        {isPlaying ? (
+                          <Pause className="w-4 h-4 fill-current" />
+                        ) : (
+                          <Play className="w-4 h-4 fill-current ml-0.5" />
+                        )}
                       </button>
 
                       <div className="font-mono text-xs text-slate-300">
-                        <span className="text-indigo-400 font-bold">{formatTime(playbackTime)}</span>
+                        <span className="text-indigo-400 font-bold">
+                          {formatTime(playbackTime)}
+                        </span>
                         <span className="text-slate-600 mx-1">/</span>
                         <span>{formatTime(selectedRecording.durationSeconds)}</span>
                       </div>
@@ -502,7 +510,8 @@ export function RecordingsModal({
                 <Video className="w-12 h-12 text-slate-700 mb-3" />
                 <h4 className="text-sm font-bold text-slate-300">Select a Session to Replay</h4>
                 <p className="text-xs text-slate-500 max-w-sm mt-1">
-                  Choose a recorded session from the left column to view its code evolution, activity timeline, and export video.
+                  Choose a recorded session from the left column to view its code evolution,
+                  activity timeline, and export video.
                 </p>
               </div>
             )}

@@ -142,7 +142,9 @@ export function FileTree({
         }`}
       >
         <div className="flex items-center gap-1.5 overflow-hidden">
-          <FileCode className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-brand-400' : 'text-slate-400'}`} />
+          <FileCode
+            className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-brand-400' : 'text-slate-400'}`}
+          />
           <span className="truncate font-mono">{item.name}</span>
         </div>
         <button

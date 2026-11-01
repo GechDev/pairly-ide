@@ -18,7 +18,7 @@ function useScrollReveal(rootMargin = '0px 0px -80px 0px') {
           }
         });
       },
-      { rootMargin }
+      { rootMargin },
     );
 
     const targets = el.querySelectorAll('.reveal');
@@ -103,10 +103,8 @@ export function FeatureGrid() {
       <div className="absolute top-0 left-0 right-0 h-px bg-white/[0.06]" />
 
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
-
         {/* Section header */}
         <div className="max-w-3xl mb-20">
-
           <h2 className="reveal text-[clamp(2rem,4.5vw,3.25rem)] font-extrabold tracking-[-0.03em] leading-[1.05] text-[#f0ede8]">
             Engineered for high-bandwidth
             <br />

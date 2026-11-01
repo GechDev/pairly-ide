@@ -23,7 +23,7 @@ export function downloadSessionJson(recording: SessionRecording): void {
  */
 export function downloadSessionVideo(
   recording: SessionRecording,
-  onProgress?: (percent: number) => void
+  onProgress?: (percent: number) => void,
 ): Promise<boolean> {
   return new Promise((resolve) => {
     if (typeof window === 'undefined' || typeof document === 'undefined') {
@@ -36,7 +36,11 @@ export function downloadSessionVideo(
     canvas.height = 720;
     const ctx = canvas.getContext('2d');
 
-    if (!ctx || typeof canvas.captureStream !== 'function' || typeof MediaRecorder === 'undefined') {
+    if (
+      !ctx ||
+      typeof canvas.captureStream !== 'function' ||
+      typeof MediaRecorder === 'undefined'
+    ) {
       // In environments without MediaRecorder (e.g. happy-dom or Safari without webm), fallback to JSON
       downloadSessionJson(recording);
       resolve(true);
@@ -115,7 +119,7 @@ export function downloadSessionVideo(
       ctx.fillText(
         `Room: ${recording.roomCode}  •  By: ${recording.createdBy}  •  ${currentSec}s / ${maxSec}s`,
         canvas.width - 440,
-        38
+        38,
       );
 
       // Editor Frame
@@ -193,8 +197,7 @@ export function downloadSessionVideo(
 
         ctx.fillStyle = '#e2e8f0';
         ctx.font = '11px sans-serif';
-        const truncated =
-          ev.detail.length > 22 ? `${ev.detail.slice(0, 20)}...` : ev.detail;
+        const truncated = ev.detail.length > 22 ? `${ev.detail.slice(0, 20)}...` : ev.detail;
         ctx.fillText(truncated, 1050, y);
       });
 
@@ -211,7 +214,7 @@ export function downloadSessionVideo(
       ctx.fillText(
         `PROGRESS: ${(progressRatio * 100).toFixed(0)}%  •  RECORDING DURATION: ${maxSec}s`,
         24,
-        708
+        708,
       );
 
       if (onProgress) onProgress(progressRatio * 100);

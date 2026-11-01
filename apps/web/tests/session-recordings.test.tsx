@@ -70,7 +70,7 @@ describe('Session Recordings & Event Timeline Replay (CodeSync/CodeX Inspired)',
         onStartRecording={vi.fn()}
         onStopRecording={handleStop}
         onDeleteRecording={vi.fn()}
-      />
+      />,
     );
 
     expect(screen.getByText(/Session Recordings & Timeline Replay/i)).toBeDefined();
@@ -94,7 +94,7 @@ describe('Session Recordings & Event Timeline Replay (CodeSync/CodeX Inspired)',
         onStartRecording={vi.fn()}
         onStopRecording={vi.fn()}
         onDeleteRecording={vi.fn()}
-      />
+      />,
     );
 
     // Assert session title in left column and right theater
@@ -119,7 +119,7 @@ describe('Session Recordings & Event Timeline Replay (CodeSync/CodeX Inspired)',
         onStartRecording={vi.fn()}
         onStopRecording={vi.fn()}
         onDeleteRecording={vi.fn()}
-      />
+      />,
     );
 
     // Range input slider
@@ -149,7 +149,7 @@ describe('Session Recordings & Event Timeline Replay (CodeSync/CodeX Inspired)',
         onStopRecording={vi.fn()}
         onDeleteRecording={vi.fn()}
         onRestoreCodeToWorkspace={handleRestore}
-      />
+      />,
     );
 
     const applyBtn = screen.getByTitle(/Restore current scrubber code to active editor/i);

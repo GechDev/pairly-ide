@@ -5,3 +5,8 @@ build
 .turbo
 pnpm-lock.yaml
 *.log
+.agents
+public
+test-results
+coverage
+out

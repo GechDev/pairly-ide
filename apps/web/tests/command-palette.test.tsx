@@ -6,7 +6,13 @@ import type { WorkspaceItem } from '../src/components/workspace/workspaceState';
 
 const mockFiles: WorkspaceItem[] = [
   { id: 'file-1', name: 'main.ts', isFolder: false, parentId: null, content: 'console.log("hi");' },
-  { id: 'file-2', name: 'styles.css', isFolder: false, parentId: null, content: 'body { margin: 0; }' },
+  {
+    id: 'file-2',
+    name: 'styles.css',
+    isFolder: false,
+    parentId: null,
+    content: 'body { margin: 0; }',
+  },
 ];
 
 describe('CommandPaletteModal Component', () => {
@@ -36,7 +42,7 @@ describe('CommandPaletteModal Component', () => {
         onOpenAbout={vi.fn()}
         onOpenReport={vi.fn()}
         onOpenLeave={vi.fn()}
-      />
+      />,
     );
 
     // Should render input
@@ -77,7 +83,7 @@ describe('CommandPaletteModal Component', () => {
         onOpenAbout={vi.fn()}
         onOpenReport={vi.fn()}
         onOpenLeave={vi.fn()}
-      />
+      />,
     );
 
     const input = screen.getByTestId('command-palette-input');
@@ -117,7 +123,7 @@ describe('CommandPaletteModal Component', () => {
         onOpenAbout={vi.fn()}
         onOpenReport={vi.fn()}
         onOpenLeave={vi.fn()}
-      />
+      />,
     );
 
     const input = screen.getByTestId('command-palette-input');

@@ -43,8 +43,7 @@ export function ThemeProvider({
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
     const applyTheme = () => {
-      const isDark =
-        theme === 'dark' || (theme === 'system' && mediaQuery.matches);
+      const isDark = theme === 'dark' || (theme === 'system' && mediaQuery.matches);
       if (isDark) {
         root.classList.add('dark');
         setResolvedTheme('dark');
@@ -70,9 +69,7 @@ export function ThemeProvider({
   };
 
   return (
-    <ThemeContext.Provider
-      value={{ theme, resolvedTheme, setTheme, toggleTheme }}
-    >
+    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

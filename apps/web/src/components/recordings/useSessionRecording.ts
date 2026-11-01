@@ -49,7 +49,7 @@ export function useSessionRecording({ roomCode, currentUsername }: UseSessionRec
         console.error('Failed to persist session recordings:', e);
       }
     },
-    [storageKey]
+    [storageKey],
   );
 
   // Recording ticker
@@ -96,7 +96,7 @@ export function useSessionRecording({ roomCode, currentUsername }: UseSessionRec
       setIsRecording(true);
       return id;
     },
-    [currentUsername]
+    [currentUsername],
   );
 
   // Record an event into the active stream
@@ -112,7 +112,7 @@ export function useSessionRecording({ roomCode, currentUsername }: UseSessionRec
       };
       activeEventsRef.current.push(newEv);
     },
-    [isRecording, recordingSeconds]
+    [isRecording, recordingSeconds],
   );
 
   // Stop recording and compile session
@@ -154,7 +154,7 @@ export function useSessionRecording({ roomCode, currentUsername }: UseSessionRec
         return updated;
       });
     },
-    [saveToStorage]
+    [saveToStorage],
   );
 
   return {

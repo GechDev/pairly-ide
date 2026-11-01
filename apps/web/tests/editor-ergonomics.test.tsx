@@ -30,7 +30,7 @@ describe('Code Editor Ergonomics & Status Bar Controls', () => {
           latencyMs={24}
           onSelectLanguage={onSelectLanguage}
           onOpenDiagnostics={onOpenDiagnostics}
-        />
+        />,
       );
 
       // Verify line and column tracking
@@ -66,7 +66,7 @@ describe('Code Editor Ergonomics & Status Bar Controls', () => {
           participant={mockParticipant}
           isCollaborative={false}
           onCodeChange={onCodeChange}
-        />
+        />,
       );
 
       const textarea = screen.getByTestId('editor-textarea') as HTMLTextAreaElement;
@@ -81,13 +81,7 @@ describe('Code Editor Ergonomics & Status Bar Controls', () => {
     });
 
     it('auto-closes parentheses, braces, and quotes', () => {
-      render(
-        <CodeEditor
-          initialCode=""
-          participant={mockParticipant}
-          isCollaborative={false}
-        />
-      );
+      render(<CodeEditor initialCode="" participant={mockParticipant} isCollaborative={false} />);
 
       const textarea = screen.getByTestId('editor-textarea') as HTMLTextAreaElement;
 
@@ -115,7 +109,7 @@ describe('Code Editor Ergonomics & Status Bar Controls', () => {
           initialCode="function test() {"
           participant={mockParticipant}
           isCollaborative={false}
-        />
+        />,
       );
 
       const textarea = screen.getByTestId('editor-textarea') as HTMLTextAreaElement;

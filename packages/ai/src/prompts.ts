@@ -44,7 +44,9 @@ export function buildAiPrompt(
 
   parts.push(`Action requested: ${action}`);
   if (userPrompt) {
-    parts.push(`<user_instruction>\n${sanitizeContextString(userPrompt.trim())}\n</user_instruction>`);
+    parts.push(
+      `<user_instruction>\n${sanitizeContextString(userPrompt.trim())}\n</user_instruction>`,
+    );
   }
 
   // Active File
@@ -74,16 +76,16 @@ export function buildAiPrompt(
 
   // Terminal Output
   if (c.terminalOutput) {
-    parts.push(
-      `<terminal_output>\n${sanitizeContextString(c.terminalOutput)}\n</terminal_output>`,
-    );
+    parts.push(`<terminal_output>\n${sanitizeContextString(c.terminalOutput)}\n</terminal_output>`);
   }
 
   // Error Context
   if (c.errorContext) {
     parts.push(
       `<error_context>\nMessage: ${sanitizeContextString(c.errorContext.message)}\n${
-        c.errorContext.stackTrace ? `StackTrace:\n${sanitizeContextString(c.errorContext.stackTrace)}` : ''
+        c.errorContext.stackTrace
+          ? `StackTrace:\n${sanitizeContextString(c.errorContext.stackTrace)}`
+          : ''
       }\n</error_context>`,
     );
   }

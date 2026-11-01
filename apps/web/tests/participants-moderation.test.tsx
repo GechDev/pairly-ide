@@ -44,7 +44,7 @@ describe('ParticipantsModal Component', () => {
         onKickParticipant={vi.fn()}
         onToggleMuteParticipant={vi.fn()}
         onToggleRoomLock={vi.fn()}
-      />
+      />,
     );
 
     expect(screen.getByTestId('participants-modal')).toBeDefined();
@@ -68,7 +68,7 @@ describe('ParticipantsModal Component', () => {
         onKickParticipant={vi.fn()}
         onToggleMuteParticipant={vi.fn()}
         onToggleRoomLock={vi.fn()}
-      />
+      />,
     );
 
     const searchInput = screen.getByTestId('participants-search-input');
@@ -97,7 +97,7 @@ describe('ParticipantsModal Component', () => {
         onKickParticipant={onKick}
         onToggleMuteParticipant={onToggleMute}
         onToggleRoomLock={vi.fn()}
-      />
+      />,
     );
 
     // Host changes Bob's role to VIEWER
@@ -131,7 +131,7 @@ describe('ParticipantsModal Component', () => {
         onKickParticipant={vi.fn()}
         onToggleMuteParticipant={vi.fn()}
         onToggleRoomLock={onToggleRoomLock}
-      />
+      />,
     );
 
     const lockBtn = screen.getByTestId('toggle-room-lock-btn');

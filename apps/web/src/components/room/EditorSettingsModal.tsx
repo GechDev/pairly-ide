@@ -1,7 +1,18 @@
 'use client';
 
 import React from 'react';
-import { Settings, X, Sliders, Type, AlignLeft, Sun, Moon, Download, Upload, Check } from 'lucide-react';
+import {
+  Settings,
+  X,
+  Sliders,
+  Type,
+  AlignLeft,
+  Sun,
+  Moon,
+  Download,
+  Upload,
+  Check,
+} from 'lucide-react';
 
 export interface EditorSettings {
   fontSize: number;
@@ -38,10 +49,7 @@ export function EditorSettingsModal({
 }: EditorSettingsModalProps) {
   if (!isOpen) return null;
 
-  const handleChange = <K extends keyof EditorSettings>(
-    key: K,
-    value: EditorSettings[K]
-  ) => {
+  const handleChange = <K extends keyof EditorSettings>(key: K, value: EditorSettings[K]) => {
     const updated = { ...settings, [key]: value };
     onUpdateSettings(updated);
     if (typeof window !== 'undefined') {
@@ -75,8 +83,11 @@ export function EditorSettingsModal({
             fontSize: typeof parsed.fontSize === 'number' ? parsed.fontSize : settings.fontSize,
             tabSize: typeof parsed.tabSize === 'number' ? parsed.tabSize : settings.tabSize,
             wordWrap: typeof parsed.wordWrap === 'boolean' ? parsed.wordWrap : settings.wordWrap,
-            lineNumbers: typeof parsed.lineNumbers === 'boolean' ? parsed.lineNumbers : settings.lineNumbers,
-            theme: ['vs-dark', 'vs-light', 'hc-black'].includes(parsed.theme) ? parsed.theme : settings.theme,
+            lineNumbers:
+              typeof parsed.lineNumbers === 'boolean' ? parsed.lineNumbers : settings.lineNumbers,
+            theme: ['vs-dark', 'vs-light', 'hc-black'].includes(parsed.theme)
+              ? parsed.theme
+              : settings.theme,
           };
           onUpdateSettings(validated);
           if (typeof window !== 'undefined') {
@@ -106,9 +117,7 @@ export function EditorSettingsModal({
               <Settings className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold tracking-tight text-white">
-                Editor Settings
-              </h2>
+              <h2 className="text-base font-bold tracking-tight text-white">Editor Settings</h2>
               <p className="text-xs text-slate-400 mt-0.5">
                 Customize appearance, font size, and typography preferences.
               </p>

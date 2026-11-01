@@ -127,7 +127,10 @@ export default function SettingsPage() {
       {/* Main Container */}
       <main className="relative flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-8">
         {/* Page Title */}
-        <div className="flex items-start gap-4 pb-6 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+        <div
+          className="flex items-start gap-4 pb-6 border-b"
+          style={{ borderColor: 'var(--border-subtle)' }}
+        >
           <div
             className="p-3 rounded-2xl flex items-center justify-center shrink-0"
             style={{
@@ -143,7 +146,8 @@ export default function SettingsPage() {
               Account &amp; Workspace Preferences
             </h1>
             <p className="text-xs text-[var(--fg-muted)] mt-1">
-              Personalize your Monaco editor environment, developer identity, and manage GDPR data exports.
+              Personalize your Monaco editor environment, developer identity, and manage GDPR data
+              exports.
             </p>
           </div>
         </div>
@@ -172,7 +176,9 @@ export default function SettingsPage() {
                 <User className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-[var(--fg-primary)]">Profile Information</h2>
+                <h2 className="text-base font-bold text-[var(--fg-primary)]">
+                  Profile Information
+                </h2>
                 <p className="text-xs text-[var(--fg-muted)]">
                   Update your global display name and notification email
                 </p>
@@ -245,7 +251,9 @@ export default function SettingsPage() {
                     <label className="text-xs font-mono uppercase tracking-wider text-[var(--fg-muted)]">
                       Font Size
                     </label>
-                    <span className="text-xs font-mono text-[var(--accent-teal)]">{fontSize}px</span>
+                    <span className="text-xs font-mono text-[var(--accent-teal)]">
+                      {fontSize}px
+                    </span>
                   </div>
                   <input
                     type="range"
@@ -284,8 +292,12 @@ export default function SettingsPage() {
                     onClick={() => setAiSuggestions(!aiSuggestions)}
                     className="w-full py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all"
                     style={{
-                      backgroundColor: aiSuggestions ? 'rgba(255, 0, 0, 0.1)' : 'var(--canvas-elevated)',
-                      borderColor: aiSuggestions ? 'rgba(255, 0, 0, 0.4)' : 'var(--border-prominent)',
+                      backgroundColor: aiSuggestions
+                        ? 'rgba(255, 0, 0, 0.1)'
+                        : 'var(--canvas-elevated)',
+                      borderColor: aiSuggestions
+                        ? 'rgba(255, 0, 0, 0.4)'
+                        : 'var(--border-prominent)',
                       color: aiSuggestions ? 'var(--accent-teal)' : 'var(--fg-muted)',
                     }}
                   >
@@ -336,7 +348,9 @@ export default function SettingsPage() {
               <Shield className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-[var(--fg-primary)]">Data Privacy &amp; Controls (GDPR)</h2>
+              <h2 className="text-base font-bold text-[var(--fg-primary)]">
+                Data Privacy &amp; Controls (GDPR)
+              </h2>
               <p className="text-xs text-[var(--fg-muted)]">
                 Manage your personal data exports, room ownership, and privacy compliance
               </p>
@@ -352,9 +366,12 @@ export default function SettingsPage() {
             }}
           >
             <div>
-              <h4 className="text-xs font-bold text-[var(--fg-primary)]">Export All Account Data</h4>
+              <h4 className="text-xs font-bold text-[var(--fg-primary)]">
+                Export All Account Data
+              </h4>
               <p className="text-[11px] text-[var(--fg-muted)] mt-1">
-                Download a JSON archive containing your profile, preferences, hosted rooms, and checkpoints (FR-ACCT-03).
+                Download a JSON archive containing your profile, preferences, hosted rooms, and
+                checkpoints (FR-ACCT-03).
               </p>
             </div>
             <button
@@ -392,7 +409,8 @@ export default function SettingsPage() {
                   Danger Zone: Delete Account
                 </h4>
                 <p className="text-[11px] text-rose-300/80 mt-1">
-                  Permanently delete your profile and cascade delete all hosted rooms and checkpoints (FR-ACCT-04, AT-11).
+                  Permanently delete your profile and cascade delete all hosted rooms and
+                  checkpoints (FR-ACCT-04, AT-11).
                 </p>
               </div>
               <button
@@ -430,7 +448,8 @@ export default function SettingsPage() {
             </div>
 
             <p className="text-xs text-[var(--fg-secondary)] leading-relaxed">
-              Are you sure you want to delete your account? All hosted rooms, participant records, and workspace snapshots will be permanently deleted per GDPR specifications.
+              Are you sure you want to delete your account? All hosted rooms, participant records,
+              and workspace snapshots will be permanently deleted per GDPR specifications.
             </p>
 
             <div className="flex justify-end gap-3 pt-3">

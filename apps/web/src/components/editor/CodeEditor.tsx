@@ -128,7 +128,11 @@ export function CodeEditor({
       isLocalUpdateRef.current = true;
       session.doc.transact(() => {
         let start = 0;
-        while (start < oldText.length && start < newText.length && oldText[start] === newText[start]) {
+        while (
+          start < oldText.length &&
+          start < newText.length &&
+          oldText[start] === newText[start]
+        ) {
           start++;
         }
         let endOld = oldText.length;
@@ -164,7 +168,7 @@ export function CodeEditor({
         isLocalUpdateRef.current = false;
       }, 10);
     },
-    [readOnly, session, onCodeChange]
+    [readOnly, session, onCodeChange],
   );
 
   // Handle local text edits with differential Yjs CRDT operations
@@ -172,7 +176,7 @@ export function CodeEditor({
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       updateEditorCode(e.target.value);
     },
-    [updateEditorCode]
+    [updateEditorCode],
   );
 
   // Handle cursor positioning & selection
@@ -197,7 +201,8 @@ export function CodeEditor({
   const fontSize = settings ? settings.fontSize : 14;
   const wordWrap = settings ? settings.wordWrap : false;
   const tabSize = settings ? settings.tabSize : 2;
-  const themeClass = settings?.theme === 'hc-black' ? 'bg-black text-white' : 'bg-slate-950 text-slate-200';
+  const themeClass =
+    settings?.theme === 'hc-black' ? 'bg-black text-white' : 'bg-slate-950 text-slate-200';
 
   // Smart keyboard ergonomics: Tab indentation, matching bracket auto-closure, Enter auto-indent
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -242,16 +247,18 @@ export function CodeEditor({
             }
             return line;
           });
-          const newCode = value.slice(0, lineStart) + updatedLines.join('\n') + value.slice(effectiveEnd);
+          const newCode =
+            value.slice(0, lineStart) + updatedLines.join('\n') + value.slice(effectiveEnd);
           updateEditorCode(
             newCode,
             Math.max(lineStart, start - removedFromFirst),
-            Math.max(lineStart, end - totalRemoved)
+            Math.max(lineStart, end - totalRemoved),
           );
         } else {
           const updatedLines = targetLines.map((line) => tabString + line);
           const addedTotal = targetLines.length * tabSize;
-          const newCode = value.slice(0, lineStart) + updatedLines.join('\n') + value.slice(effectiveEnd);
+          const newCode =
+            value.slice(0, lineStart) + updatedLines.join('\n') + value.slice(effectiveEnd);
           updateEditorCode(newCode, start + tabSize, end + addedTotal);
         }
       }
@@ -303,7 +310,11 @@ export function CodeEditor({
     if (pairs[e.key]) {
       const open = e.key;
       const close = pairs[open];
-      if ((open === '"' || open === "'" || open === '`') && value[start] === open && start === end) {
+      if (
+        (open === '"' || open === "'" || open === '`') &&
+        value[start] === open &&
+        start === end
+      ) {
         e.preventDefault();
         el.setSelectionRange(start + 1, start + 1);
         handleSelectionChange();
@@ -398,10 +409,7 @@ export function CodeEditor({
         />
 
         {/* Remote Cursors Overlay */}
-        <div
-          id="remote-cursors-layer"
-          className="pointer-events-none absolute inset-0 p-4 z-20"
-        >
+        <div id="remote-cursors-layer" className="pointer-events-none absolute inset-0 p-4 z-20">
           {cursors.map((c) => {
             const topOffset = (c.line - 1) * 24; // 24px line-height
             const leftOffset = (c.column - 1) * 8.4; // approx monospace char width
@@ -415,10 +423,7 @@ export function CodeEditor({
                 }}
               >
                 {/* Remote cursor caret */}
-                <div
-                  className="w-0.5 h-6 animate-pulse"
-                  style={{ backgroundColor: c.color }}
-                />
+                <div className="w-0.5 h-6 animate-pulse" style={{ backgroundColor: c.color }} />
                 {/* Remote cursor tag */}
                 <span
                   className="px-1.5 py-0.5 rounded text-[10px] text-white font-sans font-medium whitespace-nowrap shadow-md -mt-1 -ml-1 select-none"

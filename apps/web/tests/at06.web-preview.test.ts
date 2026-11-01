@@ -92,7 +92,9 @@ describe('T-14: Sandboxed Live Web Preview & Isolation (AT-06)', () => {
       const isPrivilegedAccessBlocked = (parentObj: any) => {
         try {
           if (!parentObj || parentObj.isSameOrigin === false) {
-            throw new Error('SecurityError: Blocked a frame with origin "null" from accessing a cross-origin frame.');
+            throw new Error(
+              'SecurityError: Blocked a frame with origin "null" from accessing a cross-origin frame.',
+            );
           }
           return parentObj.localStorage;
         } catch (e: any) {

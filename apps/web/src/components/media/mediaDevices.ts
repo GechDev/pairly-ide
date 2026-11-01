@@ -40,27 +40,31 @@ export class MediaDeviceManager {
   /**
    * Acquire local user media (camera and microphone).
    */
-  async getUserMedia(options: {
-    video?: boolean | MediaTrackConstraints;
-    audio?: boolean | MediaTrackConstraints;
-    videoDeviceId?: string;
-    audioDeviceId?: string;
-  } = {}): Promise<MediaStream | null> {
+  async getUserMedia(
+    options: {
+      video?: boolean | MediaTrackConstraints;
+      audio?: boolean | MediaTrackConstraints;
+      videoDeviceId?: string;
+      audioDeviceId?: string;
+    } = {},
+  ): Promise<MediaStream | null> {
     if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
       return null;
     }
 
-    const videoConstraint: boolean | MediaTrackConstraints = options.video ?? true
-      ? options.videoDeviceId
-        ? { deviceId: { exact: options.videoDeviceId } }
-        : true
-      : false;
+    const videoConstraint: boolean | MediaTrackConstraints =
+      (options.video ?? true)
+        ? options.videoDeviceId
+          ? { deviceId: { exact: options.videoDeviceId } }
+          : true
+        : false;
 
-    const audioConstraint: boolean | MediaTrackConstraints = options.audio ?? true
-      ? options.audioDeviceId
-        ? { deviceId: { exact: options.audioDeviceId } }
-        : true
-      : false;
+    const audioConstraint: boolean | MediaTrackConstraints =
+      (options.audio ?? true)
+        ? options.audioDeviceId
+          ? { deviceId: { exact: options.audioDeviceId } }
+          : true
+        : false;
 
     try {
       this.stopLocalStream();

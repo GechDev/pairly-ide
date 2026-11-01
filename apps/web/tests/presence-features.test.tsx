@@ -28,10 +28,7 @@ describe('Collaborative Presence & Workspace Enhancements (CodeX Inspired)', () 
       };
 
       const { container } = render(
-        <RemotePointers
-          currentUserId="user-self"
-          pointers={mockPointers}
-        />
+        <RemotePointers currentUserId="user-self" pointers={mockPointers} />,
       );
 
       // Alice's pointer should exist
@@ -60,7 +57,7 @@ describe('Collaborative Presence & Workspace Enhancements (CodeX Inspired)', () 
           isPreviewOpen={false}
           onToggleTerminal={onToggleTerminal}
           onTogglePreview={onTogglePreview}
-        />
+        />,
       );
 
       expect(screen.getByText('gateway.ts')).toBeDefined();
@@ -91,7 +88,7 @@ describe('Collaborative Presence & Workspace Enhancements (CodeX Inspired)', () 
           isHost={true}
           isLocked={false}
           onToggleLock={vi.fn()}
-        />
+        />,
       );
 
       expect(screen.getByText('Share Collaboration Room')).toBeDefined();

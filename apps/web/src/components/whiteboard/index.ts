@@ -1,1 +1,5 @@
-export { WhiteboardModal, type WhiteboardElement, type WhiteboardModalProps } from './WhiteboardModal';
+export {
+  WhiteboardModal,
+  type WhiteboardElement,
+  type WhiteboardModalProps,
+} from './WhiteboardModal';

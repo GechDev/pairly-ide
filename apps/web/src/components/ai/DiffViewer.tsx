@@ -125,8 +125,14 @@ export function DiffViewer({ diffText, filePath = 'code.ts', className = '' }: D
               {lines.map((line, idx) => {
                 if (line.type === 'header') {
                   return (
-                    <tr key={idx} className="bg-purple-950/20 text-purple-300 font-bold border-y border-purple-900/30">
-                      <td colSpan={3} className="px-4 py-1.5 text-[11px] select-none text-purple-400/90">
+                    <tr
+                      key={idx}
+                      className="bg-purple-950/20 text-purple-300 font-bold border-y border-purple-900/30"
+                    >
+                      <td
+                        colSpan={3}
+                        className="px-4 py-1.5 text-[11px] select-none text-purple-400/90"
+                      >
                         {line.text}
                       </td>
                     </tr>
@@ -183,13 +189,17 @@ export function DiffViewer({ diffText, filePath = 'code.ts', className = '' }: D
                   return (
                     <tr
                       key={`left-${idx}`}
-                      className={line.type === 'delete' ? 'bg-rose-950/30 text-rose-200' : 'text-gray-300'}
+                      className={
+                        line.type === 'delete' ? 'bg-rose-950/30 text-rose-200' : 'text-gray-300'
+                      }
                     >
                       <td className="w-10 select-none text-right pr-2 text-gray-600 font-mono text-[11px] border-r border-gray-800/80">
                         {line.oldNum}
                       </td>
                       <td className="px-3 py-0.5 whitespace-pre font-mono">
-                        {line.type === 'delete' && <span className="font-bold select-none mr-2">-</span>}
+                        {line.type === 'delete' && (
+                          <span className="font-bold select-none mr-2">-</span>
+                        )}
                         {line.text}
                       </td>
                     </tr>
@@ -214,13 +224,17 @@ export function DiffViewer({ diffText, filePath = 'code.ts', className = '' }: D
                   return (
                     <tr
                       key={`right-${idx}`}
-                      className={line.type === 'add' ? 'bg-red-950/30 text-red-200' : 'text-gray-300'}
+                      className={
+                        line.type === 'add' ? 'bg-red-950/30 text-red-200' : 'text-gray-300'
+                      }
                     >
                       <td className="w-10 select-none text-right pr-2 text-gray-600 font-mono text-[11px] border-r border-gray-800/80">
                         {line.newNum}
                       </td>
                       <td className="px-3 py-0.5 whitespace-pre font-mono">
-                        {line.type === 'add' && <span className="font-bold select-none mr-2">+</span>}
+                        {line.type === 'add' && (
+                          <span className="font-bold select-none mr-2">+</span>
+                        )}
                         {line.text}
                       </td>
                     </tr>

@@ -114,7 +114,7 @@ export function WebPreview({ items }: WebPreviewProps) {
     const popout = window.open(
       '',
       '_blank',
-      'width=960,height=720,menubar=no,toolbar=no,location=no,status=no'
+      'width=960,height=720,menubar=no,toolbar=no,location=no,status=no',
     );
     if (popout) {
       popout.document.open();
@@ -130,12 +130,12 @@ export function WebPreview({ items }: WebPreviewProps) {
     viewportMode === 'desktop'
       ? 'w-full h-full'
       : viewportMode === 'tablet'
-      ? isLandscape
-        ? 'w-[1024px] max-w-full h-full'
-        : 'w-[768px] max-w-full h-full'
-      : isLandscape
-      ? 'w-[667px] max-w-full h-[375px]'
-      : 'w-[375px] max-w-full h-[667px]';
+        ? isLandscape
+          ? 'w-[1024px] max-w-full h-full'
+          : 'w-[768px] max-w-full h-full'
+        : isLandscape
+          ? 'w-[667px] max-w-full h-[375px]'
+          : 'w-[375px] max-w-full h-[667px]';
 
   return (
     <div
@@ -169,11 +169,7 @@ export function WebPreview({ items }: WebPreviewProps) {
               title="Copy preview path"
               className="p-0.5 rounded text-slate-500 hover:text-slate-300 transition-colors ml-1"
             >
-              {copied ? (
-                <Check className="w-3 h-3 text-[#FF0000]" />
-              ) : (
-                <Copy className="w-3 h-3" />
-              )}
+              {copied ? <Check className="w-3 h-3 text-[#FF0000]" /> : <Copy className="w-3 h-3" />}
             </button>
           </div>
         </div>

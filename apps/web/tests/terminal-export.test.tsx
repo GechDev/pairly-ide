@@ -27,7 +27,7 @@ describe('SharedTerminal Output Download & Actions (CodeX Parity)', () => {
         exitCode={0}
         durationMs={340}
         onClear={vi.fn()}
-      />
+      />,
     );
 
     const downloadBtn = screen.getByLabelText(/Download terminal output/i);
@@ -47,7 +47,7 @@ describe('SharedTerminal Output Download & Actions (CodeX Parity)', () => {
         exitCode={0}
         durationMs={340}
         onClear={handleClear}
-      />
+      />,
     );
 
     const clearBtn = screen.getByTitle(/Clear terminal output/i);

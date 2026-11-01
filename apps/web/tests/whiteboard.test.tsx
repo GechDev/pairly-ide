@@ -1,13 +1,19 @@
 import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { WhiteboardModal, type WhiteboardElement } from '../src/components/whiteboard/WhiteboardModal';
+import {
+  WhiteboardModal,
+  type WhiteboardElement,
+} from '../src/components/whiteboard/WhiteboardModal';
 
 const mockElements: WhiteboardElement[] = [
   {
     id: 'el-1',
     type: 'pen',
-    points: [{ x: 10, y: 10 }, { x: 50, y: 50 }],
+    points: [
+      { x: 10, y: 10 },
+      { x: 50, y: 50 },
+    ],
     color: '#10b981',
     strokeWidth: 3,
   },
@@ -37,7 +43,7 @@ describe('WhiteboardModal Component', () => {
         elements={mockElements}
         onAddElement={onAddElement}
         onClearElements={onClearElements}
-      />
+      />,
     );
 
     // Title and Room Code badge
@@ -78,7 +84,7 @@ describe('WhiteboardModal Component', () => {
         elements={[]}
         onAddElement={onAddElement}
         onClearElements={vi.fn()}
-      />
+      />,
     );
 
     const canvas = screen.getByTestId('whiteboard-canvas');

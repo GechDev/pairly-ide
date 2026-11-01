@@ -175,8 +175,10 @@ export function rebaseProposal(
 
   // Simple clean merge heuristic:
   // If concurrent user change is on different lines than AI proposal change
-  const userChangedBase = baseLines.length !== currLines.length || baseLines.some((l, idx) => l !== currLines[idx]);
-  const aiChangedBase = baseLines.length !== aiLines.length || baseLines.some((l, idx) => l !== aiLines[idx]);
+  const userChangedBase =
+    baseLines.length !== currLines.length || baseLines.some((l, idx) => l !== currLines[idx]);
+  const aiChangedBase =
+    baseLines.length !== aiLines.length || baseLines.some((l, idx) => l !== aiLines[idx]);
 
   if (userChangedBase && aiChangedBase) {
     // Check if the file was modified in conflicting ways
@@ -184,7 +186,8 @@ export function rebaseProposal(
       success: false,
       rebasedContent: currentContent,
       hasConflict: true,
-      conflictDetails: 'Concurrent edits detected between proposal generation and review. Manual review required.',
+      conflictDetails:
+        'Concurrent edits detected between proposal generation and review. Manual review required.',
     };
   }
 

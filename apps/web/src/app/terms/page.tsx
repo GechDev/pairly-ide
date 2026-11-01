@@ -11,7 +11,10 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen text-[var(--fg-primary)]" style={{ backgroundColor: 'var(--canvas)' }}>
+    <div
+      className="min-h-screen text-[var(--fg-primary)]"
+      style={{ backgroundColor: 'var(--canvas)' }}
+    >
       {/* Background glow */}
       <div
         className="pointer-events-none fixed inset-0 opacity-40"
@@ -30,7 +33,10 @@ export default function TermsPage() {
           <span>Back to Pairly Overview</span>
         </Link>
 
-        <div className="flex items-start gap-4 mb-10 pb-8 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+        <div
+          className="flex items-start gap-4 mb-10 pb-8 border-b"
+          style={{ borderColor: 'var(--border-subtle)' }}
+        >
           <div
             className="p-3 rounded-2xl flex items-center justify-center shrink-0"
             style={{
@@ -66,8 +72,8 @@ export default function TermsPage() {
             <p>
               By accessing Pairly IDE, initializing a collaboration room, or running code within our
               sandboxes, you agree to comply with these Terms of Service. If you are entering into
-              this agreement on behalf of an organization, you represent that you possess the authority
-              to bind that organization.
+              this agreement on behalf of an organization, you represent that you possess the
+              authority to bind that organization.
             </p>
           </section>
 
@@ -83,9 +89,9 @@ export default function TermsPage() {
               2. Intellectual Property and Code Ownership
             </h2>
             <p>
-              You and your collaboration peers retain full and exclusive ownership of all source code,
-              scripts, configuration files, and assets created, edited, or uploaded inside Pairly IDE.
-              Pairly asserts no intellectual property claims over your creations.
+              You and your collaboration peers retain full and exclusive ownership of all source
+              code, scripts, configuration files, and assets created, edited, or uploaded inside
+              Pairly IDE. Pairly asserts no intellectual property claims over your creations.
             </p>
           </section>
 
@@ -101,18 +107,27 @@ export default function TermsPage() {
               3. Acceptable Use and Sandbox Security
             </h2>
             <p>
-              Pairly provides isolated execution sandboxes for software development and educational pairing.
-              You strictly agree NOT to use the execution runtime for:
+              Pairly provides isolated execution sandboxes for software development and educational
+              pairing. You strictly agree NOT to use the execution runtime for:
             </p>
             <ul className="list-disc pl-5 space-y-1.5">
               <li>Cryptocurrency mining or distributed computation abuse.</li>
-              <li>Compiling or launching malicious software, keyloggers, worms, or exploit payloads.</li>
-              <li>Unauthorized port scanning, probing, or denial-of-service testing against remote hosts.</li>
-              <li>Attempting to bypass sandbox isolation, escalate privileges, or break container containment.</li>
+              <li>
+                Compiling or launching malicious software, keyloggers, worms, or exploit payloads.
+              </li>
+              <li>
+                Unauthorized port scanning, probing, or denial-of-service testing against remote
+                hosts.
+              </li>
+              <li>
+                Attempting to bypass sandbox isolation, escalate privileges, or break container
+                containment.
+              </li>
             </ul>
             <p className="text-xs text-[var(--fg-muted)] mt-2">
-              Code execution is subject to runtime quotas: 10 seconds execution timeout, memory limits,
-              and automatic termination upon quota exhaustion. Violations result in immediate session termination.
+              Code execution is subject to runtime quotas: 10 seconds execution timeout, memory
+              limits, and automatic termination upon quota exhaustion. Violations result in
+              immediate session termination.
             </p>
           </section>
 
@@ -130,8 +145,9 @@ export default function TermsPage() {
             <p>
               Pairly IDE is provided on an &quot;AS IS&quot; and &quot;AS AVAILABLE&quot; basis.
               While our CRDT architecture provides conflict-free local edits, we recommend exporting
-              vital work to version control systems such as GitHub. Under no circumstances will Pairly
-              be liable for lost revenue, data loss, or indirect damages arising from service interruption.
+              vital work to version control systems such as GitHub. Under no circumstances will
+              Pairly be liable for lost revenue, data loss, or indirect damages arising from service
+              interruption.
             </p>
           </section>
         </div>

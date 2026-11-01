@@ -42,7 +42,11 @@ export function VideoGrid({
           data-testid="screen-share-viewport"
           className="relative w-full rounded-xl border border-indigo-500/40 bg-slate-950 aspect-video overflow-hidden shadow-2xl"
         >
-          <TrackVideo track={localScreenTrack} mirrored={false} className="object-contain bg-black" />
+          <TrackVideo
+            track={localScreenTrack}
+            mirrored={false}
+            className="object-contain bg-black"
+          />
           <div className="absolute top-2 left-2 flex items-center gap-2 bg-indigo-950/80 backdrop-blur-md border border-indigo-500/40 px-2.5 py-1 rounded-md text-xs font-medium text-indigo-200">
             <Monitor className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
             <span>You are sharing your screen</span>
@@ -56,8 +60,8 @@ export function VideoGrid({
           remoteParticipants.length === 0
             ? 'grid-cols-1'
             : remoteParticipants.length <= 2
-            ? 'grid-cols-1 sm:grid-cols-2'
-            : 'grid-cols-2 lg:grid-cols-3'
+              ? 'grid-cols-1 sm:grid-cols-2'
+              : 'grid-cols-2 lg:grid-cols-3'
         }`}
       >
         {/* Local Participant Tile */}
@@ -70,11 +74,7 @@ export function VideoGrid({
           }`}
         >
           {!isCameraOff && localVideoTrack ? (
-            <TrackVideo
-              track={localVideoTrack}
-              mirrored={true}
-              className="object-cover"
-            />
+            <TrackVideo track={localVideoTrack} mirrored={true} className="object-cover" />
           ) : (
             <div className="flex flex-col items-center justify-center text-slate-400">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-800 text-slate-300 font-bold border border-slate-700 text-sm">
@@ -87,7 +87,9 @@ export function VideoGrid({
           {/* Badges Overlay */}
           <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between text-xs bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-lg">
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="font-semibold text-slate-200 text-[11px] truncate">{localName} (You)</span>
+              <span className="font-semibold text-slate-200 text-[11px] truncate">
+                {localName} (You)
+              </span>
               {isSpeaking && (
                 <span className="flex items-center text-[10px] text-[#FF0000] font-mono">
                   <Volume2 className="w-3 h-3 mr-0.5 animate-pulse" />
@@ -177,7 +179,11 @@ export function VideoGrid({
                       : 'bg-[#FF0000]/20 text-red-300 border border-[#FF0000]/30'
                   }`}
                 >
-                  {!peer.isAudioActive ? <MicOff className="h-3 w-3" /> : <Mic className="h-3 w-3" />}
+                  {!peer.isAudioActive ? (
+                    <MicOff className="h-3 w-3" />
+                  ) : (
+                    <Mic className="h-3 w-3" />
+                  )}
                 </span>
               </div>
             </div>

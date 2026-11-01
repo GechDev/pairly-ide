@@ -322,7 +322,7 @@ export function CommandPaletteModal({
   // Clamp selection index
   const safeSelectedIndex = Math.min(
     Math.max(0, selectedIndex),
-    Math.max(0, filteredCommands.length - 1)
+    Math.max(0, filteredCommands.length - 1),
   );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -332,7 +332,7 @@ export function CommandPaletteModal({
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setSelectedIndex((prev) =>
-        prev === 0 ? Math.max(0, filteredCommands.length - 1) : prev - 1
+        prev === 0 ? Math.max(0, filteredCommands.length - 1) : prev - 1,
       );
     } else if (e.key === 'Enter') {
       e.preventDefault();
@@ -442,9 +442,7 @@ export function CommandPaletteModal({
                         {cmd.shortcut}
                       </kbd>
                     )}
-                    {isSelected && (
-                      <CornerDownLeft className="w-3.5 h-3.5 text-brand-400" />
-                    )}
+                    {isSelected && <CornerDownLeft className="w-3.5 h-3.5 text-brand-400" />}
                   </div>
                 </div>
               );

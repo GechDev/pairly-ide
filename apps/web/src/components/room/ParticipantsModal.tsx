@@ -38,10 +38,26 @@ const ROLE_CONFIG: Record<
   RoomRole,
   { label: string; colorClass: string; icon: React.ComponentType<{ className?: string }> }
 > = {
-  HOST: { label: 'Host', colorClass: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40', icon: ShieldCheck },
-  EDITOR: { label: 'Editor', colorClass: 'bg-[#FF0000]/20 text-red-300 border-[#FF0000]/40', icon: UserCheck },
-  COMMENTER: { label: 'Commenter', colorClass: 'bg-amber-500/20 text-amber-300 border-amber-500/40', icon: MessageSquare },
-  VIEWER: { label: 'Viewer', colorClass: 'bg-slate-500/20 text-slate-300 border-slate-500/40', icon: Eye },
+  HOST: {
+    label: 'Host',
+    colorClass: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
+    icon: ShieldCheck,
+  },
+  EDITOR: {
+    label: 'Editor',
+    colorClass: 'bg-[#FF0000]/20 text-red-300 border-[#FF0000]/40',
+    icon: UserCheck,
+  },
+  COMMENTER: {
+    label: 'Commenter',
+    colorClass: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+    icon: MessageSquare,
+  },
+  VIEWER: {
+    label: 'Viewer',
+    colorClass: 'bg-slate-500/20 text-slate-300 border-slate-500/40',
+    icon: Eye,
+  },
 };
 
 export function ParticipantsModal({
@@ -64,9 +80,7 @@ export function ParticipantsModal({
   if (!isOpen) return null;
 
   // Deduplicate participants by ID
-  const uniqueParticipants = Array.from(
-    new Map(participants.map((p) => [p.id, p])).values()
-  );
+  const uniqueParticipants = Array.from(new Map(participants.map((p) => [p.id, p])).values());
 
   // Sort so Host is first, then current user, then alphabetical
   const sortedParticipants = [...uniqueParticipants].sort((a, b) => {
@@ -112,7 +126,9 @@ export function ParticipantsModal({
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                {isHost ? 'Manage permissions and moderate room members' : 'Active peers currently in the workspace'}
+                {isHost
+                  ? 'Manage permissions and moderate room members'
+                  : 'Active peers currently in the workspace'}
               </p>
             </div>
           </div>
@@ -179,7 +195,10 @@ export function ParticipantsModal({
         </div>
 
         {/* Participant List */}
-        <div data-testid="participants-list" className="max-h-96 overflow-y-auto p-3 space-y-2 select-none">
+        <div
+          data-testid="participants-list"
+          className="max-h-96 overflow-y-auto p-3 space-y-2 select-none"
+        >
           {filtered.length === 0 ? (
             <div className="py-10 text-center text-xs text-slate-500 italic">
               No participants found matching &quot;{searchQuery}&quot;.
@@ -264,7 +283,11 @@ export function ParticipantsModal({
                             : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-800'
                         }`}
                       >
-                        {isMuted ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                        {isMuted ? (
+                          <MicOff className="w-3.5 h-3.5" />
+                        ) : (
+                          <Mic className="w-3.5 h-3.5" />
+                        )}
                       </button>
                     )}
 
@@ -274,7 +297,11 @@ export function ParticipantsModal({
                         type="button"
                         data-testid={`kick-btn-${p.id}`}
                         onClick={() => {
-                          if (window.confirm(`Are you sure you want to remove ${p.displayName} from this room?`)) {
+                          if (
+                            window.confirm(
+                              `Are you sure you want to remove ${p.displayName} from this room?`,
+                            )
+                          ) {
                             onKickParticipant(p.id);
                           }
                         }}

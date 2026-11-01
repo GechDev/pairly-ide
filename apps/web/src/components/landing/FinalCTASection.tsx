@@ -18,8 +18,11 @@ export function FinalCTASection() {
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('is-visible'); }),
-      { rootMargin: '0px 0px -60px 0px' }
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) e.target.classList.add('is-visible');
+        }),
+      { rootMargin: '0px 0px -60px 0px' },
     );
     const el = ref.current;
     if (el) el.querySelectorAll('.reveal').forEach((r) => observer.observe(r));
@@ -40,21 +43,16 @@ export function FinalCTASection() {
       />
 
       <div className="relative z-10 max-w-4xl mx-auto px-5 sm:px-8 text-center">
-
-
-
         {/* Headline */}
-        <h2
-          className="reveal text-[clamp(2.5rem,7vw,6rem)] font-extrabold tracking-[-0.04em] leading-[0.95] text-[#f0ede8]"
-        >
+        <h2 className="reveal text-[clamp(2.5rem,7vw,6rem)] font-extrabold tracking-[-0.04em] leading-[0.95] text-[#f0ede8]">
           Ready to pair
           <br />
           with your team?
         </h2>
 
         <p className="reveal mt-7 text-[16px] text-[#a09a92] leading-[1.65] max-w-[42ch] mx-auto font-[380]">
-          Provision a collaborative room in seconds. Invite partners via a
-          single link. No account, no setup, no local dependencies.
+          Provision a collaborative room in seconds. Invite partners via a single link. No account,
+          no setup, no local dependencies.
         </p>
 
         {/* CTAs */}

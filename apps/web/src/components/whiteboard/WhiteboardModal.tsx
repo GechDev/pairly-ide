@@ -522,7 +522,10 @@ export function WhiteboardModal({
         </header>
 
         {/* Canvas Body */}
-        <div ref={containerRef} className="relative flex-1 bg-slate-950 overflow-hidden cursor-crosshair">
+        <div
+          ref={containerRef}
+          className="relative flex-1 bg-slate-950 overflow-hidden cursor-crosshair"
+        >
           <canvas
             ref={canvasRef}
             data-testid="whiteboard-canvas"

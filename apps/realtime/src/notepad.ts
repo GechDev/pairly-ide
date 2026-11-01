@@ -21,7 +21,8 @@ export class NotepadManager {
 
     const initial: NotepadState = {
       roomId,
-      content: '# Collaborative Notes\n\n- Real-time scratchpad isolated from code workspace.\n- Supports Markdown formatting and live preview.\n',
+      content:
+        '# Collaborative Notes\n\n- Real-time scratchpad isolated from code workspace.\n- Supports Markdown formatting and live preview.\n',
       updatedAt: Date.now(),
     };
     this.notes.set(roomId, initial);

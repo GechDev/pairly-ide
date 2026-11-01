@@ -82,19 +82,22 @@ export function HeroSection({ initialRoomId }: HeroSectionProps) {
         style={{ animationDelay: '0s', animationDuration: '5s' }}
       >
         <div className="font-mono text-[11px] text-[#5c5651] leading-5 text-right">
-          <div><span className="text-[#5b9cf6]">const</span> room = <span className="text-[#FF0000]">await</span> createRoom()</div>
-          <div><span className="text-[#5c5651]">// ALPHA-7X9P — 3 peers</span></div>
-          <div><span className="text-[#5b9cf6]">room</span>.on(<span className="text-[#a09a92]">"peer:join"</span>, fn)</div>
+          <div>
+            <span className="text-[#5b9cf6]">const</span> room ={' '}
+            <span className="text-[#FF0000]">await</span> createRoom()
+          </div>
+          <div>
+            <span className="text-[#5c5651]">// ALPHA-7X9P — 3 peers</span>
+          </div>
+          <div>
+            <span className="text-[#5b9cf6]">room</span>.on(
+            <span className="text-[#a09a92]">"peer:join"</span>, fn)
+          </div>
         </div>
       </div>
 
-
-
       {/* ── Main content ── */}
       <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 w-full py-20 sm:py-28">
-
-
-
         {/* Main headline — Capsule-inspired kinetic scale */}
         <h1
           className="
@@ -108,11 +111,7 @@ export function HeroSection({ initialRoomId }: HeroSectionProps) {
         >
           Code together,
           <br />
-          <span
-            className="relative inline-block text-[#FF0000]"
-          >
-            instantly.
-          </span>
+          <span className="relative inline-block text-[#FF0000]">instantly.</span>
         </h1>
 
         {/* Sub-headline */}
@@ -126,9 +125,8 @@ export function HeroSection({ initialRoomId }: HeroSectionProps) {
           "
           style={{ animationDelay: '160ms' }}
         >
-          Share one link. Edit together in real time with sub-50ms
-          conflict-free sync, run code in 20+ isolated sandboxes,
-          and ship clean commits — no installs required.
+          Share one link. Edit together in real time with sub-50ms conflict-free sync, run code in
+          20+ isolated sandboxes, and ship clean commits — no installs required.
         </p>
 
         {/* CTA Action Buttons */}
@@ -192,8 +190,8 @@ export function HeroSection({ initialRoomId }: HeroSectionProps) {
         >
           {[
             { value: '< 50ms', label: 'CRDT sync latency' },
-            { value: '20+',    label: 'Sandboxed languages' },
-            { value: '0',      label: 'Installs needed' },
+            { value: '20+', label: 'Sandboxed languages' },
+            { value: '0', label: 'Installs needed' },
           ].map(({ value, label }) => (
             <div key={label} className="flex items-baseline gap-2">
               <span className="font-mono text-[20px] font-bold tracking-tight text-[#f0ede8]">

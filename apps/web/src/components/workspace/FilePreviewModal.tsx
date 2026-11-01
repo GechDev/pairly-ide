@@ -179,7 +179,10 @@ export function FilePreviewModal({
         <div className="px-6 py-3.5 bg-slate-950 border-t border-slate-800 flex flex-wrap justify-between items-center gap-3">
           <div className="text-xs text-slate-400 flex items-center gap-1.5">
             <AlertCircle className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Choose how to incorporate <strong className="text-slate-200">{fileName}</strong> into your workspace</span>
+            <span>
+              Choose how to incorporate <strong className="text-slate-200">{fileName}</strong> into
+              your workspace
+            </span>
           </div>
 
           <div className="flex items-center gap-2">

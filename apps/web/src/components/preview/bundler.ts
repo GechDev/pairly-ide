@@ -19,20 +19,18 @@ export interface BundlerOptions {
  */
 export function bundleWorkspaceForPreview(
   items: WorkspaceItem[],
-  options?: BundlerOptions
+  options?: BundlerOptions,
 ): BundlerResult {
   const startTime = performance.now();
   const errors: string[] = [];
 
   // 1. Locate entrypoint HTML file
   const htmlFiles = items.filter(
-    (item) => !item.isFolder && item.name.toLowerCase().endsWith('.html')
+    (item) => !item.isFolder && item.name.toLowerCase().endsWith('.html'),
   );
 
   let entrypoint = 'index.html';
-  let htmlItem =
-    htmlFiles.find((f) => f.name.toLowerCase() === 'index.html') ||
-    htmlFiles[0];
+  let htmlItem = htmlFiles.find((f) => f.name.toLowerCase() === 'index.html') || htmlFiles[0];
 
   let rawHtml = '';
 
@@ -48,11 +46,9 @@ export function bundleWorkspaceForPreview(
         (item.name.endsWith('.js') ||
           item.name.endsWith('.ts') ||
           item.name.endsWith('.jsx') ||
-          item.name.endsWith('.tsx'))
+          item.name.endsWith('.tsx')),
     );
-    const cssFile = items.find(
-      (item) => !item.isFolder && item.name.endsWith('.css')
-    );
+    const cssFile = items.find((item) => !item.isFolder && item.name.endsWith('.css'));
 
     rawHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -102,7 +98,7 @@ export function bundleWorkspaceForPreview(
         return `<style data-source="${href}">\n${cssContent}\n</style>`;
       }
       return match;
-    }
+    },
   );
 
   // 4. Inline JS <script src="...">
@@ -115,7 +111,7 @@ export function bundleWorkspaceForPreview(
         return `<script data-source="${src}">\n${jsContent}\n</script>`;
       }
       return match;
-    }
+    },
   );
 
   // 5. Inject Preview Console Interceptor, CSP meta header, and Error Banner Overlay

@@ -159,8 +159,9 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
             <div className="text-xs space-y-1">
               <span className="font-semibold text-red-300">Isolated & Secure Sandbox</span>
               <p className="text-red-400/80 leading-relaxed">
-                Code execution is strictly containerized with strict memory, CPU, and network resource
-                limits. All collaborative socket payloads enforce role-based access control (HOST, EDITOR, VIEWER).
+                Code execution is strictly containerized with strict memory, CPU, and network
+                resource limits. All collaborative socket payloads enforce role-based access control
+                (HOST, EDITOR, VIEWER).
               </p>
             </div>
           </div>

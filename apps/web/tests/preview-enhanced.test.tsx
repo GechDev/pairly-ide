@@ -17,14 +17,17 @@ const sampleWorkspace: WorkspaceItem[] = [
 
 describe('Enhanced WebPreview Component', () => {
   beforeEach(() => {
-    vi.stubGlobal('open', vi.fn().mockReturnValue({
-      document: {
-        open: vi.fn(),
-        write: vi.fn(),
-        close: vi.fn(),
-      },
-      closed: false,
-    }));
+    vi.stubGlobal(
+      'open',
+      vi.fn().mockReturnValue({
+        document: {
+          open: vi.fn(),
+          write: vi.fn(),
+          close: vi.fn(),
+        },
+        closed: false,
+      }),
+    );
   });
 
   it('renders viewport mode controls and switches device sizes', async () => {
@@ -67,10 +70,6 @@ describe('Enhanced WebPreview Component', () => {
     const detachBtn = screen.getByTestId('detach-preview-btn');
     fireEvent.click(detachBtn);
 
-    expect(window.open).toHaveBeenCalledWith(
-      '',
-      '_blank',
-      expect.stringContaining('width=960')
-    );
+    expect(window.open).toHaveBeenCalledWith('', '_blank', expect.stringContaining('width=960'));
   });
 });

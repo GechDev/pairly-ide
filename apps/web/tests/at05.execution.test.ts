@@ -56,7 +56,9 @@ describe('T-12: Sandboxed Execution Service & Piston Client (AT-05)', () => {
   it('executes JavaScript script and captures standard output', async () => {
     const result = await runner.execute({
       language: 'javascript',
-      files: [{ name: 'index.js', content: 'console.log("Hello from Pairly JS")', encoding: 'utf-8' }],
+      files: [
+        { name: 'index.js', content: 'console.log("Hello from Pairly JS")', encoding: 'utf-8' },
+      ],
       limits: { timeoutMs: 5000, memoryLimitMb: 256, networkEnabled: false },
     });
 
@@ -70,7 +72,9 @@ describe('T-12: Sandboxed Execution Service & Piston Client (AT-05)', () => {
       const def = LANGUAGE_REGISTRY[lang];
       const result = await runner.execute({
         language: lang,
-        files: [{ name: def.defaultFilename, content: `// Pairly ${lang} code`, encoding: 'utf-8' }],
+        files: [
+          { name: def.defaultFilename, content: `// Pairly ${lang} code`, encoding: 'utf-8' },
+        ],
         limits: { timeoutMs: 5000, memoryLimitMb: 256, networkEnabled: false },
       });
 
@@ -94,7 +98,9 @@ describe('T-12: Sandboxed Execution Service & Piston Client (AT-05)', () => {
   it('terminates fork bombs exceeding process limit (AT-05)', async () => {
     const result = await runner.execute({
       language: 'python',
-      files: [{ name: 'bomb.py', content: 'import os\nwhile True:\n    os.fork()', encoding: 'utf-8' }],
+      files: [
+        { name: 'bomb.py', content: 'import os\nwhile True:\n    os.fork()', encoding: 'utf-8' },
+      ],
       limits: { timeoutMs: 10000, memoryLimitMb: 256, networkEnabled: false },
     });
 

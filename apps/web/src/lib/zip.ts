@@ -25,7 +25,7 @@ export async function exportWorkspaceAsZip(items: WorkspaceItem[]): Promise<Blob
  * Per SRS FR-EDIT-10.
  */
 export async function importZipToWorkspace(
-  zipData: Blob | File | ArrayBuffer
+  zipData: Blob | File | ArrayBuffer,
 ): Promise<WorkspaceItem[]> {
   const zip = await JSZip.loadAsync(zipData);
   const items: WorkspaceItem[] = [];

@@ -147,7 +147,7 @@ export function useLiveKit({
                 }
               }
               return peer;
-            })
+            }),
           );
         }
       };
@@ -162,7 +162,7 @@ export function useLiveKit({
 
       return pc;
     },
-    [onSendWsMessage]
+    [onSendWsMessage],
   );
 
   /**
@@ -195,7 +195,7 @@ export function useLiveKit({
         }
       }
     },
-    [activeParticipants, participantId, onSendWsMessage, getOrCreatePeerConnection]
+    [activeParticipants, participantId, onSendWsMessage, getOrCreatePeerConnection],
   );
 
   /**
@@ -229,7 +229,7 @@ export function useLiveKit({
         console.warn(`[WebRTC] Error handling signal from ${fromParticipantId}:`, err);
       }
     },
-    [getOrCreatePeerConnection, onSendWsMessage]
+    [getOrCreatePeerConnection, onSendWsMessage],
   );
 
   /**
@@ -248,10 +248,10 @@ export function useLiveKit({
             };
           }
           return peer;
-        })
+        }),
       );
     },
-    []
+    [],
   );
 
   const connect = useCallback(async (): Promise<boolean> => {

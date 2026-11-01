@@ -12,14 +12,16 @@ describe('RunArgsModal & CLI Arguments / Stdin (CodeX Parity)', () => {
         args={['--port', '8080']}
         stdin="initial user input"
         onSave={vi.fn()}
-      />
+      />,
     );
 
     expect(screen.getByTestId('run-args-modal')).toBeDefined();
     expect(screen.getByTestId('cli-args-input')).toBeDefined();
     expect(screen.getByTestId('stdin-input')).toBeDefined();
     expect((screen.getByTestId('cli-args-input') as HTMLInputElement).value).toBe('--port 8080');
-    expect((screen.getByTestId('stdin-input') as HTMLTextAreaElement).value).toBe('initial user input');
+    expect((screen.getByTestId('stdin-input') as HTMLTextAreaElement).value).toBe(
+      'initial user input',
+    );
   });
 
   it('allows editing CLI arguments and saving configuration', () => {
@@ -27,13 +29,7 @@ describe('RunArgsModal & CLI Arguments / Stdin (CodeX Parity)', () => {
     const handleClose = vi.fn();
 
     render(
-      <RunArgsModal
-        isOpen={true}
-        onClose={handleClose}
-        args={[]}
-        stdin=""
-        onSave={handleSave}
-      />
+      <RunArgsModal isOpen={true} onClose={handleClose} args={[]} stdin="" onSave={handleSave} />,
     );
 
     const argsInput = screen.getByTestId('cli-args-input');
@@ -45,7 +41,10 @@ describe('RunArgsModal & CLI Arguments / Stdin (CodeX Parity)', () => {
     const saveBtn = screen.getByTestId('save-run-args-btn');
     fireEvent.click(saveBtn);
 
-    expect(handleSave).toHaveBeenCalledWith(['--host', '0.0.0.0', '--verbose'], 'alice\nsecret123\n');
+    expect(handleSave).toHaveBeenCalledWith(
+      ['--host', '0.0.0.0', '--verbose'],
+      'alice\nsecret123\n',
+    );
     expect(handleClose).toHaveBeenCalled();
   });
 
@@ -61,7 +60,7 @@ describe('RunArgsModal & CLI Arguments / Stdin (CodeX Parity)', () => {
         stdin="hello"
         onSave={vi.fn()}
         onRunWithArgs={handleRunWithArgs}
-      />
+      />,
     );
 
     const runBtn = screen.getByTestId('run-with-args-btn');
@@ -79,7 +78,7 @@ describe('RunArgsModal & CLI Arguments / Stdin (CodeX Parity)', () => {
         args={['--flag']}
         stdin="piped input"
         onSave={vi.fn()}
-      />
+      />,
     );
 
     const clearArgsBtn = screen.getByText('Clear args');

@@ -20,7 +20,7 @@ describe('AppShell Room Layout and Scroll Isolation', () => {
         <AppShell>
           <div data-testid="test-room-content">IDE Workspace Content</div>
         </AppShell>
-      </ThemeProvider>
+      </ThemeProvider>,
     );
 
     // Verify room content is present
@@ -44,7 +44,7 @@ describe('AppShell Room Layout and Scroll Isolation', () => {
         <AppShell>
           <div data-testid="public-content">Public Docs Content</div>
         </AppShell>
-      </ThemeProvider>
+      </ThemeProvider>,
     );
 
     // Verify marketing header and footer ARE rendered

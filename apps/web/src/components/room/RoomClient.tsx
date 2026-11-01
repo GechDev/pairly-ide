@@ -41,10 +41,7 @@ import type { CollaborativeSession } from '../editor/yjsExtension';
 import { FileTree } from '../workspace/FileTree';
 import { Tabs } from '../workspace/Tabs';
 import { StatusBar } from '../workspace/StatusBar';
-import {
-  createWorkspaceManager,
-  type WorkspaceState,
-} from '../workspace/workspaceState';
+import { createWorkspaceManager, type WorkspaceState } from '../workspace/workspaceState';
 import { PresenceBar } from '../presence/PresenceBar';
 import { useFollow } from '../presence/useFollow';
 import { RemotePointers, type RemotePointer } from '../presence/RemotePointers';
@@ -97,7 +94,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
   const wsRef = React.useRef<WebSocket | null>(null);
   const workspaceManagerRef = React.useRef(createWorkspaceManager());
   const [workspaceState, setWorkspaceState] = useState<WorkspaceState>(
-    workspaceManagerRef.current.getState()
+    workspaceManagerRef.current.getState(),
   );
   const [participantPresenceMap, setParticipantPresenceMap] = useState<
     Record<string, { fileId?: string | null; fileName?: string | null }>
@@ -138,8 +135,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
     fileName: string;
     content: string;
   } | null>(null);
-  const [editorSettings, setEditorSettings] =
-    useState<EditorSettings>(DEFAULT_EDITOR_SETTINGS);
+  const [editorSettings, setEditorSettings] = useState<EditorSettings>(DEFAULT_EDITOR_SETTINGS);
   const [pingLatency, setPingLatency] = useState<number | null>(null);
   const [cursorPosition, setCursorPosition] = useState<{ line: number; column: number }>({
     line: 1,
@@ -234,7 +230,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           participantId: participant.id,
           fileId: workspaceState.activeFileId,
           fileName: activeItem?.name,
-        })
+        }),
       );
     }
   }, [workspaceState.activeFileId, participant]);
@@ -287,18 +283,14 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             .replace(/=+$/, '');
 
     const token =
-      sessionStorage.getItem(`pairly_token_${roomCode}`) ||
-      `pairly_mock_${encodedPayload}`;
+      sessionStorage.getItem(`pairly_token_${roomCode}`) || `pairly_mock_${encodedPayload}`;
 
     let ws: WebSocket | null = null;
     let pingInterval: ReturnType<typeof setInterval> | null = null;
     try {
       const wsProtocol =
-        typeof window !== 'undefined' && window.location.protocol === 'https:'
-          ? 'wss:'
-          : 'ws:';
-      const wsHost =
-        typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+        typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsHost = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
       const wsUrl =
         process.env.NEXT_PUBLIC_REALTIME_URL ||
         `${wsProtocol}//${wsHost}:4001/ws/rooms/${roomCode}?token=${encodeURIComponent(token)}`;
@@ -337,9 +329,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
               return [...prev, msg.participant];
             });
           } else if (msg.type === 'USER_LEFT') {
-            setActiveParticipants((prev) =>
-              prev.filter((p) => p.id !== msg.participantId)
-            );
+            setActiveParticipants((prev) => prev.filter((p) => p.id !== msg.participantId));
             activeSessionRef.current?.removeRemoteCursor(msg.participantId);
           } else if (msg.type === 'SPOTLIGHT_CHANGED') {
             follow.setSpotlight(msg.targetParticipantId);
@@ -402,7 +392,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             setWhiteboardElements([]);
           } else if (msg.type === 'ROLE_CHANGED') {
             setActiveParticipants((prev) =>
-              prev.map((p) => (p.id === msg.targetParticipantId ? { ...p, role: msg.newRole } : p))
+              prev.map((p) => (p.id === msg.targetParticipantId ? { ...p, role: msg.newRole } : p)),
             );
             if (participant && participant.id === msg.targetParticipantId) {
               setParticipant((prev) => (prev ? { ...prev, role: msg.newRole } : null));
@@ -412,7 +402,9 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           } else if (msg.type === 'USER_MUTED') {
             setMutedParticipantIds((prev) => {
               if (msg.isMuted) {
-                return prev.includes(msg.targetParticipantId) ? prev : [...prev, msg.targetParticipantId];
+                return prev.includes(msg.targetParticipantId)
+                  ? prev
+                  : [...prev, msg.targetParticipantId];
               } else {
                 return prev.filter((id) => id !== msg.targetParticipantId);
               }
@@ -587,7 +579,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           type: 'NOTEPAD_UPDATE',
           content: notepadSessionRef.current?.getText() || '',
           update: updateBase64,
-        })
+        }),
       );
     }
   };
@@ -608,7 +600,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
 
   const handleChangeRole = (targetParticipantId: string, newRole: RoomRole) => {
     setActiveParticipants((prev) =>
-      prev.map((p) => (p.id === targetParticipantId ? { ...p, role: newRole } : p))
+      prev.map((p) => (p.id === targetParticipantId ? { ...p, role: newRole } : p)),
     );
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(
@@ -616,7 +608,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           type: 'ROLE_CHANGE',
           targetParticipantId,
           newRole,
-        })
+        }),
       );
     }
   };
@@ -629,7 +621,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           type: 'USER_KICK',
           targetParticipantId,
           reason,
-        })
+        }),
       );
     }
   };
@@ -648,7 +640,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           type: 'USER_MUTE',
           targetParticipantId,
           isMuted,
-        })
+        }),
       );
     }
   };
@@ -660,7 +652,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         JSON.stringify({
           type: 'ROOM_LOCK_TOGGLE',
           isLocked,
-        })
+        }),
       );
     }
   };
@@ -703,7 +695,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           const diffRes = computeUnifiedDiff(
             activeItem.content || '',
             data.suggestedCode,
-            activeItem.name
+            activeItem.name,
           );
 
           setActiveProposal({
@@ -789,9 +781,17 @@ export function RoomClient({ roomCode }: RoomClientProps) {
               className="w-5 h-5 flex items-center justify-center border"
               style={{ backgroundColor: '#111114', borderColor: 'rgba(255,255,255,0.08)' }}
             >
-              <Image src="/logo.png" alt="Pairly" width={13} height={13} className="object-contain" />
+              <Image
+                src="/logo.png"
+                alt="Pairly"
+                width={13}
+                height={13}
+                className="object-contain"
+              />
             </div>
-            <span className="hidden sm:inline font-bold text-[12px] tracking-[-0.02em] text-[#f0ede8]">Pairly</span>
+            <span className="hidden sm:inline font-bold text-[12px] tracking-[-0.02em] text-[#f0ede8]">
+              Pairly
+            </span>
           </Link>
 
           <span className="text-white/10 text-xs">/</span>
@@ -830,7 +830,9 @@ export function RoomClient({ roomCode }: RoomClientProps) {
               data-testid="run-code-btn"
               onClick={() => handleRunCode()}
               disabled={terminalStatus === 'RUNNING' || participant?.role === 'VIEWER'}
-              title={participant?.role === 'VIEWER' ? 'Viewers cannot run code' : 'Run (Ctrl+Enter)'}
+              title={
+                participant?.role === 'VIEWER' ? 'Viewers cannot run code' : 'Run (Ctrl+Enter)'
+              }
               className="inline-flex items-center gap-1.5 px-3 py-[5px] hover:opacity-90 disabled:opacity-40 text-white text-[11px] font-bold transition-opacity"
             >
               <Play className="w-3 h-3 fill-current" />
@@ -855,14 +857,65 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           <div className="w-px h-4 bg-white/[0.08] mx-1" />
 
           {/* Panel toggles — icon-only with active state */}
-          {([
-            { id: 'toggle-preview-btn', icon: Globe, label: 'Preview (Ctrl+P)', active: isPreviewOpen, onClick: () => setIsPreviewOpen(p => !p) },
-            { id: 'toggle-chat-btn', icon: MessageSquare, label: 'Chat', active: isChatOpen, badge: (!isChatOpen && unreadCount > 0) ? unreadCount : 0, onClick: () => { setIsChatOpen(p => !p); setUnreadCount(0); } },
-            { id: 'toggle-notepad-btn', icon: FileText, label: 'Notes', active: isNotepadOpen, onClick: () => setIsNotepadOpen(p => !p) },
-            { id: 'toggle-whiteboard-btn', icon: Palette, label: 'Whiteboard', active: isWhiteboardOpen, onClick: () => setIsWhiteboardOpen(p => !p) },
-            { id: 'toggle-ai-btn', icon: Sparkles, label: 'AI Agent', active: isAiPanelOpen, onClick: () => setIsAiPanelOpen(p => !p) },
-            { id: 'toggle-media-btn', icon: Video, label: 'Call', active: isMediaPanelOpen, dot: liveKit.isConnected, onClick: () => setIsMediaPanelOpen(p => !p) },
-          ] as Array<{id:string;icon:React.ElementType;label:string;active:boolean;badge?:number;dot?:boolean;onClick:()=>void}>).map(({ id, icon: Icon, label, active, badge, dot, onClick }) => (
+          {(
+            [
+              {
+                id: 'toggle-preview-btn',
+                icon: Globe,
+                label: 'Preview (Ctrl+P)',
+                active: isPreviewOpen,
+                onClick: () => setIsPreviewOpen((p) => !p),
+              },
+              {
+                id: 'toggle-chat-btn',
+                icon: MessageSquare,
+                label: 'Chat',
+                active: isChatOpen,
+                badge: !isChatOpen && unreadCount > 0 ? unreadCount : 0,
+                onClick: () => {
+                  setIsChatOpen((p) => !p);
+                  setUnreadCount(0);
+                },
+              },
+              {
+                id: 'toggle-notepad-btn',
+                icon: FileText,
+                label: 'Notes',
+                active: isNotepadOpen,
+                onClick: () => setIsNotepadOpen((p) => !p),
+              },
+              {
+                id: 'toggle-whiteboard-btn',
+                icon: Palette,
+                label: 'Whiteboard',
+                active: isWhiteboardOpen,
+                onClick: () => setIsWhiteboardOpen((p) => !p),
+              },
+              {
+                id: 'toggle-ai-btn',
+                icon: Sparkles,
+                label: 'AI Agent',
+                active: isAiPanelOpen,
+                onClick: () => setIsAiPanelOpen((p) => !p),
+              },
+              {
+                id: 'toggle-media-btn',
+                icon: Video,
+                label: 'Call',
+                active: isMediaPanelOpen,
+                dot: liveKit.isConnected,
+                onClick: () => setIsMediaPanelOpen((p) => !p),
+              },
+            ] as Array<{
+              id: string;
+              icon: React.ElementType;
+              label: string;
+              active: boolean;
+              badge?: number;
+              dot?: boolean;
+              onClick: () => void;
+            }>
+          ).map(({ id, icon: Icon, label, active, badge, dot, onClick }) => (
             <button
               key={id}
               type="button"
@@ -875,8 +928,12 @@ export function RoomClient({ roomCode }: RoomClientProps) {
                 color: active ? '#FF0000' : '#5c5651',
                 backgroundColor: active ? 'rgba(255,0,0,0.08)' : 'transparent',
               }}
-              onMouseEnter={(e) => { if (!active) e.currentTarget.style.color = '#a09a92'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = active ? '#FF0000' : '#5c5651'; }}
+              onMouseEnter={(e) => {
+                if (!active) e.currentTarget.style.color = '#a09a92';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = active ? '#FF0000' : '#5c5651';
+              }}
             >
               <Icon className="w-3.5 h-3.5" />
               {badge ? (
@@ -923,7 +980,9 @@ export function RoomClient({ roomCode }: RoomClientProps) {
             onUnfollow={follow.stopFollowing}
             onToggleSpotlight={(targetId) => {
               if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-                wsRef.current.send(JSON.stringify({ type: 'SPOTLIGHT_TOGGLE', targetParticipantId: targetId }));
+                wsRef.current.send(
+                  JSON.stringify({ type: 'SPOTLIGHT_TOGGLE', targetParticipantId: targetId }),
+                );
               }
             }}
           />
@@ -959,7 +1018,10 @@ export function RoomClient({ roomCode }: RoomClientProps) {
               className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-mono font-bold text-rose-400 animate-pulse"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-              {Math.floor(sessionRecording.recordingSeconds / 60).toString().padStart(2, '0')}:{(sessionRecording.recordingSeconds % 60).toString().padStart(2, '0')}
+              {Math.floor(sessionRecording.recordingSeconds / 60)
+                .toString()
+                .padStart(2, '0')}
+              :{(sessionRecording.recordingSeconds % 60).toString().padStart(2, '0')}
             </button>
           ) : (
             <button
@@ -978,17 +1040,71 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           <div className="w-px h-4 bg-white/[0.08]" />
 
           {/* Utility buttons — icon only */}
-          <button type="button" id="share-room-btn" data-testid="share-room-btn" onClick={() => setIsShareModalOpen(true)} title="Share & Invite" className="p-1.5 text-[#5c5651] hover:text-[#a09a92] transition-colors"><Share2 className="w-3.5 h-3.5" /></button>
-          <button type="button" id="toggle-participants-btn" data-testid="toggle-participants-btn" onClick={() => setIsParticipantsModalOpen(true)} title={`Participants (${activeParticipants.length})`} className="relative p-1.5 text-[#5c5651] hover:text-[#a09a92] transition-colors">
+          <button
+            type="button"
+            id="share-room-btn"
+            data-testid="share-room-btn"
+            onClick={() => setIsShareModalOpen(true)}
+            title="Share & Invite"
+            className="p-1.5 text-[#5c5651] hover:text-[#a09a92] transition-colors"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            id="toggle-participants-btn"
+            data-testid="toggle-participants-btn"
+            onClick={() => setIsParticipantsModalOpen(true)}
+            title={`Participants (${activeParticipants.length})`}
+            className="relative p-1.5 text-[#5c5651] hover:text-[#a09a92] transition-colors"
+          >
             <Users className="w-3.5 h-3.5" />
             {activeParticipants.length > 1 && (
-              <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 flex items-center justify-center rounded-full text-[8px] font-mono bg-white/10 text-[#a09a92]">{activeParticipants.length}</span>
+              <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 flex items-center justify-center rounded-full text-[8px] font-mono bg-white/10 text-[#a09a92]">
+                {activeParticipants.length}
+              </span>
             )}
           </button>
-          <button type="button" id="command-palette-btn" data-testid="command-palette-btn" onClick={() => setIsCommandPaletteOpen(true)} title="Command Palette (Ctrl+K)" className="p-1.5 text-[#5c5651] hover:text-[#a09a92] transition-colors"><Search className="w-3.5 h-3.5" /></button>
-          <button type="button" id="editor-settings-btn" data-testid="editor-settings-btn" onClick={() => setIsSettingsModalOpen(true)} title="Editor Settings" className="p-1.5 text-[#5c5651] hover:text-[#a09a92] transition-colors"><Settings className="w-3.5 h-3.5" /></button>
-          <button type="button" id="report-abuse-btn" data-testid="report-abuse-btn" onClick={() => setIsReportModalOpen(true)} title="Report" className="p-1.5 text-[#5c5651] hover:text-rose-400 transition-colors"><ShieldAlert className="w-3.5 h-3.5" /></button>
-          <button type="button" id="about-btn" data-testid="about-btn" onClick={() => setIsAboutModalOpen(true)} title="About & Shortcuts" className="p-1.5 text-[#5c5651] hover:text-[#a09a92] transition-colors"><Info className="w-3.5 h-3.5" /></button>
+          <button
+            type="button"
+            id="command-palette-btn"
+            data-testid="command-palette-btn"
+            onClick={() => setIsCommandPaletteOpen(true)}
+            title="Command Palette (Ctrl+K)"
+            className="p-1.5 text-[#5c5651] hover:text-[#a09a92] transition-colors"
+          >
+            <Search className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            id="editor-settings-btn"
+            data-testid="editor-settings-btn"
+            onClick={() => setIsSettingsModalOpen(true)}
+            title="Editor Settings"
+            className="p-1.5 text-[#5c5651] hover:text-[#a09a92] transition-colors"
+          >
+            <Settings className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            id="report-abuse-btn"
+            data-testid="report-abuse-btn"
+            onClick={() => setIsReportModalOpen(true)}
+            title="Report"
+            className="p-1.5 text-[#5c5651] hover:text-rose-400 transition-colors"
+          >
+            <ShieldAlert className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            id="about-btn"
+            data-testid="about-btn"
+            onClick={() => setIsAboutModalOpen(true)}
+            title="About & Shortcuts"
+            className="p-1.5 text-[#5c5651] hover:text-[#a09a92] transition-colors"
+          >
+            <Info className="w-3.5 h-3.5" />
+          </button>
 
           {/* Separator */}
           <div className="w-px h-4 bg-white/[0.08]" />
@@ -1033,7 +1149,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
                   item.name,
                   item.isFolder,
                   item.parentId,
-                  item.content
+                  item.content,
                 );
               }
             }}
@@ -1078,7 +1194,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
                       color: participant.color,
                       x,
                       y,
-                    })
+                    }),
                   );
                 }
               }}
@@ -1096,10 +1212,10 @@ export function RoomClient({ roomCode }: RoomClientProps) {
                   if (workspaceState.activeFileId) {
                     workspaceManagerRef.current.updateFileContent(
                       workspaceState.activeFileId,
-                      newCode
+                      newCode,
                     );
                     const file = workspaceState.items.find(
-                      (i) => i.id === workspaceState.activeFileId
+                      (i) => i.id === workspaceState.activeFileId,
                     );
                     sessionRecording.addEvent('code', newCode, {
                       fileName: file?.name || 'main.ts',
@@ -1113,7 +1229,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
                       JSON.stringify({
                         type: 'CURSOR_UPDATE',
                         cursor,
-                      })
+                      }),
                     );
                   }
                 }}
@@ -1134,7 +1250,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
                           type: 'DOC_UPDATE',
                           fileId: workspaceState.activeFileId,
                           update: base64Update,
-                        })
+                        }),
                       );
                     }
                   });
@@ -1251,11 +1367,10 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         activeFileName={
           workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.name || 'index.ts'
         }
-        language={
-          detectLanguageFromFilename(
-            workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.name || 'index.ts'
-          )
-        }
+        language={detectLanguageFromFilename(
+          workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.name ||
+            'index.ts',
+        )}
         cursorLine={cursorPosition.line}
         cursorColumn={cursorPosition.column}
         latencyMs={pingLatency ?? 28}
@@ -1266,9 +1381,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         onToggleTerminal={() => setIsTerminalExpanded((prev) => !prev)}
         onOpenDiagnostics={() => setIsDiagnosticsOpen(true)}
         onSelectLanguage={(newLang) => {
-          const activeFile = workspaceState.items.find(
-            (i) => i.id === workspaceState.activeFileId
-          );
+          const activeFile = workspaceState.items.find((i) => i.id === workspaceState.activeFileId);
           if (activeFile) {
             const extMap: Record<string, string> = {
               TypeScript: '.ts',
@@ -1403,13 +1516,11 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         recordingSeconds={sessionRecording.recordingSeconds}
         recordings={sessionRecording.recordings}
         onStartRecording={(title) => {
-          const activeFile = workspaceState.items.find(
-            (i) => i.id === workspaceState.activeFileId
-          );
+          const activeFile = workspaceState.items.find((i) => i.id === workspaceState.activeFileId);
           sessionRecording.startRecording(
             title,
             activeFile?.content || '',
-            activeFile?.name || 'main.ts'
+            activeFile?.name || 'main.ts',
           );
         }}
         onStopRecording={() => sessionRecording.stopRecording()}
@@ -1421,10 +1532,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         }}
       />
 
-      <AboutModal
-        isOpen={isAboutModalOpen}
-        onClose={() => setIsAboutModalOpen(false)}
-      />
+      <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />
 
       {/* Leave Room Modal (CodeX Inspired) */}
       <LeaveRoomModal
@@ -1467,17 +1575,16 @@ export function RoomClient({ roomCode }: RoomClientProps) {
           }
           onAppend={(content) => {
             const activeFile = workspaceState.items.find(
-              (i) => i.id === workspaceState.activeFileId
+              (i) => i.id === workspaceState.activeFileId,
             );
             if (activeFile) {
-              const merged =
-                (activeFile.content ? activeFile.content + '\n\n' : '') + content;
+              const merged = (activeFile.content ? activeFile.content + '\n\n' : '') + content;
               workspaceManagerRef.current.updateFileContent(activeFile.id, merged);
             }
           }}
           onReplace={(content) => {
             const activeFile = workspaceState.items.find(
-              (i) => i.id === workspaceState.activeFileId
+              (i) => i.id === workspaceState.activeFileId,
             );
             if (activeFile) {
               workspaceManagerRef.current.updateFileContent(activeFile.id, content);
@@ -1554,8 +1661,7 @@ export function RoomClient({ roomCode }: RoomClientProps) {
         isOpen={isGitHubExportModalOpen}
         onClose={() => setIsGitHubExportModalOpen(false)}
         activeFileName={
-          workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.name ||
-          'index.ts'
+          workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.name || 'index.ts'
         }
         activeFileContent={
           workspaceState.items.find((i) => i.id === workspaceState.activeFileId)?.content || ''

@@ -137,10 +137,12 @@ export function AIProposalModal({
                     </h4>
                     <p className="text-amber-200/90 mt-1">
                       This proposal was generated from base version{' '}
-                      <span className="font-mono font-bold">v{String(proposal.baseDocumentVersion)}</span>,
-                      but the active document has updated to{' '}
-                      <span className="font-mono font-bold">v{String(currentDocumentVersion)}</span>.
-                      Rebase the patch before applying to avoid overwriting concurrent edits.
+                      <span className="font-mono font-bold">
+                        v{String(proposal.baseDocumentVersion)}
+                      </span>
+                      , but the active document has updated to{' '}
+                      <span className="font-mono font-bold">v{String(currentDocumentVersion)}</span>
+                      . Rebase the patch before applying to avoid overwriting concurrent edits.
                     </p>
                     {rebaseError && (
                       <p className="mt-2 text-rose-300 font-semibold flex items-center gap-1">

@@ -34,7 +34,10 @@ export function Header() {
         {/* Brand mark */}
         <Link href="/" className="flex items-center gap-2.5 group" aria-label="Pairly home">
           {/* Logo mark */}
-          <div className="relative w-8 h-8 flex items-center justify-center border transition-all group-hover:border-[#FF0000]" style={{ backgroundColor: 'var(--canvas-2)', borderColor: 'var(--canvas-border)' }}>
+          <div
+            className="relative w-8 h-8 flex items-center justify-center border transition-all group-hover:border-[#FF0000]"
+            style={{ backgroundColor: 'var(--canvas-2)', borderColor: 'var(--canvas-border)' }}
+          >
             <Image
               src="/logo.png"
               alt="Pairly"
@@ -44,16 +47,14 @@ export function Header() {
               priority
             />
           </div>
-          <span
-            className="font-bold text-[15px] tracking-[-0.02em] text-[var(--fg-primary)] group-hover:text-[#FF0000] transition-colors duration-200"
-          >
+          <span className="font-bold text-[15px] tracking-[-0.02em] text-[var(--fg-primary)] group-hover:text-[#FF0000] transition-colors duration-200">
             Pairly
           </span>
         </Link>
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1" role="navigation">
-          {NAV_LINKS.map(({ label, href }) => (
+          {NAV_LINKS.map(({ label, href }) =>
             href.startsWith('#') ? (
               <a
                 key={label}
@@ -70,8 +71,8 @@ export function Header() {
               >
                 {label}
               </Link>
-            )
-          ))}
+            ),
+          )}
           <Link
             href="/settings"
             className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] hover:bg-white/[0.04] transition-all duration-150"
@@ -119,10 +120,8 @@ export function Header() {
 
       {/* Mobile drawer */}
       {mobileMenuOpen && (
-        <div
-          className="md:hidden border-t border-white/[0.06] bg-[#0a0a0b]/95 backdrop-blur-xl px-5 pt-4 pb-6 space-y-1 animate-fade-in"
-        >
-          {NAV_LINKS.map(({ label, href }) => (
+        <div className="md:hidden border-t border-white/[0.06] bg-[#0a0a0b]/95 backdrop-blur-xl px-5 pt-4 pb-6 space-y-1 animate-fade-in">
+          {NAV_LINKS.map(({ label, href }) =>
             href.startsWith('#') ? (
               <a
                 key={label}
@@ -141,13 +140,32 @@ export function Header() {
               >
                 {label}
               </Link>
-            )
-          ))}
+            ),
+          )}
 
           <div className="pt-3 border-t border-white/[0.06] mt-3 flex items-center gap-3 text-xs text-[#5c5651]">
-            <Link href="/privacy" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#a09a92] transition-colors">Privacy</Link>
-            <Link href="/terms" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#a09a92] transition-colors">Terms</Link>
-            <a href="https://github.com/GechDev/pairly-ide" target="_blank" rel="noopener noreferrer" className="hover:text-[#a09a92] transition-colors">GitHub</a>
+            <Link
+              href="/privacy"
+              onClick={() => setMobileMenuOpen(false)}
+              className="hover:text-[#a09a92] transition-colors"
+            >
+              Privacy
+            </Link>
+            <Link
+              href="/terms"
+              onClick={() => setMobileMenuOpen(false)}
+              className="hover:text-[#a09a92] transition-colors"
+            >
+              Terms
+            </Link>
+            <a
+              href="https://github.com/GechDev/pairly-ide"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#a09a92] transition-colors"
+            >
+              GitHub
+            </a>
           </div>
         </div>
       )}

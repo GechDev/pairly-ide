@@ -1,13 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  MessageSquare,
-  X,
-  Send,
-  AtSign,
-  Code2,
-} from 'lucide-react';
+import { MessageSquare, X, Send, AtSign, Code2 } from 'lucide-react';
 import type { ParticipantIdentity } from '@pairly/contracts';
 
 export interface ChatMessageItem {
@@ -73,10 +67,7 @@ export function formatChatMarkdown(text: string): React.ReactNode[] {
       return part;
     });
 
-    return [
-      ...formattedParts,
-      lineIdx < lines.length - 1 ? <br key={`br-${lineIdx}`} /> : null,
-    ];
+    return [...formattedParts, lineIdx < lines.length - 1 ? <br key={`br-${lineIdx}`} /> : null];
   });
 }
 

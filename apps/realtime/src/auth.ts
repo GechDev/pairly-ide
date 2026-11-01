@@ -15,7 +15,10 @@ export const TokenPayloadSchema = z.object({
   participantId: z.string().min(1),
   displayName: z.string().min(1),
   avatar: z.string().default('default-avatar.png'),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default('#3b82f6'),
+  color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .default('#3b82f6'),
   role: z.enum(['HOST', 'EDITOR', 'COMMENTER', 'VIEWER']),
   roomCode: z.string().min(1),
   expiresAt: z.number().optional(),
@@ -40,7 +43,7 @@ export function generateMockRoomToken(payload: TokenPayload): string {
  */
 export function authenticateRoomToken(
   token: string | undefined,
-  expectedRoomCode?: string
+  expectedRoomCode?: string,
 ): RoomAuthContext {
   if (!token) {
     throw new Error('Authentication failed: Missing connection token');
@@ -55,7 +58,7 @@ export function authenticateRoomToken(
 
       if (expectedRoomCode && parsed.roomCode !== expectedRoomCode) {
         throw new Error(
-          `Token bound to room ${parsed.roomCode}, cannot join room ${expectedRoomCode}`
+          `Token bound to room ${parsed.roomCode}, cannot join room ${expectedRoomCode}`,
         );
       }
 
@@ -90,14 +93,12 @@ export function authenticateRoomToken(
   if (parts.length === 4 && parts[0] === 'user') {
     const [, userId, roleStr, roomCode] = parts;
     if (expectedRoomCode && roomCode !== expectedRoomCode) {
-      throw new Error(
-        `Token bound to room ${roomCode}, cannot join room ${expectedRoomCode}`
-      );
+      throw new Error(`Token bound to room ${roomCode}, cannot join room ${expectedRoomCode}`);
     }
 
-    const role = (['HOST', 'EDITOR', 'COMMENTER', 'VIEWER'].includes(roleStr!)
-      ? roleStr
-      : 'VIEWER') as RoomRole;
+    const role = (
+      ['HOST', 'EDITOR', 'COMMENTER', 'VIEWER'].includes(roleStr!) ? roleStr : 'VIEWER'
+    ) as RoomRole;
 
     const participant: ParticipantIdentity = {
       id: userId!,

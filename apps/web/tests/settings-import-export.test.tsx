@@ -27,7 +27,7 @@ describe('EditorSettingsModal JSON Export & Import (CodeX Parity)', () => {
         onClose={vi.fn()}
         settings={mockSettings}
         onUpdateSettings={vi.fn()}
-      />
+      />,
     );
 
     expect(screen.getByTestId('export-settings-btn')).toBeDefined();
@@ -46,7 +46,7 @@ describe('EditorSettingsModal JSON Export & Import (CodeX Parity)', () => {
         onClose={vi.fn()}
         settings={mockSettings}
         onUpdateSettings={vi.fn()}
-      />
+      />,
     );
 
     const exportBtn = screen.getByTestId('export-settings-btn');

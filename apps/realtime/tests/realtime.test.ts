@@ -58,7 +58,7 @@ describe('Realtime WebSocket Service Integration', () => {
     });
 
     const ws = new WebSocket(
-      `ws://127.0.0.1:${port}/ws/rooms/room-101?token=${encodeURIComponent(token)}`
+      `ws://127.0.0.1:${port}/ws/rooms/room-101?token=${encodeURIComponent(token)}`,
     );
 
     const initialMessage = await new Promise<any>((resolve) => {
@@ -97,7 +97,7 @@ describe('Realtime WebSocket Service Integration', () => {
 
     // 1. Connect peer A
     const wsA = new WebSocket(
-      `ws://127.0.0.1:${port}/ws/rooms/room-collab?token=${encodeURIComponent(tokenA)}`
+      `ws://127.0.0.1:${port}/ws/rooms/room-collab?token=${encodeURIComponent(tokenA)}`,
     );
 
     await new Promise((resolve) => {
@@ -116,7 +116,7 @@ describe('Realtime WebSocket Service Integration', () => {
     });
 
     const wsB = new WebSocket(
-      `ws://127.0.0.1:${port}/ws/rooms/room-collab?token=${encodeURIComponent(tokenB)}`
+      `ws://127.0.0.1:${port}/ws/rooms/room-collab?token=${encodeURIComponent(tokenB)}`,
     );
 
     const userJoinedEvent = await peerBJoinedPromise;

@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  RunParametersSchema,
-  canExecute,
-  type RoomRole,
-} from '@pairly/contracts';
+import { RunParametersSchema, canExecute, type RoomRole } from '@pairly/contracts';
 import { PistonRunnerClient } from '@pairly/execution';
 
 const runner = new PistonRunnerClient();
@@ -32,7 +28,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
           error: 'Unauthorized: Your role does not have execution permissions (SRS SEC-01)',
           code: 'UNAUTHORIZED_ACTION',
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -45,7 +41,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
           error: 'Invalid run parameters',
           details: parsed.error.flatten(),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 

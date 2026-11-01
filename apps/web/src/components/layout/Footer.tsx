@@ -25,17 +25,30 @@ const FOOTER_LINKS = {
 
 export function Footer() {
   return (
-    <footer className="relative border-t" style={{ backgroundColor: 'var(--canvas)', borderColor: 'var(--border-subtle)' }}>
+    <footer
+      className="relative border-t"
+      style={{ backgroundColor: 'var(--canvas)', borderColor: 'var(--border-subtle)' }}
+    >
       {/* Top accent line */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[50%] h-px bg-[#FF0000] opacity-30" />
 
       <div className="max-w-7xl mx-auto px-5 sm:px-8 pt-16 pb-12">
         {/* Main grid */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-10 lg:gap-16 pb-14 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+        <div
+          className="grid grid-cols-1 md:grid-cols-5 gap-10 lg:gap-16 pb-14 border-b"
+          style={{ borderColor: 'var(--border-subtle)' }}
+        >
           {/* Brand */}
           <div className="md:col-span-2 space-y-5">
-            <Link href="/" className="inline-flex items-center gap-2.5 group" aria-label="Pairly home">
-              <div className="relative w-8 h-8 flex items-center justify-center border transition-all group-hover:border-[#FF0000]" style={{ backgroundColor: 'var(--canvas-2)', borderColor: 'var(--canvas-border)' }}>
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2.5 group"
+              aria-label="Pairly home"
+            >
+              <div
+                className="relative w-8 h-8 flex items-center justify-center border transition-all group-hover:border-[#FF0000]"
+                style={{ backgroundColor: 'var(--canvas-2)', borderColor: 'var(--canvas-border)' }}
+              >
                 <Image
                   src="/logo.png"
                   alt="Pairly"
@@ -44,17 +57,28 @@ export function Footer() {
                   className="object-contain"
                 />
               </div>
-              <span className="font-bold text-[15px] tracking-[-0.02em] text-[var(--fg-primary)]">Pairly</span>
+              <span className="font-bold text-[15px] tracking-[-0.02em] text-[var(--fg-primary)]">
+                Pairly
+              </span>
             </Link>
 
             <p className="text-xs text-[var(--fg-muted)] leading-relaxed max-w-[34ch]">
-              High-performance collaborative development workspace. Sub-50ms conflict-free CRDT sync, multi-language container sandboxes, and server-enforced access control.
+              High-performance collaborative development workspace. Sub-50ms conflict-free CRDT
+              sync, multi-language container sandboxes, and server-enforced access control.
             </p>
 
             {/* Status indicator */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border" style={{ backgroundColor: 'var(--canvas-subtle)', borderColor: 'var(--border-subtle)' }}>
+            <div
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border"
+              style={{
+                backgroundColor: 'var(--canvas-subtle)',
+                borderColor: 'var(--border-subtle)',
+              }}
+            >
               <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-teal)] animate-pulse" />
-              <span className="font-mono text-[11px] text-[var(--fg-secondary)]">Distributed Coordinator: Operational</span>
+              <span className="font-mono text-[11px] text-[var(--fg-secondary)]">
+                Distributed Coordinator: Operational
+              </span>
             </div>
 
             {/* GitHub */}
@@ -105,7 +129,9 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--fg-muted)]">
           <p>© 2026 Pairly. Designed for modern pair-programming teams.</p>
-          <p className="font-mono text-[11px]">Encrypted WebSockets · Sandboxed Isolation · Zero Setup</p>
+          <p className="font-mono text-[11px]">
+            Encrypted WebSockets · Sandboxed Isolation · Zero Setup
+          </p>
         </div>
       </div>
     </footer>

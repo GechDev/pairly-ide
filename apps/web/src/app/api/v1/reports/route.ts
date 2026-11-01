@@ -22,14 +22,8 @@ const reportsStore: AbuseReportRecord[] = [];
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
-    const {
-      roomId,
-      reporterId,
-      reportedParticipantId,
-      category,
-      description,
-      contextSnapshot,
-    } = body;
+    const { roomId, reporterId, reportedParticipantId, category, description, contextSnapshot } =
+      body;
 
     if (!roomId) {
       return NextResponse.json({ error: 'Room ID is required' }, { status: 400 });

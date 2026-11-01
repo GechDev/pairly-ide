@@ -18,7 +18,7 @@ describe('Startup Public Landing & Legal Pages', () => {
     render(
       <ThemeProvider>
         <Header />
-      </ThemeProvider>
+      </ThemeProvider>,
     );
     expect(screen.getByText('Pairly')).toBeDefined();
     expect(screen.getByText('Capabilities')).toBeDefined();
@@ -59,9 +59,7 @@ describe('Startup Public Landing & Legal Pages', () => {
   it('renders FAQSection with developer questions and toggleable answers', () => {
     render(<FAQSection />);
     expect(screen.getByText('Questions, answered.')).toBeDefined();
-    expect(
-      screen.getByText(/Do partners need to install anything/i)
-    ).toBeDefined();
+    expect(screen.getByText(/Do partners need to install anything/i)).toBeDefined();
   });
 
   it('renders FinalCTASection with room launch link', () => {

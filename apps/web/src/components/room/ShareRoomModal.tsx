@@ -2,17 +2,7 @@
 
 import React, { useState } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
-import {
-  X,
-  Copy,
-  Check,
-  Shield,
-  Lock,
-  Unlock,
-  Users,
-  Link2,
-  Hash,
-} from 'lucide-react';
+import { X, Copy, Check, Shield, Lock, Unlock, Users, Link2, Hash } from 'lucide-react';
 
 export interface ShareRoomModalProps {
   isOpen: boolean;
@@ -84,7 +74,8 @@ export function ShareRoomModal({
                 Share Collaboration Room
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">
-                Anyone with this Room ID or Invite Link can collaborate in this room. Only share with people you trust.
+                Anyone with this Room ID or Invite Link can collaborate in this room. Only share
+                with people you trust.
               </p>
             </div>
           </div>

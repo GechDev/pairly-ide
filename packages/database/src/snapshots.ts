@@ -12,10 +12,7 @@ export interface CreateSnapshotInput {
  * Creates a named workspace snapshot checkpoint in the database.
  * Per SRS FR-HIST-01 and FR-HIST-02.
  */
-export async function createWorkspaceSnapshot(
-  prisma: PrismaClient,
-  input: CreateSnapshotInput
-) {
+export async function createWorkspaceSnapshot(prisma: PrismaClient, input: CreateSnapshotInput) {
   // Determine next version number for this room
   const latest = await prisma.workspaceSnapshot.findFirst({
     where: { roomId: input.roomId },

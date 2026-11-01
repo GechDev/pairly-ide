@@ -168,7 +168,9 @@ export function SharedTerminal({
           {(status === 'FAILED' || status === 'TIMEOUT' || status === 'OOM_KILLED') && (
             <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] bg-rose-500/10 text-rose-400 border border-rose-500/20">
               <AlertCircle className="w-3 h-3" />
-              <span>{status} (exit {exitCode ?? 1})</span>
+              <span>
+                {status} (exit {exitCode ?? 1})
+              </span>
             </div>
           )}
 

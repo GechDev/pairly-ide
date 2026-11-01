@@ -11,7 +11,10 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen text-[var(--fg-primary)]" style={{ backgroundColor: 'var(--canvas)' }}>
+    <div
+      className="min-h-screen text-[var(--fg-primary)]"
+      style={{ backgroundColor: 'var(--canvas)' }}
+    >
       {/* Background glow */}
       <div
         className="pointer-events-none fixed inset-0 opacity-40"
@@ -30,7 +33,10 @@ export default function PrivacyPage() {
           <span>Back to Pairly Overview</span>
         </Link>
 
-        <div className="flex items-start gap-4 mb-10 pb-8 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+        <div
+          className="flex items-start gap-4 mb-10 pb-8 border-b"
+          style={{ borderColor: 'var(--border-subtle)' }}
+        >
           <div
             className="p-3 rounded-2xl flex items-center justify-center shrink-0"
             style={{
@@ -65,10 +71,10 @@ export default function PrivacyPage() {
             </h2>
             <p>
               Pairly IDE is built for engineers and pair-programming teams. We believe in privacy by
-              architecture: data is collected solely to power your real-time collaborative workspace,
-              execute code safely in isolated runners, and facilitate peer-to-peer communication.
-              We do not sell your personal data, track you across third-party websites, or use your
-              private code to train public machine learning models.
+              architecture: data is collected solely to power your real-time collaborative
+              workspace, execute code safely in isolated runners, and facilitate peer-to-peer
+              communication. We do not sell your personal data, track you across third-party
+              websites, or use your private code to train public machine learning models.
             </p>
           </section>
 
@@ -85,26 +91,30 @@ export default function PrivacyPage() {
             </h2>
             <ul className="list-disc pl-5 space-y-2.5">
               <li>
-                <strong className="text-[var(--fg-primary)]">Guest Sessions:</strong> When joining as a guest, we generate an ephemeral
-                identity (temporary identifier, display name, and avatar seed) stored only in your
-                browser session storage. No registration or credit card is required.
+                <strong className="text-[var(--fg-primary)]">Guest Sessions:</strong> When joining
+                as a guest, we generate an ephemeral identity (temporary identifier, display name,
+                and avatar seed) stored only in your browser session storage. No registration or
+                credit card is required.
               </li>
               <li>
-                <strong className="text-[var(--fg-primary)]">Document Contents &amp; CRDT Updates:</strong> Code typed in Pairly rooms is
-                synchronized through Yjs binary state vectors and transmitted over encrypted
-                WebSockets (WSS). Snapshots and room checkpoints are persisted in encrypted database
-                storage to enable session resumption.
+                <strong className="text-[var(--fg-primary)]">
+                  Document Contents &amp; CRDT Updates:
+                </strong>{' '}
+                Code typed in Pairly rooms is synchronized through Yjs binary state vectors and
+                transmitted over encrypted WebSockets (WSS). Snapshots and room checkpoints are
+                persisted in encrypted database storage to enable session resumption.
               </li>
               <li>
-                <strong className="text-[var(--fg-primary)]">Execution I/O:</strong> When you run code, execution payloads are processed
-                within an isolated, sandboxed environment (capped by CPU, memory, and a 10-second timeout).
-                Standard output and error streams are routed directly to participants and are not logged
-                permanently.
+                <strong className="text-[var(--fg-primary)]">Execution I/O:</strong> When you run
+                code, execution payloads are processed within an isolated, sandboxed environment
+                (capped by CPU, memory, and a 10-second timeout). Standard output and error streams
+                are routed directly to participants and are not logged permanently.
               </li>
               <li>
-                <strong className="text-[var(--fg-primary)]">Voice and Media Streams:</strong> Peer audio is negotiated via WebRTC.
-                Audio streams travel directly between peers whenever possible. Pairly does not record,
-                transcribe, or store real-time voice communications.
+                <strong className="text-[var(--fg-primary)]">Voice and Media Streams:</strong> Peer
+                audio is negotiated via WebRTC. Audio streams travel directly between peers whenever
+                possible. Pairly does not record, transcribe, or store real-time voice
+                communications.
               </li>
             </ul>
           </section>
@@ -139,24 +149,33 @@ export default function PrivacyPage() {
               4. User Rights and GDPR / CCPA Compliance
             </h2>
             <p>
-              Under global data protection regulations including GDPR and CCPA, you have full control
-              over your personal data:
+              Under global data protection regulations including GDPR and CCPA, you have full
+              control over your personal data:
             </p>
             <ul className="list-disc pl-5 space-y-2">
               <li>
-                <strong className="text-[var(--fg-primary)]">Right to Export:</strong> Download a complete JSON archive of your account
-                records and hosted workspaces at any time via{' '}
-                <Link href="/settings" className="text-[var(--accent-teal)] underline underline-offset-4">
+                <strong className="text-[var(--fg-primary)]">Right to Export:</strong> Download a
+                complete JSON archive of your account records and hosted workspaces at any time via{' '}
+                <Link
+                  href="/settings"
+                  className="text-[var(--accent-teal)] underline underline-offset-4"
+                >
                   Account Settings
-                </Link>.
+                </Link>
+                .
               </li>
               <li>
-                <strong className="text-[var(--fg-primary)]">Right to Erasure:</strong> Trigger immediate, irreversible account deletion
-                which cascade-deletes all associated profile information and room records.
+                <strong className="text-[var(--fg-primary)]">Right to Erasure:</strong> Trigger
+                immediate, irreversible account deletion which cascade-deletes all associated
+                profile information and room records.
               </li>
               <li>
-                <strong className="text-[var(--fg-primary)]">Data Inquiries:</strong> Contact our engineering team at{' '}
-                <a href="mailto:privacy@pairly.dev" className="text-[var(--accent-teal)] underline underline-offset-4">
+                <strong className="text-[var(--fg-primary)]">Data Inquiries:</strong> Contact our
+                engineering team at{' '}
+                <a
+                  href="mailto:privacy@pairly.dev"
+                  className="text-[var(--accent-teal)] underline underline-offset-4"
+                >
                   privacy@pairly.dev
                 </a>{' '}
                 for all privacy requests.

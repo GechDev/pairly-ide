@@ -77,7 +77,9 @@ describe('T-17: AI Gateway with Context Construction & Injection Guardrails', ()
     expect(sanitized).not.toContain('<|im_start|>');
 
     const promptObj = buildAiPrompt('EXPLAIN', sampleContext, maliciousPrompt);
-    expect(promptObj.userMessage).toContain('<active_file path="src/index.ts" language="typescript">');
+    expect(promptObj.userMessage).toContain(
+      '<active_file path="src/index.ts" language="typescript">',
+    );
     expect(promptObj.userMessage).toContain('<selected_code lines="1-3">');
     expect(promptObj.userMessage).toContain('<additional_file path="src/types.ts">');
     expect(promptObj.userMessage).toContain('<terminal_output>');

@@ -70,7 +70,8 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
 
   try {
     const body = await request.json();
-    const name = typeof body.name === 'string' && body.name.trim() ? body.name.trim() : 'Checkpoint';
+    const name =
+      typeof body.name === 'string' && body.name.trim() ? body.name.trim() : 'Checkpoint';
     const dataBase64 = typeof body.data === 'string' ? body.data : '';
     const buffer = Buffer.from(dataBase64, 'base64');
 
@@ -99,7 +100,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
               createdAt: snapshot.createdAt,
             },
           },
-          { status: 201 }
+          { status: 201 },
         );
       }
     } catch {
@@ -132,7 +133,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
           createdAt: fallbackItem.createdAt,
         },
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (err: any) {
     return NextResponse.json(
@@ -140,7 +141,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
         success: false,
         error: err.message || 'Failed to create snapshot checkpoint',
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 }

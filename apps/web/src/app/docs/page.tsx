@@ -22,7 +22,10 @@ export const metadata: Metadata = {
 
 export default function DocsPage() {
   return (
-    <div className="min-h-screen text-[var(--fg-primary)]" style={{ backgroundColor: 'var(--canvas)' }}>
+    <div
+      className="min-h-screen text-[var(--fg-primary)]"
+      style={{ backgroundColor: 'var(--canvas)' }}
+    >
       {/* Background glow */}
       <div
         className="pointer-events-none fixed inset-0 opacity-40"
@@ -43,7 +46,10 @@ export default function DocsPage() {
         </Link>
 
         {/* Page Title */}
-        <div className="flex items-start gap-4 mb-10 pb-8 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+        <div
+          className="flex items-start gap-4 mb-10 pb-8 border-b"
+          style={{ borderColor: 'var(--border-subtle)' }}
+        >
           <div
             className="p-3 rounded-2xl flex items-center justify-center shrink-0"
             style={{
@@ -59,7 +65,8 @@ export default function DocsPage() {
               Pairly IDE Documentation
             </h1>
             <p className="text-sm text-[var(--fg-secondary)] mt-1.5 font-sans">
-              Distributed synchronization architecture, Piston sandbox lifecycle, and peer protocol documentation.
+              Distributed synchronization architecture, Piston sandbox lifecycle, and peer protocol
+              documentation.
             </p>
           </div>
         </div>
@@ -98,7 +105,9 @@ export default function DocsPage() {
               1. Instant Quick Start
             </h2>
             <p className="text-sm leading-relaxed text-[var(--fg-secondary)]">
-              Pairly IDE requires no local runtime installation, zero client extensions, and zero container setup. You can initiate a fully functional multi-user sandbox session in seconds:
+              Pairly IDE requires no local runtime installation, zero client extensions, and zero
+              container setup. You can initiate a fully functional multi-user sandbox session in
+              seconds:
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
               <div
@@ -108,10 +117,15 @@ export default function DocsPage() {
                   border: '1px solid var(--border-subtle)',
                 }}
               >
-                <div className="text-[var(--accent-teal)] font-bold text-xs mb-2">01 / PROVISION</div>
-                <div className="font-semibold text-sm text-[var(--fg-primary)] mb-1">Create Room</div>
+                <div className="text-[var(--accent-teal)] font-bold text-xs mb-2">
+                  01 / PROVISION
+                </div>
+                <div className="font-semibold text-sm text-[var(--fg-primary)] mb-1">
+                  Create Room
+                </div>
                 <div className="text-[var(--fg-muted)] font-sans leading-relaxed">
-                  Click &ldquo;Start Coding Now&rdquo; to provision an unguessable nanoid room code with pre-configured templates.
+                  Click &ldquo;Start Coding Now&rdquo; to provision an unguessable nanoid room code
+                  with pre-configured templates.
                 </div>
               </div>
               <div
@@ -122,9 +136,12 @@ export default function DocsPage() {
                 }}
               >
                 <div className="text-[var(--accent-cyan)] font-bold text-xs mb-2">02 / INVITE</div>
-                <div className="font-semibold text-sm text-[var(--fg-primary)] mb-1">Share Instant Link</div>
+                <div className="font-semibold text-sm text-[var(--fg-primary)] mb-1">
+                  Share Instant Link
+                </div>
                 <div className="text-[var(--fg-muted)] font-sans leading-relaxed">
-                  Copy the room URL or QR code. Your pairing partner enters instantaneously with an ephemeral identity.
+                  Copy the room URL or QR code. Your pairing partner enters instantaneously with an
+                  ephemeral identity.
                 </div>
               </div>
               <div
@@ -134,10 +151,15 @@ export default function DocsPage() {
                   border: '1px solid var(--border-subtle)',
                 }}
               >
-                <div className="text-[var(--accent-teal)] font-bold text-xs mb-2">03 / COLLABORATE</div>
-                <div className="font-semibold text-sm text-[var(--fg-primary)] mb-1">Pair &amp; Ship</div>
+                <div className="text-[var(--accent-teal)] font-bold text-xs mb-2">
+                  03 / COLLABORATE
+                </div>
+                <div className="font-semibold text-sm text-[var(--fg-primary)] mb-1">
+                  Pair &amp; Ship
+                </div>
                 <div className="text-[var(--fg-muted)] font-sans leading-relaxed">
-                  Code together with sub-millisecond CRDT sync, execute in sandboxes, and export clean commits directly to GitHub.
+                  Code together with sub-millisecond CRDT sync, execute in sandboxes, and export
+                  clean commits directly to GitHub.
                 </div>
               </div>
             </div>
@@ -150,7 +172,8 @@ export default function DocsPage() {
               2. System Architecture
             </h2>
             <p className="text-sm leading-relaxed text-[var(--fg-secondary)]">
-              Pairly IDE is designed around a high-performance distributed coordinator optimized for deterministic real-time state:
+              Pairly IDE is designed around a high-performance distributed coordinator optimized for
+              deterministic real-time state:
             </p>
             <div
               className="p-6 rounded-2xl font-mono text-xs space-y-3 overflow-x-auto"
@@ -160,16 +183,30 @@ export default function DocsPage() {
               }}
             >
               <div className="text-[var(--accent-teal)] font-semibold">
-                [Client Monaco / Web] &lt;---(Yjs WSS binary stream)&gt; [Fastify Realtime Coordinator]
+                [Client Monaco / Web] &lt;---(Yjs WSS binary stream)&gt; [Fastify Realtime
+                Coordinator]
               </div>
-              <div className="pl-6 text-[var(--fg-secondary)] border-l" style={{ borderColor: 'var(--border-prominent)' }}>
-                ├── <span className="text-[var(--fg-primary)] font-semibold">Redis Pub/Sub</span>: Cross-node message broadcasting and cursor awareness
+              <div
+                className="pl-6 text-[var(--fg-secondary)] border-l"
+                style={{ borderColor: 'var(--border-prominent)' }}
+              >
+                ├── <span className="text-[var(--fg-primary)] font-semibold">Redis Pub/Sub</span>:
+                Cross-node message broadcasting and cursor awareness
               </div>
-              <div className="pl-6 text-[var(--fg-secondary)] border-l" style={{ borderColor: 'var(--border-prominent)' }}>
-                ├── <span className="text-[var(--fg-primary)] font-semibold">PostgreSQL</span>: Room metadata, user settings, and workspace checkpoints
+              <div
+                className="pl-6 text-[var(--fg-secondary)] border-l"
+                style={{ borderColor: 'var(--border-prominent)' }}
+              >
+                ├── <span className="text-[var(--fg-primary)] font-semibold">PostgreSQL</span>: Room
+                metadata, user settings, and workspace checkpoints
               </div>
-              <div className="pl-6 text-[var(--fg-secondary)] border-l" style={{ borderColor: 'var(--border-prominent)' }}>
-                └── <span className="text-[var(--fg-primary)] font-semibold">Piston Sandbox API</span>: Multi-language containerized execution engine
+              <div
+                className="pl-6 text-[var(--fg-secondary)] border-l"
+                style={{ borderColor: 'var(--border-prominent)' }}
+              >
+                └──{' '}
+                <span className="text-[var(--fg-primary)] font-semibold">Piston Sandbox API</span>:
+                Multi-language containerized execution engine
               </div>
             </div>
           </section>
@@ -181,7 +218,10 @@ export default function DocsPage() {
               3. Conflict-Free CRDT Synchronization
             </h2>
             <p className="text-sm leading-relaxed text-[var(--fg-secondary)]">
-              Concurrent edits are reconciled deterministically using Yjs state vectors. Every document in the virtual file tree maps to a distinct Y.Text structure. Even during high-frequency typing or transient network partitions, changes converge automatically with mathematical guarantees and zero lost keystrokes.
+              Concurrent edits are reconciled deterministically using Yjs state vectors. Every
+              document in the virtual file tree maps to a distinct Y.Text structure. Even during
+              high-frequency typing or transient network partitions, changes converge automatically
+              with mathematical guarantees and zero lost keystrokes.
             </p>
           </section>
 
@@ -192,7 +232,8 @@ export default function DocsPage() {
               4. Sandboxed Code Execution
             </h2>
             <p className="text-sm leading-relaxed text-[var(--fg-secondary)]">
-              Code execution requests are dispatched to an isolated container runtime. The runner enforces strict operational constraints:
+              Code execution requests are dispatched to an isolated container runtime. The runner
+              enforces strict operational constraints:
             </p>
             <div
               className="p-6 rounded-2xl space-y-3 text-sm text-[var(--fg-secondary)]"
@@ -202,10 +243,23 @@ export default function DocsPage() {
               }}
             >
               <ul className="space-y-2.5 list-disc pl-5">
-                <li><strong className="text-[var(--fg-primary)]">Execution Timeout:</strong> 10-second hard ceiling per execution request with graceful SIGTERM termination.</li>
-                <li><strong className="text-[var(--fg-primary)]">Memory Ceiling:</strong> Rigid cgroup memory limits per container preventing runaway memory consumption.</li>
-                <li><strong className="text-[var(--fg-primary)]">Supported Languages:</strong> TypeScript, JavaScript, Python, Go, Rust, C++, Java, and Ruby.</li>
-                <li><strong className="text-[var(--fg-primary)]">Interactive Terminal:</strong> Stdout and stderr stream directly back over WebSockets with live bidirectional stdin support.</li>
+                <li>
+                  <strong className="text-[var(--fg-primary)]">Execution Timeout:</strong> 10-second
+                  hard ceiling per execution request with graceful SIGTERM termination.
+                </li>
+                <li>
+                  <strong className="text-[var(--fg-primary)]">Memory Ceiling:</strong> Rigid cgroup
+                  memory limits per container preventing runaway memory consumption.
+                </li>
+                <li>
+                  <strong className="text-[var(--fg-primary)]">Supported Languages:</strong>{' '}
+                  TypeScript, JavaScript, Python, Go, Rust, C++, Java, and Ruby.
+                </li>
+                <li>
+                  <strong className="text-[var(--fg-primary)]">Interactive Terminal:</strong> Stdout
+                  and stderr stream directly back over WebSockets with live bidirectional stdin
+                  support.
+                </li>
               </ul>
             </div>
           </section>
@@ -217,7 +271,8 @@ export default function DocsPage() {
               5. Role-Based Access Governance
             </h2>
             <p className="text-sm leading-relaxed text-[var(--fg-secondary)]">
-              Rooms enforce 4 discrete participant roles verified by the coordinator on every incoming message:
+              Rooms enforce 4 discrete participant roles verified by the coordinator on every
+              incoming message:
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div
@@ -229,7 +284,8 @@ export default function DocsPage() {
               >
                 <span className="font-bold font-mono text-[var(--accent-teal)]">HOST</span>
                 <p className="text-[var(--fg-secondary)] mt-1.5 font-sans leading-relaxed">
-                  Full room authority: lock/unlock sessions, kick participants, grant permissions, mute microphones, and control checkpoint branching.
+                  Full room authority: lock/unlock sessions, kick participants, grant permissions,
+                  mute microphones, and control checkpoint branching.
                 </p>
               </div>
               <div
@@ -241,7 +297,8 @@ export default function DocsPage() {
               >
                 <span className="font-bold font-mono text-[var(--accent-cyan)]">EDITOR</span>
                 <p className="text-[var(--fg-secondary)] mt-1.5 font-sans leading-relaxed">
-                  Read and write privileges to the document tree, execution permissions in the container sandbox, and whiteboard drawing.
+                  Read and write privileges to the document tree, execution permissions in the
+                  container sandbox, and whiteboard drawing.
                 </p>
               </div>
               <div
@@ -253,7 +310,8 @@ export default function DocsPage() {
               >
                 <span className="font-bold font-mono text-amber-400">COMMENTER</span>
                 <p className="text-[var(--fg-secondary)] mt-1.5 font-sans leading-relaxed">
-                  Can participate in chat, join peer voice channels, and view real-time cursor activity without editing permissions.
+                  Can participate in chat, join peer voice channels, and view real-time cursor
+                  activity without editing permissions.
                 </p>
               </div>
               <div
@@ -265,7 +323,8 @@ export default function DocsPage() {
               >
                 <span className="font-bold font-mono text-[var(--fg-muted)]">VIEWER</span>
                 <p className="text-[var(--fg-secondary)] mt-1.5 font-sans leading-relaxed">
-                  Read-only presentation mode for live interviews, team broadcasts, and coding assessments.
+                  Read-only presentation mode for live interviews, team broadcasts, and coding
+                  assessments.
                 </p>
               </div>
             </div>
@@ -298,15 +357,22 @@ export default function DocsPage() {
                     <th className="p-3.5">Description</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y font-mono text-[var(--fg-secondary)]" style={{ borderColor: 'var(--border-subtle)' }}>
+                <tbody
+                  className="divide-y font-mono text-[var(--fg-secondary)]"
+                  style={{ borderColor: 'var(--border-subtle)' }}
+                >
                   <tr>
-                    <td className="p-3.5 font-semibold text-[var(--fg-primary)]">Command Palette</td>
+                    <td className="p-3.5 font-semibold text-[var(--fg-primary)]">
+                      Command Palette
+                    </td>
                     <td className="p-3.5">
                       <kbd className="px-2 py-0.5 rounded text-[11px] bg-[var(--canvas-elevated)] border border-[var(--border-prominent)] text-[var(--fg-primary)]">
                         Ctrl / Cmd + K
                       </kbd>
                     </td>
-                    <td className="p-3.5 font-sans">Open fuzzy searchable quick command palette.</td>
+                    <td className="p-3.5 font-sans">
+                      Open fuzzy searchable quick command palette.
+                    </td>
                   </tr>
                   <tr>
                     <td className="p-3.5 font-semibold text-[var(--fg-primary)]">Execute Code</td>
@@ -324,10 +390,14 @@ export default function DocsPage() {
                         Ctrl / Cmd + B
                       </kbd>
                     </td>
-                    <td className="p-3.5 font-sans">Expand or collapse the file explorer and tools.</td>
+                    <td className="p-3.5 font-sans">
+                      Expand or collapse the file explorer and tools.
+                    </td>
                   </tr>
                   <tr>
-                    <td className="p-3.5 font-semibold text-[var(--fg-primary)]">Toggle Terminal</td>
+                    <td className="p-3.5 font-semibold text-[var(--fg-primary)]">
+                      Toggle Terminal
+                    </td>
                     <td className="p-3.5">
                       <kbd className="px-2 py-0.5 rounded text-[11px] bg-[var(--canvas-elevated)] border border-[var(--border-prominent)] text-[var(--fg-primary)]">
                         Ctrl / Cmd + `
@@ -336,7 +406,9 @@ export default function DocsPage() {
                     <td className="p-3.5 font-sans">Toggle shared execution terminal drawer.</td>
                   </tr>
                   <tr>
-                    <td className="p-3.5 font-semibold text-[var(--fg-primary)]">Whiteboard Canvas</td>
+                    <td className="p-3.5 font-semibold text-[var(--fg-primary)]">
+                      Whiteboard Canvas
+                    </td>
                     <td className="p-3.5">
                       <kbd className="px-2 py-0.5 rounded text-[11px] bg-[var(--canvas-elevated)] border border-[var(--border-prominent)] text-[var(--fg-primary)]">
                         Toolbar Button
@@ -351,7 +423,9 @@ export default function DocsPage() {
                         Toolbar / Cmd+K
                       </kbd>
                     </td>
-                    <td className="p-3.5 font-sans">Push current workspace files directly to GitHub.</td>
+                    <td className="p-3.5 font-sans">
+                      Push current workspace files directly to GitHub.
+                    </td>
                   </tr>
                 </tbody>
               </table>

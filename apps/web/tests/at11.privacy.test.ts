@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { NextRequest } from 'next/server';
-import { GET as getMe, PUT as updateMe, DELETE as deleteMe } from '../src/app/api/v1/users/me/route';
+import {
+  GET as getMe,
+  PUT as updateMe,
+  DELETE as deleteMe,
+} from '../src/app/api/v1/users/me/route';
 import { GET as exportMe } from '../src/app/api/v1/users/me/export/route';
 
 describe('T-22: User Accounts, Settings, and Data Privacy Controls (FR-ACCT-01..04, AT-11)', () => {

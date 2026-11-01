@@ -24,15 +24,13 @@ describe('T-09: Multi-File Workspace Tree, Tab Management, and ZIP Serialization
 
     // 3. Update file content
     manager.updateFileContent(file.id, 'console.log("updated");');
-    expect(
-      manager.getState().items.find((i) => i.id === file.id)?.content
-    ).toBe('console.log("updated");');
+    expect(manager.getState().items.find((i) => i.id === file.id)?.content).toBe(
+      'console.log("updated");',
+    );
 
     // 4. Rename file
     manager.renameFile(file.id, 'app.ts');
-    expect(manager.getState().items.find((i) => i.id === file.id)?.path).toBe(
-      '/src/app.ts'
-    );
+    expect(manager.getState().items.find((i) => i.id === file.id)?.path).toBe('/src/app.ts');
 
     // 5. Delete folder cascades to children
     manager.deleteFile(folder.id);
