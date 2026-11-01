@@ -69,3 +69,15 @@ test('apps/realtime/Dockerfile exists and adheres to production hardening rules 
   const dockerignorePath = path.join(rootDir, 'apps', 'realtime', '.dockerignore');
   assert.ok(fs.existsSync(dockerignorePath), 'apps/realtime/.dockerignore must exist');
 });
+
+test('GitHub Actions CI pipeline is configured with quality and docker validation jobs (T-26)', () => {
+  const ciPath = path.join(rootDir, '.github', 'workflows', 'ci.yml');
+  assert.ok(fs.existsSync(ciPath), '.github/workflows/ci.yml must exist');
+  const ciContent = fs.readFileSync(ciPath, 'utf8');
+
+  assert.match(ciContent, /pnpm run format:check/, 'CI must verify formatting');
+  assert.match(ciContent, /pnpm run typecheck/, 'CI must run typechecking');
+  assert.match(ciContent, /pnpm run test/, 'CI must run tests');
+  assert.match(ciContent, /pnpm run build/, 'CI must test production building');
+  assert.match(ciContent, /apps\/realtime\/Dockerfile/, 'CI must validate realtime Dockerfile');
+});

@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Code Quality & Monorepo Verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9.15.4
+          run_install: false
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify code formatting
+        run: pnpm run format:check
+
+      - name: Typecheck monorepo
+        run: pnpm run typecheck
+
+      - name: Run automated test suites
+        run: pnpm run test
+
+      - name: Build monorepo packages & applications
+        run: pnpm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+
+  docker:
+    name: Realtime Docker Container Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & Validate Realtime Production Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/realtime/Dockerfile
+          push: false
+          tags: pairly-realtime:ci
