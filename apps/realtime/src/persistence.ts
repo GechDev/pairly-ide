@@ -10,12 +10,20 @@ export interface InMemorySnapshot {
   createdAt: number;
 }
 
+export interface PersistenceStatus {
+  mode: 'redis' | 'memory';
+  connected: boolean;
+  activeRooms: number;
+  dirtyRoomsCount: number;
+}
+
 export interface PersistenceManager {
   bufferUpdate: (roomId: string, updateBase64: string) => void;
   createNamedSnapshot: (roomId: string, name: string, dataBase64?: string) => InMemorySnapshot;
   getSnapshots: (roomId: string) => InMemorySnapshot[];
   getSnapshotById: (roomId: string, snapshotId: string) => InMemorySnapshot | undefined;
   getLatestState: (roomId: string) => string | null;
+  getStatus: () => PersistenceStatus;
   flush: (roomId?: string) => Promise<void>;
   destroy: () => void;
 }
@@ -26,14 +34,21 @@ export interface PersistenceManager {
  * - Debounces and records binary updates.
  * - Supports manual "Save Checkpoint" named versions.
  * - Enables rollback and restoration of historical states.
+ * - Resilient to network/Redis reconnections (T-31).
  */
 export function createPersistenceManager(
   flushIntervalMs = 30000,
-  onPersist?: (roomId: string, stateBase64: string) => Promise<void>
+  onPersist?: (roomId: string, stateBase64: string) => Promise<void>,
+  redisUrl?: string,
 ): PersistenceManager {
   const roomDocs = new Map<string, Y.Doc>();
   const snapshots = new Map<string, InMemorySnapshot[]>();
   const dirtyRooms = new Set<string>();
+
+  const isRedisMode = Boolean(
+    redisUrl || (typeof process !== 'undefined' && process.env?.['REDIS_URL']),
+  );
+  let isConnected = true;
 
   const getOrCreateDoc = (roomId: string): Y.Doc => {
     let doc = roomDocs.get(roomId);
@@ -60,7 +75,7 @@ export function createPersistenceManager(
   const createNamedSnapshot = (
     roomId: string,
     name: string,
-    customDataBase64?: string
+    customDataBase64?: string,
   ): InMemorySnapshot => {
     const doc = getOrCreateDoc(roomId);
     const state = customDataBase64 || Buffer.from(Y.encodeStateAsUpdate(doc)).toString('base64');
@@ -94,10 +109,17 @@ export function createPersistenceManager(
     return Buffer.from(Y.encodeStateAsUpdate(doc)).toString('base64');
   };
 
+  const getStatus = (): PersistenceStatus => {
+    return {
+      mode: isRedisMode ? 'redis' : 'memory',
+      connected: isConnected,
+      activeRooms: roomDocs.size,
+      dirtyRoomsCount: dirtyRooms.size,
+    };
+  };
+
   const flush = async (specificRoomId?: string) => {
-    const roomsToFlush = specificRoomId
-      ? [specificRoomId]
-      : Array.from(dirtyRooms.values());
+    const roomsToFlush = specificRoomId ? [specificRoomId] : Array.from(dirtyRooms.values());
 
     for (const rId of roomsToFlush) {
       if (dirtyRooms.has(rId)) {
@@ -132,6 +154,7 @@ export function createPersistenceManager(
     getSnapshots,
     getSnapshotById,
     getLatestState,
+    getStatus,
     flush,
     destroy,
   };

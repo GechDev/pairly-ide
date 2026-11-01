@@ -147,4 +147,25 @@ describe('Database Architecture & Infrastructure Contracts', () => {
     expect(schemaContent).toContain('@@index([roomId, version])');
     expect(schemaContent).toContain('@@index([createdAt])');
   });
+
+  it('buildHardenedDatabaseUrl adds PgBouncer parameters and SSL for Neon/Supabase poolers (T-31)', async () => {
+    const { buildHardenedDatabaseUrl } = await import('../src/index.js');
+
+    const neonUrl =
+      'postgresql://user:pass@ep-pooler.us-east-2.aws.neon.tech/pairly?pgbouncer=true';
+    const hardened = buildHardenedDatabaseUrl(neonUrl);
+
+    expect(hardened).toBeDefined();
+    expect(hardened).toContain('connection_limit=10');
+    expect(hardened).toContain('pool_timeout=20');
+    expect(hardened).toContain('sslmode=require');
+  });
+
+  it('checkDatabaseHealth executes and measures latency or captures disconnected state (T-31)', async () => {
+    const { checkDatabaseHealth } = await import('../src/index.js');
+    const health = await checkDatabaseHealth();
+
+    expect(typeof health.ok).toBe('boolean');
+    expect(typeof health.latencyMs).toBe('number');
+  });
 });
