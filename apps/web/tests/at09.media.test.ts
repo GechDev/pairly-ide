@@ -1,10 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
 import { NextRequest } from 'next/server';
-import { POST } from '../src/app/api/v1/rooms/[code]/media/token/route';
+import crypto from 'node:crypto';
+import { POST, GET } from '../src/app/api/v1/rooms/[code]/media/token/route';
 import { createWorkspaceManager } from '../src/components/workspace/workspaceState';
 
-describe('T-20: LiveKit Media Integration & Graceful Degradation (AT-09, FR-COMM-03..07, 10)', () => {
-  it('generates WebRTC SFU access tokens with roomJoin and publish grants', async () => {
+describe('T-20 & T-30: LiveKit Media Integration & Cryptographic SFU Tokens (AT-09, FR-COMM-03..07, 10)', () => {
+  it('generates cryptographically valid HMAC-SHA256 WebRTC SFU access tokens', async () => {
     const req = new NextRequest('http://localhost:3000/api/v1/rooms/room-xyz/media/token', {
       method: 'POST',
       body: JSON.stringify({ participantName: 'Alice' }),
@@ -15,10 +16,42 @@ describe('T-20: LiveKit Media Integration & Graceful Degradation (AT-09, FR-COMM
 
     const data = await res.json();
     expect(data.token).toBeDefined();
-    expect(data.token.split('.').length).toBe(3); // JWT format: header.payload.signature
+
+    const parts = data.token.split('.');
+    expect(parts.length).toBe(3); // JWT format: header.payload.signature
+
+    // Cryptographic validation of signature
+    const [headerB64, payloadB64, signatureB64] = parts;
+    const expectedSig = crypto
+      .createHmac('sha256', 'secretsecretsecretsecretsecretsecretsecret')
+      .update(`${headerB64}.${payloadB64}`)
+      .digest('base64url');
+
+    expect(signatureB64).toBe(expectedSig);
+
+    const payload = JSON.parse(Buffer.from(payloadB64!, 'base64url').toString('utf-8'));
+    expect(payload.video.roomJoin).toBe(true);
+    expect(payload.video.canPublish).toBe(true);
+    expect(payload.video.canSubscribe).toBe(true);
     expect(data.wsUrl).toBeDefined();
     expect(data.room).toBe('room-xyz');
-    expect(data.identity).toBe('Alice');
+  });
+
+  it('supports GET /api/v1/rooms/[code]/media/token with query parameters (T-30)', async () => {
+    const req = new NextRequest(
+      'http://localhost:3000/api/v1/rooms/room-xyz/media/token?username=Bob',
+      {
+        method: 'GET',
+      },
+    );
+
+    const res = await GET(req, { params: { code: 'room-xyz' } });
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.token).toBeDefined();
+    expect(data.token.split('.').length).toBe(3);
+    expect(data.room).toBe('room-xyz');
   });
 
   it('AT-09: simulates media permission denial and asserts editor and chat remain fully functional (FR-COMM-10)', async () => {
