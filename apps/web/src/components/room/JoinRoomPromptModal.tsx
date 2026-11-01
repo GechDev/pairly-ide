@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { User, ArrowRight, Code2 } from 'lucide-react';
+import { User, ArrowRight } from 'lucide-react';
 
 export interface JoinRoomPromptModalProps {
   isOpen: boolean;
@@ -11,7 +11,7 @@ export interface JoinRoomPromptModalProps {
 
 export function JoinRoomPromptModal({
   isOpen,
-  roomCode,
+  roomCode: _roomCode,
   onJoin,
 }: JoinRoomPromptModalProps) {
   const [name, setName] = useState('');
@@ -41,24 +41,10 @@ export function JoinRoomPromptModal({
         aria-modal="true"
         aria-labelledby="join-prompt-title"
       >
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-[#FF0000]/10 border border-[#FF0000]/20 flex items-center justify-center text-[#FF0000]">
-            <Code2 className="w-6 h-6 stroke-[2.5]" />
-          </div>
-          <div>
-            <h2
-              id="join-prompt-title"
-              className="text-xl font-bold text-slate-100 tracking-tight"
-            >
-              Enter Your Name to Join
-            </h2>
-            <div className="flex items-center justify-center gap-1.5 mt-1.5 text-xs text-slate-400">
-              <span>Room Code:</span>
-              <span className="font-mono font-semibold text-[#FF0000] bg-[#FF0000]/10 px-2 py-0.5 rounded border border-[#FF0000]/20">
-                {roomCode}
-              </span>
-            </div>
-          </div>
+        <div className="text-center">
+          <h2 id="join-prompt-title" className="text-xl font-bold text-slate-100 tracking-tight">
+            Enter Your Name to Join
+          </h2>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -80,9 +66,7 @@ export function JoinRoomPromptModal({
             />
           </div>
 
-          {error && (
-            <p className="text-xs text-rose-400 font-medium text-left">{error}</p>
-          )}
+          {error && <p className="text-xs text-rose-400 font-medium text-left">{error}</p>}
 
           <button
             type="submit"

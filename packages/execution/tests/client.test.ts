@@ -114,5 +114,54 @@ describe('Sandboxed Execution Service (@pairly/execution)', () => {
       expect(result.exitCode).toBe(137);
       expect(result.stderr).toContain('exceeded maximum process limit');
     });
+
+    it('falls back to secondary Piston endpoint when primary endpoint fails (T-24)', async () => {
+      const calledEndpoints: string[] = [];
+      const mockFetch = async (
+        url: string | URL | Request,
+        init?: RequestInit,
+      ): Promise<Response> => {
+        const urlStr = url.toString();
+        calledEndpoints.push(urlStr);
+
+        // Fail primary endpoint with connection error
+        if (urlStr.includes('primary.piston.local')) {
+          throw new Error('connect ECONNREFUSED primary.piston.local:2000');
+        }
+
+        // Succeed on fallback endpoint
+        if (urlStr.includes('emkc.org')) {
+          return new Response(
+            JSON.stringify({
+              run: {
+                stdout: 'Output from remote public Piston sandbox\n',
+                stderr: '',
+                code: 0,
+              },
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          );
+        }
+
+        throw new Error('Unexpected URL');
+      };
+
+      const fallbackClient = new PistonRunnerClient({
+        endpoint: 'http://primary.piston.local:2000',
+        fallbackEndpoint: 'https://emkc.org/api/v2/piston',
+        fetchFn: mockFetch as typeof fetch,
+      });
+
+      const result = await fallbackClient.execute({
+        language: 'python',
+        files: [{ name: 'test.py', content: 'print("test")' }],
+        limits: { timeoutMs: 5000, memoryLimitMb: 256, networkEnabled: false },
+      });
+
+      expect(calledEndpoints.some((u) => u.includes('primary.piston.local'))).toBe(true);
+      expect(calledEndpoints.some((u) => u.includes('emkc.org'))).toBe(true);
+      expect(result.status).toBe('COMPLETED');
+      expect(result.stdout).toContain('Output from remote public Piston sandbox');
+    });
   });
 });

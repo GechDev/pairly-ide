@@ -1,13 +1,13 @@
-import {
-  type RunParameters,
-  type ExecutionResult,
-  RunParametersSchema,
-} from '@pairly/contracts';
+import { type RunParameters, type ExecutionResult, RunParametersSchema } from '@pairly/contracts';
 import { LANGUAGE_REGISTRY, getLanguageDefinition } from './languages.js';
 import { DEFAULT_EXECUTION_LIMITS } from './limits.js';
 
+export const DEFAULT_PISTON_ENDPOINT = 'http://localhost:2000';
+export const PUBLIC_PISTON_ENDPOINT = 'https://emkc.org/api/v2/piston';
+
 export interface PistonClientOptions {
   endpoint?: string;
+  fallbackEndpoint?: string;
   defaultTimeoutMs?: number;
   defaultMemoryLimitMb?: number;
   fetchFn?: typeof fetch;
@@ -20,45 +20,60 @@ export interface PistonRuntime {
 }
 
 export class PistonRunnerClient {
-  private readonly endpoint: string;
+  public readonly endpoint: string;
+  public readonly fallbackEndpoint: string;
   private readonly defaultTimeoutMs: number;
   private readonly defaultMemoryLimitMb: number;
   private readonly fetchFn: typeof fetch;
 
   constructor(options: PistonClientOptions = {}) {
+    const isProduction =
+      typeof process !== 'undefined' && process.env?.['NODE_ENV'] === 'production';
     this.endpoint =
       options.endpoint ||
       (typeof process !== 'undefined' && process.env?.['PISTON_URL']) ||
-      'http://localhost:2000';
-    this.defaultTimeoutMs =
-      options.defaultTimeoutMs || DEFAULT_EXECUTION_LIMITS.TIMEOUT_MS;
+      (isProduction ? PUBLIC_PISTON_ENDPOINT : DEFAULT_PISTON_ENDPOINT);
+    this.fallbackEndpoint =
+      options.fallbackEndpoint ||
+      (typeof process !== 'undefined' && process.env?.['PISTON_FALLBACK_URL']) ||
+      PUBLIC_PISTON_ENDPOINT;
+    this.defaultTimeoutMs = options.defaultTimeoutMs || DEFAULT_EXECUTION_LIMITS.TIMEOUT_MS;
     this.defaultMemoryLimitMb =
       options.defaultMemoryLimitMb || DEFAULT_EXECUTION_LIMITS.MEMORY_LIMIT_MB;
     this.fetchFn = options.fetchFn || globalThis.fetch;
   }
 
   /**
-   * Fetches supported installed runtimes from Piston API.
+   * Fetches supported installed runtimes from Piston API with fallback endpoint support.
    */
   async getRuntimes(): Promise<PistonRuntime[]> {
-    try {
-      const res = await this.fetchFn(`${this.endpoint}/api/v2/runtimes`);
-      if (!res.ok) {
-        throw new Error(`Failed to fetch runtimes: HTTP ${res.status}`);
-      }
-      return (await res.json()) as PistonRuntime[];
-    } catch {
-      // Fallback to static registry when offline
-      return Object.values(LANGUAGE_REGISTRY).map((def) => ({
-        language: def.pistonLanguage,
-        version: def.version,
-        aliases: def.aliases,
-      }));
+    const endpoints = [this.endpoint];
+    if (this.fallbackEndpoint && this.fallbackEndpoint !== this.endpoint) {
+      endpoints.push(this.fallbackEndpoint);
     }
+
+    for (const ep of endpoints) {
+      try {
+        const res = await this.fetchFn(`${ep}/api/v2/runtimes`);
+        if (res.ok) {
+          return (await res.json()) as PistonRuntime[];
+        }
+      } catch {
+        // Try fallback endpoint
+      }
+    }
+
+    // Fallback to static registry when offline
+    return Object.values(LANGUAGE_REGISTRY).map((def) => ({
+      language: def.pistonLanguage,
+      version: def.version,
+      aliases: def.aliases,
+    }));
   }
 
   /**
    * Executes code files within sandboxed environment per SRS FR-EXEC-01..05.
+   * Attempts primary endpoint, then remote public fallback before using local fallback.
    */
   async execute(params: RunParameters): Promise<ExecutionResult> {
     const validated = RunParametersSchema.parse(params);
@@ -80,11 +95,11 @@ export class PistonRunnerClient {
     const startTime = Date.now();
     const timeoutMs = Math.min(
       validated.limits.timeoutMs || this.defaultTimeoutMs,
-      DEFAULT_EXECUTION_LIMITS.TIMEOUT_MS
+      DEFAULT_EXECUTION_LIMITS.TIMEOUT_MS,
     );
     const memoryLimitMb = Math.min(
       validated.limits.memoryLimitMb || this.defaultMemoryLimitMb,
-      DEFAULT_EXECUTION_LIMITS.MEMORY_LIMIT_MB
+      DEFAULT_EXECUTION_LIMITS.MEMORY_LIMIT_MB,
     );
 
     // Prepare Piston execute payload
@@ -103,83 +118,92 @@ export class PistonRunnerClient {
       run_memory_limit: memoryLimitMb * 1024 * 1024,
     };
 
-    try {
-      const controller = new AbortController();
-      // Add small safety margin to fetch timeout
-      const timer = setTimeout(() => controller.abort(), timeoutMs + 1500);
-
-      const res = await this.fetchFn(`${this.endpoint}/api/v2/execute`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(pistonPayload),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timer);
-
-      if (!res.ok) {
-        throw new Error(`Execution service error: HTTP ${res.status}`);
-      }
-
-      const data = (await res.json()) as any;
-      const durationMs = Date.now() - startTime;
-
-      // Extract compile error if compilation failed
-      if (data.compile && data.compile.code !== 0) {
-        return {
-          runId,
-          status: 'FAILED',
-          exitCode: data.compile.code,
-          stdout: data.compile.stdout || '',
-          stderr: data.compile.stderr || data.compile.output || '',
-          durationMs,
-        };
-      }
-
-      const run = data.run || {};
-      const stdout = run.stdout || run.output || '';
-      const stderr = run.stderr || '';
-      const exitCode = run.code !== undefined ? run.code : 0;
-
-      // Check timeout signal
-      if (run.signal === 'SIGKILL' || run.signal === 'SIGTERM') {
-        return {
-          runId,
-          status: 'TIMEOUT',
-          exitCode: null,
-          stdout,
-          stderr: stderr || `Process terminated: execution exceeded ${timeoutMs / 1000}s timeout (SRS AT-05)`,
-          durationMs,
-        };
-      }
-
-      return {
-        runId,
-        status: exitCode === 0 ? 'COMPLETED' : 'FAILED',
-        exitCode,
-        stdout: stdout.slice(0, DEFAULT_EXECUTION_LIMITS.MAX_OUTPUT_BYTES),
-        stderr: stderr.slice(0, DEFAULT_EXECUTION_LIMITS.MAX_OUTPUT_BYTES),
-        durationMs,
-      };
-    } catch (err: unknown) {
-      const durationMs = Date.now() - startTime;
-      const isAbort = err instanceof Error && err.name === 'AbortError';
-
-      if (isAbort) {
-        return {
-          runId,
-          status: 'TIMEOUT',
-          exitCode: null,
-          stdout: '',
-          stderr: `Execution timed out after ${timeoutMs}ms (SRS AT-05 limit enforced)`,
-          durationMs,
-        };
-      }
-
-      // If Piston service is not running locally during offline development,
-      // run mock runner for test and development stability
-      return this.executeLocalFallback(validated, runId, startTime, timeoutMs);
+    const endpoints = [this.endpoint];
+    if (this.fallbackEndpoint && this.fallbackEndpoint !== this.endpoint) {
+      endpoints.push(this.fallbackEndpoint);
     }
+
+    for (const ep of endpoints) {
+      try {
+        const controller = new AbortController();
+        // Add small safety margin to fetch timeout
+        const timer = setTimeout(() => controller.abort(), timeoutMs + 1500);
+
+        const res = await this.fetchFn(`${ep}/api/v2/execute`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(pistonPayload),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timer);
+
+        if (!res.ok) {
+          throw new Error(`Execution service error from ${ep}: HTTP ${res.status}`);
+        }
+
+        const data = (await res.json()) as any;
+        const durationMs = Date.now() - startTime;
+
+        // Extract compile error if compilation failed
+        if (data.compile && data.compile.code !== 0) {
+          return {
+            runId,
+            status: 'FAILED',
+            exitCode: data.compile.code,
+            stdout: data.compile.stdout || '',
+            stderr: data.compile.stderr || data.compile.output || '',
+            durationMs,
+          };
+        }
+
+        const run = data.run || {};
+        const stdout = run.stdout || run.output || '';
+        const stderr = run.stderr || '';
+        const exitCode = run.code !== undefined ? run.code : 0;
+
+        // Check timeout signal
+        if (run.signal === 'SIGKILL' || run.signal === 'SIGTERM') {
+          return {
+            runId,
+            status: 'TIMEOUT',
+            exitCode: null,
+            stdout,
+            stderr:
+              stderr ||
+              `Process terminated: execution exceeded ${timeoutMs / 1000}s timeout (SRS AT-05)`,
+            durationMs,
+          };
+        }
+
+        return {
+          runId,
+          status: exitCode === 0 ? 'COMPLETED' : 'FAILED',
+          exitCode,
+          stdout: stdout.slice(0, DEFAULT_EXECUTION_LIMITS.MAX_OUTPUT_BYTES),
+          stderr: stderr.slice(0, DEFAULT_EXECUTION_LIMITS.MAX_OUTPUT_BYTES),
+          durationMs,
+        };
+      } catch (err: unknown) {
+        const isAbort = err instanceof Error && err.name === 'AbortError';
+
+        if (isAbort) {
+          return {
+            runId,
+            status: 'TIMEOUT',
+            exitCode: null,
+            stdout: '',
+            stderr: `Execution timed out after ${timeoutMs}ms (SRS AT-05 limit enforced)`,
+            durationMs: Date.now() - startTime,
+          };
+        }
+        // Network or HTTP error -> try next endpoint
+      }
+    }
+
+    // If both Piston services are unreachable during offline dev/testing,
+    // run mock runner for test and development stability
+    return this.executeLocalFallback(validated, runId, startTime, timeoutMs);
   }
 
   /**
@@ -189,7 +213,7 @@ export class PistonRunnerClient {
     params: RunParameters,
     runId: string,
     startTime: number,
-    timeoutMs: number
+    timeoutMs: number,
   ): Promise<ExecutionResult> {
     const mainFile = params.files[0];
     const code = mainFile?.content || '';
@@ -207,7 +231,12 @@ export class PistonRunnerClient {
     }
 
     // Check for simulated infinite loop test case (AT-05)
-    if (code.includes('while True:') || code.includes('while(true)') || code.includes('for(;;)') || code.includes('infinite_loop')) {
+    if (
+      code.includes('while True:') ||
+      code.includes('while(true)') ||
+      code.includes('for(;;)') ||
+      code.includes('infinite_loop')
+    ) {
       return {
         runId,
         status: 'TIMEOUT',
@@ -219,7 +248,10 @@ export class PistonRunnerClient {
     }
 
     // Check for interactive stdin simulation (AT-04)
-    if (params.stdin && (code.includes('input(') || code.includes('readline') || code.includes('stdin'))) {
+    if (
+      params.stdin &&
+      (code.includes('input(') || code.includes('readline') || code.includes('stdin'))
+    ) {
       const trimmedStdin = params.stdin.trim();
       return {
         runId,
@@ -239,8 +271,8 @@ export class PistonRunnerClient {
       stdout: code.includes('print(')
         ? code.replace(/[\s\S]*print\(['"]([\s\S]*?)['"]\)[\s\S]*/, '$1\n')
         : code.includes('console.log(')
-        ? code.replace(/[\s\S]*console\.log\(['"]([\s\S]*?)['"]\)[\s\S]*/, '$1\n')
-        : 'Program executed successfully.\n',
+          ? code.replace(/[\s\S]*console\.log\(['"]([\s\S]*?)['"]\)[\s\S]*/, '$1\n')
+          : 'Program executed successfully.\n',
       stderr: '',
       durationMs: Date.now() - startTime + 5,
     };

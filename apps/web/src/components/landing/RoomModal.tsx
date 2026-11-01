@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { X, Code2 } from 'lucide-react';
+import { X } from 'lucide-react';
 import { RoomAccessForm } from './RoomAccessForm';
 
 export interface RoomModalProps {
@@ -58,7 +58,10 @@ export function RoomModal({ isOpen, onClose, initialRoomId }: RoomModalProps) {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-px bg-[#FF0000] opacity-60" />
 
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-5 mb-5 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+        <div
+          className="flex items-center justify-between pb-5 mb-5 border-b"
+          style={{ borderColor: 'var(--border-subtle)' }}
+        >
           <div className="flex items-center gap-3">
             <div
               className="w-9 h-9 flex items-center justify-center border"
@@ -96,11 +99,7 @@ export function RoomModal({ isOpen, onClose, initialRoomId }: RoomModalProps) {
         </div>
 
         {/* Room Access Form */}
-        <RoomAccessForm
-          initialRoomId={initialRoomId}
-          isModal={true}
-          onClose={onClose}
-        />
+        <RoomAccessForm initialRoomId={initialRoomId} isModal={true} onClose={onClose} />
       </div>
     </div>
   );

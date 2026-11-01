@@ -131,7 +131,7 @@ export class RoomManager {
   public getParticipantSession(
     roomCode: string,
     participantId: string
-  ): ParticipantSession | undefined {
+  ): RoomParticipantSession | undefined {
     const room = this.rooms.get(roomCode);
     return room?.participants.get(participantId);
   }

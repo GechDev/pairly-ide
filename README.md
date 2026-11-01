@@ -44,7 +44,7 @@ flowchart TB
     end
 
     subgraph Edge["Real-Time Coordination Gateway"]
-        WS["Fastify WebSocket Server\n(Port 4000)"]
+        WS["Fastify WebSocket Server\n(Port 4001)"]
         AUTH["Token & RBAC Guard\n(Zero-Trust)"]
         ROOMS["Room State Manager\n(Presence & Awareness)"]
         PTY["PTY Session Manager\n(Chunk Replay Buffer)"]
@@ -169,7 +169,7 @@ pnpm dev
 ```
 
 - **Web Application**: [`http://localhost:3000`](http://localhost:3000)
-- **Realtime WebSocket Server**: [`ws://localhost:4000`](http://localhost:4000)
+- **Realtime WebSocket Server**: [`ws://localhost:4001`](http://localhost:4001)
 - **Execution Sandbox API**: [`http://localhost:2000`](http://localhost:2000)
 
 ---
