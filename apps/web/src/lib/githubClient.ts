@@ -36,8 +36,11 @@ export class GitHubClient {
    * List repositories accessible to the user (FR-INT-01).
    */
   public async listRepositories(token?: string, query?: string): Promise<GitHubRepoItem[]> {
+    const effectiveToken =
+      token || (typeof process !== 'undefined' ? process.env?.['GITHUB_TOKEN'] : undefined);
+
     // If no token or testing mock token, provide mock repos for development & tests
-    if (!token || token === 'mock-token' || token.startsWith('mock_')) {
+    if (!effectiveToken || effectiveToken === 'mock-token' || effectiveToken.startsWith('mock_')) {
       return this.getMockRepositories(query);
     }
 
@@ -85,8 +88,11 @@ export class GitHubClient {
     token?: string,
     branch: string = 'main',
   ): Promise<GitHubImportResult> {
+    const effectiveToken =
+      token || (typeof process !== 'undefined' ? process.env?.['GITHUB_TOKEN'] : undefined);
+
     // If mock token or no token, return mock file tree
-    if (!token || token === 'mock-token' || token.startsWith('mock_')) {
+    if (!effectiveToken || effectiveToken === 'mock-token' || effectiveToken.startsWith('mock_')) {
       return this.getMockImportResult(repo);
     }
 
@@ -96,7 +102,7 @@ export class GitHubClient {
         `${this.apiUrl}/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${effectiveToken}`,
             Accept: 'application/vnd.github+json',
             'User-Agent': 'Pairly-IDE',
           },
@@ -122,7 +128,7 @@ export class GitHubClient {
         try {
           const fileResp = await fetch(entry.url, {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${effectiveToken}`,
               Accept: 'application/vnd.github+json',
               'User-Agent': 'Pairly-IDE',
             },
@@ -164,7 +170,10 @@ export class GitHubClient {
     token?: string,
     branch: string = 'main',
   ): Promise<{ success: boolean; commitUrl: string; sha: string }> {
-    if (!token || token === 'mock-token' || token.startsWith('mock_')) {
+    const effectiveToken =
+      token || (typeof process !== 'undefined' ? process.env?.['GITHUB_TOKEN'] : undefined);
+
+    if (!effectiveToken || effectiveToken === 'mock-token' || effectiveToken.startsWith('mock_')) {
       const mockSha = `sha_${Date.now().toString(16)}`;
       return {
         success: true,
@@ -180,7 +189,7 @@ export class GitHubClient {
         `${this.apiUrl}/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(branch)}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${effectiveToken}`,
             Accept: 'application/vnd.github+json',
             'User-Agent': 'Pairly-IDE',
           },
@@ -198,7 +207,7 @@ export class GitHubClient {
         {
           method: 'PUT',
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${effectiveToken}`,
             Accept: 'application/vnd.github+json',
             'Content-Type': 'application/json',
             'User-Agent': 'Pairly-IDE',

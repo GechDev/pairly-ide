@@ -10,6 +10,8 @@ import {
   CheckCircle2,
   Download,
   AlertCircle,
+  Key,
+  ShieldCheck,
 } from 'lucide-react';
 import type { GitHubRepoItem, GitHubImportFile } from '../../lib/githubClient';
 
@@ -19,39 +21,76 @@ export interface GitHubImportModalProps {
   onImportFiles: (files: GitHubImportFile[], repoName: string) => void;
 }
 
-export function GitHubImportModal({
-  isOpen,
-  onClose,
-  onImportFiles,
-}: GitHubImportModalProps) {
+export function GitHubImportModal({ isOpen, onClose, onImportFiles }: GitHubImportModalProps) {
   const [repos, setRepos] = useState<GitHubRepoItem[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
   const [importingId, setImportingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Live GitHub Token Support (T-28)
+  const [patToken, setPatToken] = useState<string>('');
+  const [showTokenSettings, setShowTokenSettings] = useState<boolean>(false);
+  const [inputToken, setInputToken] = useState<string>('');
+
   useEffect(() => {
     if (isOpen) {
-      loadRepos();
+      const stored =
+        typeof window !== 'undefined' ? localStorage.getItem('pairly_github_pat') || '' : '';
+      setPatToken(stored);
+      setInputToken(stored);
+      loadRepos(undefined, stored);
     }
   }, [isOpen]);
 
-  const loadRepos = async (query?: string) => {
+  const loadRepos = async (query?: string, tokenOverride?: string) => {
     setLoading(true);
     setError(null);
     try {
+      const token = tokenOverride !== undefined ? tokenOverride : patToken;
       const url = query
         ? `/api/v1/integrations/github/repos?query=${encodeURIComponent(query)}`
         : '/api/v1/integrations/github/repos';
-      const res = await fetch(url);
+
+      const headers: Record<string, string> = {};
+      if (token && token.trim()) {
+        headers['Authorization'] = `Bearer ${token.trim()}`;
+      }
+
+      const res = await fetch(url, { headers });
       if (!res.ok) throw new Error('Failed to load repositories');
       const data = await res.json();
-      setRepos(data.repos || []);
+      const repoList: GitHubRepoItem[] = Array.isArray(data) ? data : data.repos || [];
+      setRepos(repoList);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error fetching repositories');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSaveToken = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = inputToken.trim();
+    setPatToken(trimmed);
+    if (typeof window !== 'undefined') {
+      if (trimmed) {
+        localStorage.setItem('pairly_github_pat', trimmed);
+      } else {
+        localStorage.removeItem('pairly_github_pat');
+      }
+    }
+    setShowTokenSettings(false);
+    loadRepos(search, trimmed);
+  };
+
+  const handleClearToken = () => {
+    setPatToken('');
+    setInputToken('');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('pairly_github_pat');
+    }
+    loadRepos(search, '');
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -68,9 +107,16 @@ export function GitHubImportModal({
       const owner = parts[0] || 'pairly-team';
       const repoName = parts[1] || repo.name;
 
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (patToken && patToken.trim()) {
+        headers['Authorization'] = `Bearer ${patToken.trim()}`;
+      }
+
       const res = await fetch('/api/v1/integrations/github/import', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           owner,
           repo: repoName,
@@ -94,11 +140,16 @@ export function GitHubImportModal({
 
   if (!isOpen) return null;
 
+  const isLive = Boolean(
+    patToken && patToken.trim() && patToken !== 'mock-token' && !patToken.startsWith('mock_'),
+  );
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
+      data-testid="github-import-modal"
     >
       <div className="relative w-full max-w-2xl flex flex-col rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden text-slate-100">
         {/* Header */}
@@ -108,19 +159,92 @@ export function GitHubImportModal({
               <Github className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-100">Import GitHub Repository</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-slate-100">Import GitHub Repository</h3>
+                {isLive ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 border border-emerald-500/30">
+                    <ShieldCheck className="h-3 w-3" />
+                    Live GitHub API
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-slate-400 border border-slate-700">
+                    Demo Mode (Mock)
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-slate-400">
-                Browse public and private repositories to import files into your room (FR-INT-01..02)
+                Browse public and private repositories to import files into your room
+                (FR-INT-01..02)
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors"
-          >
-            ✕
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowTokenSettings(!showTokenSettings)}
+              className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-all ${
+                showTokenSettings
+                  ? 'border-brand-500 bg-brand-500/10 text-brand-300'
+                  : 'border-slate-700 bg-slate-800/80 text-slate-300 hover:bg-slate-750'
+              }`}
+              title="Configure Personal Access Token"
+            >
+              <Key className="h-3.5 w-3.5" />
+              <span>{isLive ? 'Token Configured' : 'Connect Token'}</span>
+            </button>
+            <button
+              onClick={onClose}
+              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors"
+            >
+              ✕
+            </button>
+          </div>
         </div>
+
+        {/* Token Configuration Banner */}
+        {showTokenSettings && (
+          <form
+            onSubmit={handleSaveToken}
+            className="border-b border-slate-800 bg-slate-950/90 p-4 animate-in slide-in-from-top-2 duration-150"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-slate-200">
+                GitHub Personal Access Token (PAT)
+              </span>
+              <a
+                href="https://github.com/settings/tokens/new?scopes=repo,read:user"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[11px] text-brand-400 hover:underline"
+              >
+                Generate Token on GitHub ↗
+              </a>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="password"
+                value={inputToken}
+                onChange={(e) => setInputToken(e.target.value)}
+                placeholder="ghp_xxxxxxxxxxxxxxxxxxxx (stored only in browser localStorage)"
+                className="flex-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:border-brand-500 focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="rounded-lg bg-brand-600 hover:bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors"
+              >
+                Apply Token
+              </button>
+              {patToken && (
+                <button
+                  type="button"
+                  onClick={handleClearToken}
+                  className="rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 text-xs text-rose-300 transition-colors"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          </form>
+        )}
 
         {/* Search Bar */}
         <div className="p-4 border-b border-slate-800/80 bg-slate-900/40">

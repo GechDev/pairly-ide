@@ -23,9 +23,14 @@ describe('T-21: GitHub OAuth & Repository Import (FR-INT-01..02)', () => {
   it('filters repositories based on search queries', async () => {
     const pythonRepos = await defaultGitHubClient.listRepositories('mock-token', 'python');
     expect(pythonRepos.length).toBeGreaterThan(0);
-    expect(pythonRepos.every((r) => r.name.includes('python') || r.description?.includes('Python'))).toBe(true);
+    expect(
+      pythonRepos.every((r) => r.name.includes('python') || r.description?.includes('Python')),
+    ).toBe(true);
 
-    const nonExistent = await defaultGitHubClient.listRepositories('mock-token', 'non-existent-repo-xyz-999');
+    const nonExistent = await defaultGitHubClient.listRepositories(
+      'mock-token',
+      'non-existent-repo-xyz-999',
+    );
     expect(nonExistent.length).toBe(0);
   });
 
@@ -43,10 +48,13 @@ describe('T-21: GitHub OAuth & Repository Import (FR-INT-01..02)', () => {
   });
 
   it('GET /api/v1/integrations/github/repos returns 200 with repository list', async () => {
-    const req = new NextRequest('http://localhost:3000/api/v1/integrations/github/repos?query=sample', {
-      method: 'GET',
-      headers: { authorization: 'Bearer mock-token' },
-    });
+    const req = new NextRequest(
+      'http://localhost:3000/api/v1/integrations/github/repos?query=sample',
+      {
+        method: 'GET',
+        headers: { authorization: 'Bearer mock-token' },
+      },
+    );
 
     const res = await GET(req);
     expect(res.status).toBe(200);
@@ -96,5 +104,17 @@ describe('T-21: GitHub OAuth & Repository Import (FR-INT-01..02)', () => {
     expect(res.status).toBe(400);
     const data = await res.json();
     expect(data.error).toContain('Repository name is required');
+  });
+
+  it('respects process.env.GITHUB_TOKEN environment variable fallback (T-28)', async () => {
+    const originalEnv = process.env['GITHUB_TOKEN'];
+    try {
+      process.env['GITHUB_TOKEN'] = 'mock-env-token';
+      const repos = await defaultGitHubClient.listRepositories();
+      expect(repos).toBeDefined();
+      expect(repos.length).toBeGreaterThan(0);
+    } finally {
+      process.env['GITHUB_TOKEN'] = originalEnv;
+    }
   });
 });
