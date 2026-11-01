@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  validateAiInvocation,
-  canWrite,
-  type RoomRole,
-} from '@pairly/contracts';
-import { defaultAiGateway } from '@pairly/ai';
+import { validateAiInvocation, canWrite, type RoomRole } from '@pairly/contracts';
+import { defaultAiGateway, type AiProviderType } from '@pairly/ai';
 
 interface RouteContext {
   params: { code: string };
@@ -13,7 +9,8 @@ interface RouteContext {
 /**
  * POST /api/v1/rooms/[code]/ai
  * Dispatches AI invocations to the Pairly AI Gateway with
- * transparent context disclosure and server-side RBAC enforcement (FR-AI-01..03, 07).
+ * transparent context disclosure, live streaming (SSE), BYOK support,
+ * and server-side RBAC enforcement (FR-AI-01..03, 06, 07, T-29).
  */
 export async function POST(request: NextRequest, { params }: RouteContext) {
   try {
@@ -27,7 +24,8 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
     if (!canWrite(roleHeader)) {
       return NextResponse.json(
         {
-          error: 'Unauthorized: Your role does not have permission to invoke AI assistance (SRS SEC-01)',
+          error:
+            'Unauthorized: Your role does not have permission to invoke AI assistance (SRS SEC-01)',
           code: 'UNAUTHORIZED_ACTION',
         },
         { status: 403 },
@@ -47,8 +45,46 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
       );
     }
 
-    // Execute via AI Gateway
-    const result = await defaultAiGateway.invoke(parsed.data);
+    // Optional BYOK (Bring Your Own Key) & provider overrides from headers
+    const byokKey = request.headers.get('x-ai-api-key') || undefined;
+    const byokProvider = (request.headers.get('x-ai-provider') as AiProviderType) || undefined;
+    const isStream =
+      request.nextUrl.searchParams.get('stream') === 'true' ||
+      request.headers.get('accept') === 'text/event-stream';
+
+    // 1. Live Server-Sent Events (SSE) Streaming
+    if (isStream) {
+      const responseStream = new ReadableStream({
+        async start(controller) {
+          const encoder = new TextEncoder();
+          try {
+            for await (const chunk of defaultAiGateway.stream(parsed.data, {
+              apiKey: byokKey,
+              provider: byokProvider,
+            })) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
+            }
+            controller.close();
+          } catch (err) {
+            controller.error(err);
+          }
+        },
+      });
+
+      return new Response(responseStream, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          Connection: 'keep-alive',
+        },
+      });
+    }
+
+    // 2. Standard JSON Completion
+    const result = await defaultAiGateway.invoke(parsed.data, {
+      apiKey: byokKey,
+      provider: byokProvider,
+    });
 
     return NextResponse.json(
       {
