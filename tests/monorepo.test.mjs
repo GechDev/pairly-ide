@@ -53,3 +53,19 @@ test('.gitignore properly ignores sensitive and generated paths', () => {
   assert.match(gitignore, /dist/, 'must ignore dist');
   assert.match(gitignore, /\.env/, 'must ignore .env');
 });
+
+test('apps/realtime/Dockerfile exists and adheres to production hardening rules (T-25)', () => {
+  const dockerfilePath = path.join(rootDir, 'apps', 'realtime', 'Dockerfile');
+  assert.ok(fs.existsSync(dockerfilePath), 'apps/realtime/Dockerfile must exist');
+  const content = fs.readFileSync(dockerfilePath, 'utf8');
+
+  assert.match(content, /FROM node:20-alpine/, 'must use hardened node:20-alpine base');
+  assert.match(content, /turbo prune @pairly\/realtime/, 'must use turbo pruning for monorepo');
+  assert.match(content, /USER node/, 'must run as non-privileged node user');
+  assert.match(content, /EXPOSE 4001/, 'must expose realtime port 4001');
+  assert.match(content, /HEALTHCHECK/, 'must define container health check');
+  assert.match(content, /\/health/, 'healthcheck must query /health route');
+
+  const dockerignorePath = path.join(rootDir, 'apps', 'realtime', '.dockerignore');
+  assert.ok(fs.existsSync(dockerignorePath), 'apps/realtime/.dockerignore must exist');
+});

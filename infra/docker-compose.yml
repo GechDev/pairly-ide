@@ -32,7 +32,25 @@ services:
       timeout: 5s
       retries: 5
 
+  realtime:
+    build:
+      context: ..
+      dockerfile: apps/realtime/Dockerfile
+    container_name: pairly_realtime
+    restart: unless-stopped
+    ports:
+      - '${REALTIME_PORT:-4001}:4001'
+    environment:
+      PORT: 4001
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://${POSTGRES_USER:-pairly_user}:${POSTGRES_PASSWORD:-pairly_password}@postgres:5432/${POSTGRES_DB:-pairly}
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   redis_data:
-
